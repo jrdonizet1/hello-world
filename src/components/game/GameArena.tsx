@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { motion, useAnimation } from 'framer-motion';
+import { motion, useAnimation, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/useGameStore';
 import { generateCommand } from '../../lib/gameLogic';
 

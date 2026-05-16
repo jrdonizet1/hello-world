@@ -17,6 +17,7 @@ export const GameArena: React.FC = () => {
   } = useGameStore();
 
   const [countDown, setCountDown] = useState(3);
+  const [isWrong, setIsWrong] = useState(false);
   const controls = useAnimation();
 
   // Handle countdown
@@ -50,30 +51,29 @@ export const GameArena: React.FC = () => {
   const handleAction = useCallback((action: string, target: string) => {
     if (gameState !== 'PLAYING' || !currentCommand) return;
 
-    // Check if action matches command logic
-    // Simplified for MVP:
     let success = false;
     
     if (currentCommand.type === 'COLOR') {
       if (currentCommand.action === 'tap' && target === currentCommand.target) success = true;
       if (currentCommand.action === 'not_tap' && target !== currentCommand.target) success = true;
-    } else if (currentCommand.type === 'MATH') {
-       if (target === currentCommand.target) success = true;
-    } else if (currentCommand.type === 'TAP') {
+    } else if (currentCommand.type === 'MATH' || currentCommand.type === 'TAP') {
        success = true;
     }
 
     if (success) {
       updateScore(1);
       setCommand(generateCommand(Math.floor(score / 5) + 1));
-      // Reset timer slightly faster as score increases
-      useGameStore.setState({ timeRemaining: Math.max(0.5, 3 - (score * 0.05)) });
+      const baseTime = Math.max(0.7, 2.2 - (score * 0.04));
+      useGameStore.setState({ timeRemaining: baseTime });
+      
       controls.start({
-        scale: [1, 1.05, 1],
+        scale: [1, 1.1, 1],
+        filter: ['brightness(1)', 'brightness(1.5)', 'brightness(1)'],
         transition: { duration: 0.1 }
       });
     } else {
-      endGame('COMANDO ERRADO!');
+      setIsWrong(true);
+      setTimeout(() => endGame('CONEXÃO CEREBRAL PERDIDA'), 200);
     }
   }, [gameState, currentCommand, score, updateScore, setCommand, endGame, controls]);
 
@@ -82,9 +82,10 @@ export const GameArena: React.FC = () => {
       <div className="flex items-center justify-center h-full">
         <motion.span 
           key={countDown}
-          initial={{ scale: 2, opacity: 0 }}
+          initial={{ scale: 3, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="text-9xl font-black italic"
+          exit={{ scale: 0, opacity: 0 }}
+          className="text-9xl font-black italic glitch-effect"
         >
           {countDown}
         </motion.span>
@@ -93,24 +94,24 @@ export const GameArena: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col h-full relative p-6">
+    <div className={`flex flex-col h-full relative p-6 transition-colors duration-200 ${isWrong ? 'bg-red-900' : ''}`}>
       {/* Header */}
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center mb-6">
         <div className="flex flex-col">
-          <span className="text-gray-500 text-xs font-bold uppercase tracking-widest">Pontos</span>
-          <span className="text-4xl font-black italic">{score}</span>
+          <span className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em]">Sincronia</span>
+          <span className="text-4xl font-black italic tabular-nums">{score}</span>
         </div>
         <div className="flex flex-col items-end">
-          <span className="text-gray-500 text-xs font-bold uppercase tracking-widest">Sobreviventes</span>
-          <span className="text-2xl font-black text-cyan-400">12</span>
+          <span className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em]">Estável</span>
+          <span className="text-2xl font-black text-cyan-400 tabular-nums">98%</span>
         </div>
       </div>
 
       {/* Timer Bar */}
-      <div className="w-full h-4 bg-white/10 rounded-full overflow-hidden mb-12 border border-white/5">
+      <div className="w-full h-3 bg-white/5 rounded-full overflow-hidden mb-12 border border-white/10 p-[2px]">
         <motion.div 
-          className="h-full bg-cyan-500"
-          animate={{ width: `${(timeRemaining / 3) * 100}%` }}
+          className={`h-full rounded-full ${timeRemaining < 0.8 ? 'bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-cyan-500'}`}
+          animate={{ width: `${Math.max(0, (timeRemaining / 2.2) * 100)}%` }}
           transition={{ duration: 0.05, ease: 'linear' }}
         />
       </div>
@@ -118,28 +119,28 @@ export const GameArena: React.FC = () => {
       {/* Main Command Area */}
       <motion.div 
         animate={controls}
-        className="flex-1 flex flex-col items-center justify-center text-center px-4"
+        className="flex-1 flex flex-col items-center justify-center text-center px-4 mb-8"
       >
         <AnimatePresence mode="wait">
           <motion.div
             key={currentCommand?.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="space-y-4"
+            initial={{ opacity: 0, scale: 0.8, filter: 'blur(10px)' }}
+            animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, scale: 1.2, filter: 'blur(10px)' }}
+            className="space-y-2"
           >
-            <h2 className="text-4xl sm:text-5xl font-black tracking-tight leading-none uppercase">
+            <h2 className="text-5xl sm:text-6xl font-black tracking-tighter leading-none uppercase italic glitch-effect">
               {currentCommand?.text}
             </h2>
           </motion.div>
         </AnimatePresence>
       </motion.div>
 
-      {/* Interaction Area (Dynamic based on command) */}
-      <div className="grid grid-cols-2 gap-4 h-64 mb-8">
-        <InteractionButton color="bg-red-500" label="VERMELHO" onClick={() => handleAction('tap', 'red')} />
-        <InteractionButton color="bg-blue-500" label="AZUL" onClick={() => handleAction('tap', 'blue')} />
-        <InteractionButton color="bg-green-500" label="VERDE" onClick={() => handleAction('tap', 'green')} />
+      {/* Interaction Area */}
+      <div className="grid grid-cols-2 gap-3 h-[45%] mb-4">
+        <InteractionButton color="bg-red-600" label="VERMELHO" onClick={() => handleAction('tap', 'red')} />
+        <InteractionButton color="bg-blue-600" label="AZUL" onClick={() => handleAction('tap', 'blue')} />
+        <InteractionButton color="bg-green-600" label="VERDE" onClick={() => handleAction('tap', 'green')} />
         <InteractionButton color="bg-yellow-500" label="AMARELO" onClick={() => handleAction('tap', 'yellow')} />
       </div>
     </div>
@@ -148,10 +149,10 @@ export const GameArena: React.FC = () => {
 
 const InteractionButton: React.FC<{ color: string; label: string; onClick: () => void }> = ({ color, label, onClick }) => (
   <motion.button
-    whileTap={{ scale: 0.9, filter: 'brightness(1.5)' }}
+    whileTap={{ scale: 0.94 }}
     onClick={onClick}
-    className={`${color} rounded-2xl flex items-center justify-center font-black text-xl shadow-lg border-b-8 border-black/20`}
+    className={`${color} rounded-3xl flex items-center justify-center font-black text-xl shadow-2xl border-b-[6px] border-black/30 active:border-b-0 active:translate-y-1 transition-all`}
   >
-    {label}
+    <span className="drop-shadow-md">{label}</span>
   </motion.button>
 );

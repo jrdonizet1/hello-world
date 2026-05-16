@@ -142,3 +142,20 @@
     color: var(--color-foreground);
   }
 }
+
+@layer base {
+  html, body {
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
+    position: fixed;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+}
+
+.glitch-effect {
+  text-shadow: 2px 0 #ff0055, -2px 0 #00f2ff;
+}

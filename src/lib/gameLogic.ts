@@ -3,12 +3,12 @@ import { Command } from '../store/useGameStore';
 const COMMANDS: Omit<Command, 'id'>[] = [
   { text: 'TOQUE NO VERMELHO', type: 'COLOR', action: 'tap', target: 'red', difficulty: 1 },
   { text: 'NÃO TOQUE NO AZUL', type: 'COLOR', action: 'not_tap', target: 'blue', difficulty: 2 },
-  { text: 'TOQUE NO TEXTO, NÃO NA COR', type: 'COLOR', action: 'tap_text', target: 'any', difficulty: 3 },
-  { text: 'SWIPE PARA A ESQUERDA', type: 'SWIPE', action: 'swipe_left', target: 'left', difficulty: 1 },
-  { text: 'SWIPE PARA O LADO OPOSTO', type: 'SWIPE', action: 'swipe_right', target: 'right', difficulty: 3 },
-  { text: 'SEGURE POR 1 SEGUNDO', type: 'HOLD', action: 'hold', target: '1s', difficulty: 2 },
-  { text: '2 + 2 = ?', type: 'MATH', action: 'math_4', target: '4', difficulty: 1 },
-  { text: 'CLIQUE NO MENOR NÚMERO', type: 'MATH', action: 'min', target: 'any', difficulty: 2 },
+  { text: 'ESCOLHA O VERDE', type: 'COLOR', action: 'tap', target: 'green', difficulty: 1 },
+  { text: 'ESQUEÇA O AMARELO', type: 'COLOR', action: 'not_tap', target: 'yellow', difficulty: 2 },
+  { text: 'CLIQUE NO AZUL', type: 'COLOR', action: 'tap', target: 'blue', difficulty: 1 },
+  { text: 'SWIPE NÃO DISPONÍVEL', type: 'TAP', action: 'tap', target: 'any', difficulty: 3 },
+  { text: '2 + 2 = 4?', type: 'MATH', action: 'math_4', target: '4', difficulty: 1 },
+  { text: '10 - 3 = 7?', type: 'MATH', action: 'math_4', target: '4', difficulty: 2 },
 ];
 
 export const generateCommand = (difficulty: number): Command => {

@@ -115,6 +115,31 @@ export const GameOver: React.FC = () => {
           </div>
         </div>
 
+        {rewards && (
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            className="mb-6 space-y-3 bg-cyan-500/10 border border-cyan-500/20 rounded-2xl p-4 overflow-hidden"
+          >
+            <div className="flex justify-between items-center">
+              <span className="text-[10px] font-black uppercase text-cyan-400">Recompensas</span>
+              {rewards.leveledUp && (
+                <span className="bg-yellow-500 text-black text-[8px] font-black px-2 py-0.5 rounded-full animate-bounce">LEVEL UP! Lvl {rewards.newLevel}</span>
+              )}
+            </div>
+            <div className="flex gap-4">
+              <div className="flex-1 bg-black/20 rounded-xl p-2 text-center">
+                <p className="text-[8px] text-white/40 font-bold uppercase">XP</p>
+                <p className="text-lg font-black text-white">+{rewards.xp}</p>
+              </div>
+              <div className="flex-1 bg-black/20 rounded-xl p-2 text-center border border-yellow-500/20">
+                <p className="text-[8px] text-yellow-500/60 font-bold uppercase">Coins</p>
+                <p className="text-lg font-black text-yellow-500">+{rewards.coins}</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         <div className="space-y-4">
           <p className="text-[10px] font-black uppercase tracking-widest text-white/40 border-b border-white/10 pb-2">Top Mundial</p>
           <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, Coins, Check, Lock, Palette, Type, Monitor, Sparkles } from 'lucide-react';
+import { ShoppingBag, Coins, Check, Lock, Palette, Type, Monitor, Sparkles, Star, Zap } from 'lucide-react';
+import { useGameStore } from '../../store/useGameStore';
 import { getShopItems, buyShopItem, getUserInventory, updateEquippedItems, getProfile } from '../../lib/server-functions';
 import { toast } from 'sonner';
 
@@ -9,7 +10,8 @@ interface ShopItem {
   name: string;
   description: string;
   price: number;
-  category: 'skin' | 'title' | 'avatar' | 'font' | 'arena_effect';
+  category: 'skin' | 'title' | 'avatar' | 'font' | 'arena_effect' | 'power_up';
+  rarity?: 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY';
   item_data: any;
 }
 
@@ -27,9 +29,13 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         getUserInventory(),
         getProfile()
       ]);
+      const profileData = userProfile as any;
       setItems(shopItems as ShopItem[]);
       setInventory(userInv);
-      setProfile(userProfile);
+      setProfile(profileData);
+      
+      const { setPowerCounts } = useGameStore.getState();
+      setPowerCounts(profileData.power_slow_count || 0, profileData.power_shield_count || 0);
     } catch (err: any) {
       console.error(err);
       toast.error('Erro ao carregar loja');
@@ -86,6 +92,7 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   }
 
   const isEquipped = (item: ShopItem) => {
+    if (item.category === 'power_up') return false; // Power ups are consumables
     if (item.category === 'skin') return profile?.selected_skin === item.item_data.color;
     if (item.category === 'title') return profile?.selected_title === item.item_data.text;
     if (item.category === 'font') return JSON.stringify(profile?.selected_font) === JSON.stringify(item.item_data);
@@ -113,48 +120,85 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-12">
         {items.map((item) => {
-          const owned = inventory.includes(item.id);
+          const owned = inventory.includes(item.id) && item.category !== 'power_up';
           const equipped = isEquipped(item);
           const canAfford = (profile?.coins || 0) >= item.price;
+          
+          const rarityColors = {
+            COMMON: 'text-zinc-400 border-zinc-800 bg-zinc-900/40',
+            RARE: 'text-blue-400 border-blue-900/30 bg-blue-950/20',
+            EPIC: 'text-purple-400 border-purple-900/30 bg-purple-950/20',
+            LEGENDARY: 'text-yellow-400 border-yellow-900/30 bg-yellow-950/20 shadow-[0_0_20px_rgba(234,179,8,0.1)]'
+          };
+          
+          const rarityLabel = {
+            COMMON: 'Comum',
+            RARE: 'Raro',
+            EPIC: 'Épico',
+            LEGENDARY: 'Lendário'
+          };
+
+          const currentRarity = item.rarity || 'COMMON';
 
           return (
             <motion.div
               key={item.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`p-4 rounded-2xl border-2 transition-all relative overflow-hidden ${
+              className={`p-5 rounded-3xl border-2 transition-all relative overflow-hidden flex flex-col ${
                 equipped 
-                  ? 'border-cyan-500 bg-cyan-500/10' 
+                  ? 'border-cyan-500 bg-cyan-500/10 shadow-[0_0_20px_rgba(6,182,212,0.15)]' 
                   : owned 
                     ? 'border-white/20 bg-white/5' 
-                    : 'border-white/5 bg-black/40'
+                    : rarityColors[currentRarity]
               }`}
             >
-              {/* Category Icon */}
-              <div className="absolute top-4 right-4 opacity-20">
-                {item.category === 'skin' ? <Palette className="w-8 h-8" /> : 
-                 item.category === 'font' ? <Type className="w-8 h-8" /> :
-                 item.category === 'arena_effect' ? <Sparkles className="w-8 h-8" /> :
-                 <Type className="w-8 h-8" />}
+              {/* Rarity Tag */}
+              <div className="flex justify-between items-start mb-4">
+                <span className={`text-[8px] font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded-full border ${
+                  currentRarity === 'LEGENDARY' ? 'bg-yellow-500/20 border-yellow-500/30' : 'bg-black/20 border-white/5'
+                }`}>
+                  {rarityLabel[currentRarity]}
+                </span>
+                <div className="opacity-40">
+                  {item.category === 'skin' ? <Palette size={14} /> : 
+                   item.category === 'power_up' ? <Sparkles size={14} /> :
+                   <Type size={14} />}
+                </div>
               </div>
 
               <div className="flex flex-col h-full justify-between gap-4">
                 <div>
-                  <h3 className="font-black italic text-lg uppercase tracking-tight">
+                  <h3 className={`font-black italic text-lg uppercase tracking-tight mb-1 ${
+                    currentRarity === 'LEGENDARY' ? 'text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-yellow-600' : 'text-white'
+                  }`}>
                     {item.name}
                   </h3>
-                  <p className="text-xs text-gray-400 leading-relaxed mb-2">
+                  <p className="text-[10px] text-zinc-500 font-bold leading-relaxed uppercase tracking-tight">
                     {item.description}
                   </p>
                   
-                  {item.category === 'skin' && (
-                    <div 
-                      className="w-full h-2 rounded-full mb-2" 
-                      style={{ backgroundColor: item.item_data.color, boxShadow: `0 0 10px ${item.item_data.color}40` }}
-                    />
-                  )}
+                  <div className="mt-4">
+                    {item.category === 'skin' && item.item_data.color !== 'rainbow' && (
+                      <div 
+                        className="w-full h-1 rounded-full" 
+                        style={{ backgroundColor: item.item_data.color, boxShadow: `0 0 10px ${item.item_data.color}40` }}
+                      />
+                    )}
+                    {item.category === 'skin' && item.item_data.color === 'rainbow' && (
+                      <div className="w-full h-1 rounded-full bg-gradient-to-r from-red-500 via-green-500 to-blue-500 animate-pulse" />
+                    )}
+                    {item.category === 'title' && (
+                      <div className="text-[10px] font-black uppercase tracking-[0.3em] py-2 px-3 bg-black/40 rounded-xl border border-white/5 text-center" style={{ 
+                        color: item.item_data.color || 'inherit',
+                        textShadow: item.item_data.glow ? `0 0 10px ${item.item_data.color}` : 'none'
+                      }}>
+                        « {item.item_data.text} »
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex items-center justify-between mt-auto">

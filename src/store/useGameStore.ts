@@ -41,6 +41,9 @@ interface BrainLagState {
   duelSeed: number | null;
   activePowers: { id: string, expiresAt: number }[];
   coins: number;
+  powerSlowCount: number;
+  powerShieldCount: number;
+  hasShield: boolean;
   
   setGameState: (state: GameState) => void;
   setGameMode: (mode: GameMode) => void;
@@ -53,6 +56,7 @@ interface BrainLagState {
   tick: (delta: number) => void;
   setRoom: (id: string | null, code: string | null, isHost: boolean) => void;
   setCustomization: (skin: string | null, title: string | null, font?: any, arenaEffect?: any) => void;
+  setPowerCounts: (slow: number, shield: number) => void;
   increaseCombo: (reactionTime: number) => void;
   setDuelOpponent: (id: string | null, progress: number) => void;
   usePower: (powerId: string) => void;
@@ -87,6 +91,9 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
   duelSeed: null,
   activePowers: [],
   coins: 0,
+  powerSlowCount: 0,
+  powerShieldCount: 0,
+  hasShield: false,
 
   setCustomization: (skin, title, font, arenaEffect) => set({ 
     userSkin: skin, 
@@ -94,6 +101,7 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
     userFont: font || null,
     userArenaEffect: arenaEffect || null
   }),
+  setPowerCounts: (slow, shield) => set({ powerSlowCount: slow, powerShieldCount: shield }),
   setGameMode: (mode) => set({ gameMode: mode }),
   setSelectedThemes: (themes) => set({ selectedThemes: themes }),
   setGameSettings: (baseTime, accelerationIntensity) => set({ baseTime, accelerationIntensity, accelerationEnabled: accelerationIntensity !== 'OFF' }),
@@ -181,8 +189,22 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
 
   setDuelOpponent: (id, progress) => set({ duelOpponentId: id, duelOpponentProgress: progress }),
   usePower: (powerId) => set((state) => {
-    const expiresAt = Date.now() + 5000; // 5 seconds
-    return { activePowers: [...state.activePowers, { id: powerId, expiresAt }] };
+    if (powerId === 'slow') {
+      if (state.powerSlowCount <= 0) return state;
+      const expiresAt = Date.now() + 5000;
+      return { 
+        activePowers: [...state.activePowers, { id: powerId, expiresAt }],
+        powerSlowCount: state.powerSlowCount - 1
+      };
+    }
+    if (powerId === 'shield') {
+      if (state.powerShieldCount <= 0 || state.hasShield) return state;
+      return { 
+        hasShield: true,
+        powerShieldCount: state.powerShieldCount - 1
+      };
+    }
+    return state;
   }),
   resetCombo: () => set({ combo: 0, multiplier: 1 }),
 }));

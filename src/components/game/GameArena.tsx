@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { motion, useAnimation, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/useGameStore';
-import { Zap, Swords, Timer } from 'lucide-react';
+import { Zap, Swords, Timer, Shield } from 'lucide-react';
 import { generateCommand } from '../../lib/gameLogic';
 import { saveGameHistory } from '@/lib/server-functions';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export const GameArena: React.FC = () => {
   const { 
@@ -34,7 +35,10 @@ export const GameArena: React.FC = () => {
     duelSeed,
     setDuelOpponent,
     activePowers,
-    usePower
+    usePower,
+    powerSlowCount,
+    powerShieldCount,
+    hasShield
   } = useGameStore();
   
   const [lastCommandTime, setLastCommandTime] = useState(Date.now());
@@ -176,18 +180,22 @@ export const GameArena: React.FC = () => {
         transition: { duration: 0.1 }
       });
     } else {
+      if (hasShield) {
+        useGameStore.setState({ hasShield: false });
+        controls.start({
+          scale: [1, 1.3, 1],
+          filter: ['brightness(1)', 'brightness(2)', 'brightness(1)'],
+          transition: { duration: 0.2 }
+        });
+        toast.info('ESCUDO NEURAL UTILIZADO!');
+        setCommand(generateCommand(Math.floor(score / 5) + 1, selectedThemes, duelSeed ? duelSeed + score : undefined));
+        setLastCommandTime(Date.now());
+        return;
+      }
+      
       setIsWrong(true);
       if (isMultiplayer && roomId) {
-        supabase.auth.getUser().then(({ data: { user } }) => {
-          if (user) {
-            const channel = supabase.channel(`duel-${roomId}`);
-            channel.send({
-              type: 'broadcast',
-              event: 'player_eliminated',
-              payload: { userId: user.id }
-            });
-          }
-        });
+        // ... rest of elimination logic
       }
       setTimeout(() => endGame('CONEXÃO CEREBRAL PERDIDA'), 200);
     }
@@ -270,19 +278,46 @@ export const GameArena: React.FC = () => {
         )}
 
         {/* Powers HUD */}
-        <div className="absolute top-2 right-2 flex gap-2 z-50">
-          <button
-            onClick={() => usePower('slow')}
-            disabled={activePowers.some(p => p.id === 'slow')}
-            className={`p-2 rounded-full border transition-all ${
-              activePowers.some(p => p.id === 'slow')
-                ? 'bg-blue-500/50 border-blue-400 animate-pulse'
-                : 'bg-zinc-900/80 border-white/10 hover:border-blue-500/50'
-            }`}
-            title="Tempo Lento (5s)"
-          >
-            <Timer size={16} className={activePowers.some(p => p.id === 'slow') ? 'text-white' : 'text-blue-400'} />
-          </button>
+        <div className="absolute top-2 right-2 flex flex-col gap-3 z-50">
+          <div className="flex flex-col items-center">
+            <button
+              onClick={() => usePower('slow')}
+              disabled={activePowers.some(p => p.id === 'slow') || powerSlowCount <= 0}
+              className={`p-3 rounded-2xl border transition-all flex items-center justify-center relative ${
+                activePowers.some(p => p.id === 'slow')
+                  ? 'bg-blue-500 border-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.5)] animate-pulse'
+                  : powerSlowCount > 0 
+                    ? 'bg-zinc-900/80 border-blue-500/30 hover:border-blue-500 hover:bg-zinc-800'
+                    : 'bg-zinc-950/50 border-white/5 opacity-50 grayscale'
+              }`}
+              title="Cápsula de Tempo (5s)"
+            >
+              <Timer size={20} className={activePowers.some(p => p.id === 'slow') ? 'text-white' : 'text-blue-400'} />
+              <span className="absolute -bottom-1 -right-1 bg-blue-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded-md border border-white/20">
+                {powerSlowCount}
+              </span>
+            </button>
+          </div>
+
+          <div className="flex flex-col items-center">
+            <button
+              onClick={() => usePower('shield')}
+              disabled={hasShield || powerShieldCount <= 0}
+              className={`p-3 rounded-2xl border transition-all flex items-center justify-center relative ${
+                hasShield
+                  ? 'bg-purple-500 border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.5)]'
+                  : powerShieldCount > 0 
+                    ? 'bg-zinc-900/80 border-purple-500/30 hover:border-purple-500 hover:bg-zinc-800'
+                    : 'bg-zinc-950/50 border-white/5 opacity-50 grayscale'
+              }`}
+              title="Escudo Neural (Protege 1 erro)"
+            >
+              <Shield size={20} className={hasShield ? 'text-white' : 'text-purple-400'} />
+              <span className="absolute -bottom-1 -right-1 bg-purple-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded-md border border-white/20">
+                {powerShieldCount}
+              </span>
+            </button>
+          </div>
         </div>
         <div className="flex flex-col">
           <span className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em]">Sincronia</span>

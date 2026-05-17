@@ -9,7 +9,7 @@ import { saveScore, getLeaderboard } from '@/lib/server-functions';
 import { toast } from 'sonner';
 
 export const GameOver: React.FC = () => {
-  const { score, lastError, startGame, setGameState, gameMode, selectedThemes } = useGameStore();
+  const { score, lastError, startGame, setGameState, gameMode, selectedThemes, maxCombo } = useGameStore();
   const [session, setSession] = useState<any>(null);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -50,7 +50,7 @@ export const GameOver: React.FC = () => {
         themeScores[selectedThemes[0]] = score;
       }
       
-      const result = await (saveScore as any)({ data: { score, themeScores } });
+      const result = await (saveScore as any)({ data: { score, themeScores, maxCombo } });
       if (result.success) {
         setRewards({
           xp: result.xpGained,
@@ -108,7 +108,13 @@ export const GameOver: React.FC = () => {
             </p>
             <p className={`text-5xl font-black italic ${gameMode === 'BLITZ' ? 'text-amber-500' : gameMode === 'SURVIVAL' ? 'text-emerald-500' : 'text-white'}`}>{score}</p>
           </div>
-          <div className="text-right">
+          <div className="text-right flex flex-col items-end gap-1">
+            {maxCombo > 0 && (
+              <div className="flex items-center gap-1 bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 rounded-lg">
+                <span className="text-[8px] font-black text-cyan-400 uppercase">Max Combo</span>
+                <span className="text-xs font-black text-cyan-400 italic">x{maxCombo}</span>
+              </div>
+            )}
             {!session ? (
               <button 
                 onClick={handleLogin}

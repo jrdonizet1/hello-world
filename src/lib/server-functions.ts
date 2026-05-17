@@ -7,10 +7,9 @@ export const saveScore = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async (args: any) => {
     const { data, context } = args;
-    const { score } = data;
+    const { score, themeScores } = data;
     const { userId } = context;
 
-    // Buscar perfil atual para atualizar XP e Moedas
     const { data: profile, error: profileError } = await supabaseAdmin
       .from("profiles")
       .select("xp, coins, level")
@@ -22,36 +21,36 @@ export const saveScore = createServerFn({ method: "POST" })
     const xpGained = score * 10;
     const coinsGained = Math.floor(score / 5);
     const newXp = profile.xp + xpGained;
-    const newCoins = profile.coins + coinsGained;
-    
-    // Lógica simples de level up: cada level precisa de 1000 XP
+    const newCoins = (profile.coins || 0) + coinsGained;
     const newLevel = Math.floor(newXp / 1000) + 1;
     const leveledUp = newLevel > profile.level;
 
-    // Atualizar perfil com novos ganhos
-    const { error: updateError } = await supabaseAdmin
+    await supabaseAdmin
       .from("profiles")
-      .update({ 
-        xp: newXp, 
-        coins: newCoins, 
-        level: newLevel 
-      })
+      .update({ xp: newXp, coins: newCoins, level: newLevel })
       .eq("id", userId);
 
-    if (updateError) throw new Error(updateError.message);
-
-    // Salvar no leaderboard se for recorde pessoal
     const { data: currentEntry } = await supabaseAdmin
       .from("leaderboard")
-      .select("score")
+      .select("*")
       .eq("user_id", userId)
       .single();
 
-    if (!currentEntry || currentEntry.score < score) {
-      await supabaseAdmin
-        .from("leaderboard")
-        .upsert({ user_id: userId, score }, { onConflict: "user_id" });
+    const updateData: any = { user_id: userId };
+    if (!currentEntry || currentEntry.score < score) updateData.score = score;
+
+    if (themeScores) {
+      Object.entries(themeScores).forEach(([themeId, tScore]: [string, any]) => {
+        const colName = `score_${themeId.toLowerCase()}`;
+        if (!currentEntry || (currentEntry as any)[colName] < tScore) {
+          updateData[colName] = tScore;
+        }
+      });
     }
+
+    await supabaseAdmin
+      .from("leaderboard")
+      .upsert(updateData, { onConflict: "user_id" });
 
     return { 
       success: true, 
@@ -81,19 +80,29 @@ export const getProfile = createServerFn({ method: "GET" })
   });
 
 export const getLeaderboard = createServerFn({ method: "GET" })
-  .handler(async () => {
+  .handler(async (args: any) => {
+    const { data: category } = args || {};
+    const colName = category ? `score_${category.toLowerCase()}` : 'score';
+    
     const { data, error } = await supabaseAdmin
       .from("leaderboard")
       .select(`
         score,
+        score_color,
+        score_math,
+        score_general,
+        score_curiosity,
+        score_sequence,
+        score_capital,
+        score_scale,
         user_id,
         profiles (
           nickname,
           avatar_url
         )
       `)
-      .order("score", { ascending: false })
-      .limit(10);
+      .order(colName, { ascending: false })
+      .limit(20);
 
     if (error) throw new Error(error.message);
     return data.filter(entry => entry.profiles !== null);

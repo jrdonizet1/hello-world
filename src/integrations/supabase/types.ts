@@ -52,6 +52,13 @@ export type Database = {
           created_at: string
           id: string
           score: number
+          score_capital: number | null
+          score_color: number | null
+          score_curiosity: number | null
+          score_general: number | null
+          score_math: number | null
+          score_scale: number | null
+          score_sequence: number | null
           updated_at: string
           user_id: string
         }
@@ -59,6 +66,13 @@ export type Database = {
           created_at?: string
           id?: string
           score?: number
+          score_capital?: number | null
+          score_color?: number | null
+          score_curiosity?: number | null
+          score_general?: number | null
+          score_math?: number | null
+          score_scale?: number | null
+          score_sequence?: number | null
           updated_at?: string
           user_id: string
         }
@@ -66,6 +80,13 @@ export type Database = {
           created_at?: string
           id?: string
           score?: number
+          score_capital?: number | null
+          score_color?: number | null
+          score_curiosity?: number | null
+          score_general?: number | null
+          score_math?: number | null
+          score_scale?: number | null
+          score_sequence?: number | null
           updated_at?: string
           user_id?: string
         }

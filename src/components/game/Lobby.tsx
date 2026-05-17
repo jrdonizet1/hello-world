@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/useGameStore';
-import { Trophy, Users, Zap, LogIn, User, LogOut, Plus, LogIn as JoinIcon, ChevronLeft, Copy, Check, Shield, ShieldOff, Lock, UserPlus, RefreshCw, ShoppingBag } from 'lucide-react';
+import { Trophy, Users, Zap, LogIn, User, LogOut, Plus, LogIn as JoinIcon, ChevronLeft, Copy, Check, Shield, ShieldOff, Lock, UserPlus, RefreshCw, ShoppingBag, Share2 } from 'lucide-react';
 import { lovable } from '@/integrations/lovable';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { updateProfile, createRoom, joinRoom, startRoomGame, claimDailyReward, leaveRoom, getProfile } from '@/lib/server-functions';
+import { updateProfile, createRoom, joinRoom, startRoomGame, claimDailyReward, leaveRoom, getProfile, redeemReferralCode } from '@/lib/server-functions';
 import { Shop } from './Shop';
 
-type LobbyView = 'MAIN' | 'MULTIPLAYER' | 'CREATE_ROOM' | 'JOIN_ROOM' | 'WAITING' | 'VISITOR_NICK' | 'ROOMS_LIST' | 'PROFILE' | 'SHOP';
+type LobbyView = 'MAIN' | 'MULTIPLAYER' | 'CREATE_ROOM' | 'JOIN_ROOM' | 'WAITING' | 'VISITOR_NICK' | 'ROOMS_LIST' | 'PROFILE' | 'SHOP' | 'REFERRAL';
 
 export const Lobby: React.FC = () => {
   const { startGame, setRoom, roomId, roomCode, isHost, setCustomization } = useGameStore();
@@ -47,10 +47,24 @@ export const Lobby: React.FC = () => {
   };
 
   useEffect(() => {
+    // Check for referral code in URL
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (ref) {
+      localStorage.setItem('pending_referral', ref);
+    }
+
+    const joinParam = params.get('join');
+    if (joinParam) {
+      setJoinCode(joinParam.toUpperCase());
+      setPendingAction({ type: 'JOIN', code: joinParam.toUpperCase() });
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session) {
         fetchProfile(session.user.id);
+        checkPendingReferral(session.user.id);
       }
     });
 
@@ -58,6 +72,7 @@ export const Lobby: React.FC = () => {
       setSession(session);
       if (session) {
         fetchProfile(session.user.id);
+        checkPendingReferral(session.user.id);
       } else {
         setProfile(null);
         setNickname('');
@@ -67,7 +82,6 @@ export const Lobby: React.FC = () => {
     // Cleanup for room
     const handleUnload = () => {
       if (roomId) {
-        // Simple call, we don't await because it's unloading
         leaveRoom();
       }
     };
@@ -78,6 +92,26 @@ export const Lobby: React.FC = () => {
       window.removeEventListener('beforeunload', handleUnload);
     };
   }, [roomId]);
+
+  const checkPendingReferral = async (userId: string) => {
+    const pendingRef = localStorage.getItem('pending_referral');
+    if (pendingRef && session && !session.user.is_anonymous) {
+      try {
+        const result = await (redeemReferralCode as any)({ data: pendingRef });
+        if (result.success) {
+          toast.success(result.message);
+          localStorage.removeItem('pending_referral');
+          fetchProfile(userId);
+        }
+      } catch (err: any) {
+        // Only log if it's not the "already redeemed" error to avoid spamming
+        if (!err.message.includes('já resgatou')) {
+          console.error('Referral error:', err.message);
+        }
+        localStorage.removeItem('pending_referral');
+      }
+    }
+  };
 
   useEffect(() => {
     if (view === 'ROOMS_LIST') {
@@ -209,6 +243,7 @@ export const Lobby: React.FC = () => {
     }
     setLoading(true);
     try {
+      if (roomId) await (leaveRoom as any)();
       const room = await (createRoom as any)({ 
         data: { name: roomName, maxPlayers, isPrivate, password } 
       });
@@ -232,6 +267,7 @@ export const Lobby: React.FC = () => {
     
     setLoading(true);
     try {
+      if (roomId) await (leaveRoom as any)();
       const room = await (joinRoom as any)({ 
         data: { code, password: joinPassword } 
       });
@@ -439,6 +475,94 @@ export const Lobby: React.FC = () => {
                 >
                   <ShoppingBag size={18} /> LOJA DE ITENS
                 </button>
+
+                {session && !session.user.is_anonymous && (
+                  <button 
+                    onClick={() => setView('REFERRAL')}
+                    className="w-full py-3 bg-cyan-500/10 border border-cyan-500/20 text-cyan-500 font-black text-[10px] rounded-xl flex items-center justify-center gap-2 hover:bg-cyan-500/20 transition-all uppercase tracking-widest shadow-[0_0_15px_rgba(6,182,212,0.1)]"
+                  >
+                    <UserPlus size={14} /> Convide Amigos & Ganhe Moedas
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          )}
+
+          {view === 'REFERRAL' && (
+            <motion.div 
+              key="referral"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-6"
+            >
+              <button onClick={() => setView('MAIN')} className="flex items-center gap-1 text-zinc-500 font-bold text-[10px] uppercase tracking-[0.2em] mb-2 hover:text-white transition-colors">
+                <ChevronLeft size={14} /> Voltar
+              </button>
+
+              <div className="bg-zinc-900/50 border border-zinc-800 p-8 rounded-3xl backdrop-blur-xl text-center space-y-6">
+                <div className="w-16 h-16 bg-cyan-500/20 rounded-full flex items-center justify-center border border-cyan-500/30 mx-auto shadow-[0_0_20px_rgba(6,182,212,0.2)]">
+                  <UserPlus size={32} className="text-cyan-400" />
+                </div>
+                
+                <div>
+                  <h3 className="text-xl font-black text-white italic">INDIQUE E GANHE</h3>
+                  <p className="text-zinc-500 text-xs mt-1">Convide amigos para a arena neural e ganhe <span className="text-yellow-500 font-bold">250 moedas</span> por cada um que entrar!</p>
+                </div>
+
+                <div className="space-y-3 pt-2">
+                  <div className="bg-zinc-950 border border-zinc-800 p-4 rounded-2xl">
+                    <p className="text-[8px] font-black text-zinc-600 uppercase tracking-widest mb-2">Seu Código</p>
+                    <div className="flex items-center justify-center gap-4">
+                      <span className="text-2xl font-black tracking-[0.3em] text-white uppercase">{profile?.referral_code || '------'}</span>
+                      <button 
+                        onClick={() => {
+                          if (profile?.referral_code) {
+                            navigator.clipboard.writeText(profile.referral_code);
+                            toast.success('Código copiado!');
+                          }
+                        }}
+                        className="p-2 bg-zinc-900 hover:bg-zinc-800 rounded-lg text-zinc-500 hover:text-white transition-colors"
+                      >
+                        <Copy size={16} />
+                      </button>
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={() => {
+                      const link = `${window.location.origin}?ref=${profile?.referral_code}`;
+                      const text = `🧠 Ei! Entre na Arena Neural do BRAINLAG comigo! Use meu link para ganhar 100 moedas iniciais: ${link}`;
+                      
+                      if (navigator.share) {
+                        navigator.share({
+                          title: 'BRAINLAG - Convite para Arena',
+                          text: text,
+                          url: link
+                        });
+                      } else {
+                        const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+                        window.open(whatsappUrl, '_blank');
+                      }
+                    }}
+                    className="w-full py-5 bg-cyan-500 text-black font-black rounded-2xl shadow-[0_0_20px_rgba(6,182,212,0.3)] active:scale-95 transition-all flex items-center justify-center gap-2"
+                  >
+                    <Share2 size={20} className="fill-current" /> CONVIDAR VIA WHATSAPP
+                  </button>
+
+                  <div className="pt-4 border-t border-zinc-800">
+                    <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+                      Você já indicou <span className="text-cyan-400">{profile?.referral_count || 0}</span> amigos
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-yellow-500/5 border border-yellow-500/10 p-4 rounded-2xl flex items-start gap-3">
+                <Trophy size={16} className="text-yellow-500 mt-0.5" />
+                <p className="text-[10px] text-yellow-500/80 leading-relaxed">
+                  <strong>DICA:</strong> Compartilhe seu link em grupos! Seus amigos também ganham <span className="font-black">100 moedas</span> ao se cadastrarem pelo seu link.
+                </p>
               </div>
             </motion.div>
           )}
@@ -725,12 +849,34 @@ export const Lobby: React.FC = () => {
                   <div className="absolute inset-0 bg-cyan-500/5 blur-xl transition-all duration-500 group-hover:bg-cyan-500/10"></div>
                   <div className="flex items-center justify-between text-4xl font-black text-white tracking-widest bg-zinc-900/80 py-4 px-6 rounded-2xl border border-zinc-800 relative shadow-inner">
                     {roomCode}
-                    <button 
-                      onClick={copyCode}
-                      className="text-zinc-500 hover:text-white hover:bg-zinc-800 p-2 rounded-xl transition-colors active:scale-95"
-                    >
-                      <Copy className="w-6 h-6" />
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button 
+                        onClick={copyCode}
+                        className="text-zinc-500 hover:text-white hover:bg-zinc-800 p-2 rounded-xl transition-colors active:scale-95"
+                        title="Copiar Código"
+                      >
+                        <Copy className="w-6 h-6" />
+                      </button>
+                      <button 
+                        onClick={() => {
+                          const text = `🧠 Entre na minha Arena do BRAINLAG! Código: ${roomCode}. Link: ${window.location.origin}?join=${roomCode}`;
+                          if (navigator.share) {
+                            navigator.share({
+                              title: 'BRAINLAG - Convite para Sala',
+                              text: text,
+                              url: window.location.origin
+                            });
+                          } else {
+                            const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+                            window.open(whatsappUrl, '_blank');
+                          }
+                        }}
+                        className="text-cyan-500 hover:text-cyan-400 hover:bg-cyan-500/10 p-2 rounded-xl transition-colors active:scale-95"
+                        title="Convidar via WhatsApp"
+                      >
+                        <Share2 className="w-6 h-6" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

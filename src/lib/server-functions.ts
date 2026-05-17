@@ -376,3 +376,22 @@ export const updateEquippedItems = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { success: true };
   });
+
+export const redeemReferralCode = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async (args: any) => {
+    const { data: code, context } = args;
+    const { userId } = context;
+
+    const { data, error } = await supabaseAdmin.rpc("redeem_referral", {
+      p_user_id: userId,
+      p_code: code.toUpperCase()
+    });
+
+    if (error) throw new Error(error.message);
+    
+    const result = data as any;
+    if (!result.success) throw new Error(result.message);
+    
+    return result;
+  });

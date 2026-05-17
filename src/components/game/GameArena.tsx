@@ -48,22 +48,17 @@ export const GameArena: React.FC = () => {
     }
   }, [gameState, tick]);
 
-  const handleAction = useCallback((action: string, target: string) => {
+  const handleAction = useCallback((response: boolean) => {
     if (gameState !== 'PLAYING' || !currentCommand) return;
 
-    let success = false;
+    const isCorrect = (currentCommand as any).isCorrect === response;
     
-    if (currentCommand.type === 'COLOR') {
-      if (currentCommand.action === 'tap' && target === currentCommand.target) success = true;
-      if (currentCommand.action === 'not_tap' && target !== currentCommand.target) success = true;
-    } else if (currentCommand.type === 'MATH' || currentCommand.type === 'TAP') {
-       success = true;
-    }
-
-    if (success) {
+    if (isCorrect) {
       updateScore(1);
       setCommand(generateCommand(Math.floor(score / 5) + 1));
-      const baseTime = Math.max(0.7, 2.2 - (score * 0.04));
+      
+      // Scalable difficulty: time starts at 2s and drops towards 0.6s
+      const baseTime = Math.max(0.6, 2.0 - (score * 0.035));
       useGameStore.setState({ timeRemaining: baseTime });
       
       controls.start({
@@ -127,21 +122,33 @@ export const GameArena: React.FC = () => {
             initial={{ opacity: 0, scale: 0.8, filter: 'blur(10px)' }}
             animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
             exit={{ opacity: 0, scale: 1.2, filter: 'blur(10px)' }}
-            className="space-y-2"
+            className="flex flex-col items-center"
           >
-            <h2 className="text-5xl sm:text-6xl font-black tracking-tighter leading-none uppercase italic glitch-effect">
+            <h3 className="text-xl font-bold text-gray-400 mb-4 uppercase tracking-widest">
               {currentCommand?.text}
+            </h3>
+            <h2 
+              className="text-7xl sm:text-8xl font-black tracking-tighter leading-none uppercase italic drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]"
+              style={{ color: (currentCommand as any)?.displayColor }}
+            >
+              {(currentCommand as any)?.displayWord}
             </h2>
           </motion.div>
         </AnimatePresence>
       </motion.div>
 
       {/* Interaction Area */}
-      <div className="grid grid-cols-2 gap-3 h-[45%] mb-4">
-        <InteractionButton color="bg-red-600" label="VERMELHO" onClick={() => handleAction('tap', 'red')} />
-        <InteractionButton color="bg-blue-600" label="AZUL" onClick={() => handleAction('tap', 'blue')} />
-        <InteractionButton color="bg-green-600" label="VERDE" onClick={() => handleAction('tap', 'green')} />
-        <InteractionButton color="bg-yellow-500" label="AMARELO" onClick={() => handleAction('tap', 'yellow')} />
+      <div className="grid grid-cols-2 gap-6 h-[25%] mb-8">
+        <InteractionButton 
+          color="bg-red-600 shadow-red-900/50" 
+          label="NÃO" 
+          onClick={() => handleAction(false)} 
+        />
+        <InteractionButton 
+          color="bg-green-600 shadow-green-900/50" 
+          label="SIM" 
+          onClick={() => handleAction(true)} 
+        />
       </div>
     </div>
   );

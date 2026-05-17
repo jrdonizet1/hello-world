@@ -97,7 +97,13 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     if (item.category === 'skin') return profile?.selected_skin === item.item_data.color;
     if (item.category === 'title') return profile?.selected_title === item.item_data.text;
     if (item.category === 'font') return JSON.stringify(profile?.selected_font) === JSON.stringify(item.item_data);
-    if (item.category === 'arena_effect') return JSON.stringify(profile?.selected_arena_effect) === JSON.stringify(item.item_data);
+    if (item.category === 'arena_effect') {
+      if (item.item_data.type === 'glow' || item.item_data.type === 'cycle') {
+        return JSON.stringify(profile?.selected_effect) === JSON.stringify(item.item_data);
+      }
+      return JSON.stringify(profile?.selected_arena_effect) === JSON.stringify(item.item_data);
+    }
+    if (item.category === 'avatar') return profile?.selected_icon === item.item_data.icon;
     return false;
   };
 

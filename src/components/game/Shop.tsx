@@ -4,53 +4,21 @@ import { ShoppingBag, Coins, Check, Lock, Palette, Type, Monitor, Sparkles, Star
 import { getShopItems, buyShopItem, getUserInventory, updateEquippedItems, getProfile } from '../../lib/server-functions';
 import { useGameStore } from '../../store/useGameStore';
 import { toast } from 'sonner';
+import { UserIdentity } from './UserIdentity';
 
-const NamePreview = ({ name, profile, skinColor, title, icon, effect }: any) => {
-  const isCycle = effect?.type === 'cycle';
-  const isGlow = effect?.type === 'glow';
-  
+const NamePreview = ({ name, profile, skinColor, title, icon, effect, font }: any) => {
   return (
-    <div className="flex flex-col items-center gap-1 p-4 bg-black/60 rounded-2xl border border-white/10 mb-4 min-h-[80px] justify-center">
-      <p className="text-[8px] font-black uppercase tracking-widest text-zinc-600 mb-2">Prévia de Exibição</p>
-      <div className="flex items-center gap-2">
-        {icon && (
-          <div className="text-white">
-            {icon === 'Zap' && <Zap size={14} className="text-cyan-400" />}
-            {icon === 'Crown' && <Crown size={14} className="text-yellow-500" />}
-            {icon === 'ShieldCheck' && <ShieldCheck size={14} className="text-emerald-500" />}
-            {icon === 'Infinity' && <InfinityIcon size={14} className="text-purple-500" />}
-          </div>
-        )}
-        <div className="flex flex-col items-center">
-          <motion.span 
-            className="text-lg font-black italic uppercase tracking-tight"
-            animate={isCycle ? {
-              color: ['#ff0000', '#00ff00', '#0000ff', '#ff00ff', '#ff0000'],
-            } : {
-              color: skinColor || '#ffffff',
-            }}
-            transition={isCycle ? { duration: 3, repeat: Infinity, ease: "linear" } : {}}
-            style={{
-              textShadow: isGlow ? `0 0 ${effect.intensity === 'high' ? '15px' : '8px'} ${skinColor || '#00f2ff'}` : 'none'
-            }}
-          >
-            {name}
-          </motion.span>
-          {title && (
-            <motion.span 
-              className="text-[8px] font-black uppercase tracking-[0.2em] opacity-70"
-              animate={isCycle ? {
-                color: ['#ff0000', '#00ff00', '#0000ff', '#ff00ff', '#ff0000'],
-              } : {
-                color: skinColor || '#ffffff',
-              }}
-              transition={isCycle ? { duration: 3, repeat: Infinity, ease: "linear" } : {}}
-            >
-              « {title} »
-            </motion.span>
-          )}
-        </div>
-      </div>
+    <div className="flex flex-col items-center gap-1 p-4 bg-black/60 rounded-2xl border border-white/10 mb-4 min-h-[100px] justify-center overflow-hidden">
+      <p className="text-[8px] font-black uppercase tracking-widest text-zinc-600 mb-2">Prévia de Identidade Neural</p>
+      <UserIdentity 
+        name={name}
+        skin={skinColor}
+        title={title}
+        icon={icon}
+        effect={effect}
+        font={font}
+        size="xl"
+      />
     </div>
   );
 };
@@ -132,7 +100,7 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           updateData.arenaEffect = item.item_data;
         }
       }
-      else if (item.category === 'avatar') updateData.icon = item.item_data.icon;
+      else if (item.category === 'avatar') updateData.icon = item.item_data;
 
       await (updateEquippedItems as any)({ data: updateData });
       toast.success('Equipado com sucesso!');
@@ -153,7 +121,7 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       }
       return JSON.stringify(profile?.selected_arena_effect) === JSON.stringify(item.item_data);
     }
-    if (item.category === 'avatar') return profile?.selected_icon === item.item_data.icon;
+    if (item.category === 'avatar') return JSON.stringify(profile?.selected_icon) === JSON.stringify(item.item_data);
     return false;
   };
 
@@ -257,6 +225,7 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           title={profile.selected_title}
           icon={profile.selected_icon}
           effect={profile.selected_effect}
+          font={profile.selected_font}
         />
       )}
       <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
@@ -336,11 +305,12 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                         </div>
                       )}
                       {item.category === 'avatar' && (
-                        <div className="flex justify-center py-2 bg-black/40 rounded-xl border border-white/5">
-                          {item.item_data.icon === 'Zap' && <Zap size={24} className="text-cyan-400" />}
-                          {item.item_data.icon === 'Crown' && <Crown size={24} className="text-yellow-500" />}
-                          {item.item_data.icon === 'ShieldCheck' && <ShieldCheck size={24} className="text-emerald-500" />}
-                          {item.item_data.icon === 'Infinity' && <InfinityIcon size={24} className="text-purple-500" />}
+                        <div className="flex justify-center py-2 bg-black/40 rounded-xl border border-white/5 min-h-[50px] items-center">
+                          <UserIdentity 
+                            name="" 
+                            icon={item.item_data} 
+                            showTitle={false}
+                          />
                         </div>
                       )}
                       {item.category === 'power_up' && (

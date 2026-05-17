@@ -50,12 +50,13 @@ export const updateProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async (args: any) => {
     const { data, context } = args;
-    const { nickname, roomId } = data;
+    const { nickname, roomId, isReady } = data;
     const { userId } = context;
 
     const updateData: any = { id: userId };
     if (nickname !== undefined) updateData.nickname = nickname;
     if (roomId !== undefined) updateData.room_id = roomId;
+    if (isReady !== undefined) updateData.is_ready = isReady;
 
     const { error } = await supabaseAdmin
       .from("profiles")
@@ -68,14 +69,23 @@ export const updateProfile = createServerFn({ method: "POST" })
 export const createRoom = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async (args: any) => {
-    const { context } = args;
+    const { data: roomSettings, context } = args;
     const { userId } = context;
+    const { name, maxPlayers, isPrivate, password } = roomSettings;
 
-    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const code = Math.random().toString(36).substring(2, 6).toUpperCase();
 
     const { data, error } = await supabaseAdmin
       .from("rooms")
-      .insert({ code, host_id: userId, status: 'LOBBY' })
+      .insert({ 
+        code, 
+        host_id: userId, 
+        status: 'LOBBY',
+        name: name || 'Arena Neural',
+        max_players: maxPlayers || 4,
+        is_private: isPrivate || false,
+        password: password || null
+      })
       .select()
       .single();
 
@@ -84,7 +94,7 @@ export const createRoom = createServerFn({ method: "POST" })
     // Join room
     await supabaseAdmin
       .from("profiles")
-      .update({ room_id: data.id })
+      .update({ room_id: data.id, is_ready: false })
       .eq("id", userId);
 
     return data;
@@ -93,7 +103,8 @@ export const createRoom = createServerFn({ method: "POST" })
 export const joinRoom = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async (args: any) => {
-    const { data: code, context } = args;
+    const { data, context } = args;
+    const { code, password } = data;
     const { userId } = context;
 
     const { data: room, error: roomError } = await supabaseAdmin
@@ -104,9 +115,24 @@ export const joinRoom = createServerFn({ method: "POST" })
 
     if (roomError || !room) throw new Error("Sala não encontrada");
 
+    // Check password if private
+    if (room.is_private && room.password !== password) {
+      throw new Error("Senha incorreta");
+    }
+
+    // Check max players
+    const { count } = await supabaseAdmin
+      .from("profiles")
+      .select("id", { count: "exact", head: true })
+      .eq("room_id", room.id);
+
+    if (count && count >= room.max_players) {
+      throw new Error("Sala cheia");
+    }
+
     const { error } = await supabaseAdmin
       .from("profiles")
-      .update({ room_id: room.id })
+      .update({ room_id: room.id, is_ready: false })
       .eq("id", userId);
 
     if (error) throw new Error(error.message);

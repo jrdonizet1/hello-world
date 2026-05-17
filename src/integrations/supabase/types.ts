@@ -150,6 +150,8 @@ export type Database = {
           referral_count: number | null
           referred_by_id: string | null
           room_id: string | null
+          selected_arena_effect: Json | null
+          selected_font: Json | null
           selected_skin: string | null
           selected_title: string | null
           updated_at: string
@@ -168,6 +170,8 @@ export type Database = {
           referral_count?: number | null
           referred_by_id?: string | null
           room_id?: string | null
+          selected_arena_effect?: Json | null
+          selected_font?: Json | null
           selected_skin?: string | null
           selected_title?: string | null
           updated_at?: string
@@ -186,6 +190,8 @@ export type Database = {
           referral_count?: number | null
           referred_by_id?: string | null
           room_id?: string | null
+          selected_arena_effect?: Json | null
+          selected_font?: Json | null
           selected_skin?: string | null
           selected_title?: string | null
           updated_at?: string

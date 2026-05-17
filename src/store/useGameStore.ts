@@ -86,6 +86,8 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
   userTitle: null,
   userFont: null,
   userArenaEffect: null,
+  userIcon: null,
+  userEffect: null,
   selectedThemes: ['COLOR', 'MATH'],
   baseTime: 2.2,
   accelerationIntensity: 'NORMAL',

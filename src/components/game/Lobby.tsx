@@ -772,7 +772,14 @@ export const Lobby: React.FC = () => {
                     </button>
                     <button 
                       onClick={() => {
-                        setCustomization(profile?.selected_skin, profile?.selected_title, profile?.selected_font, profile?.selected_arena_effect);
+                        setCustomization(
+                          profile?.selected_skin, 
+                          profile?.selected_title, 
+                          profile?.selected_font, 
+                          profile?.selected_arena_effect,
+                          profile?.selected_icon,
+                          profile?.selected_effect
+                        );
                         startGame('BLITZ', undefined, baseTime, accelerationIntensity);
                       }}
                       className="py-4 bg-amber-500/10 border border-amber-500/30 text-amber-500 font-black text-xs rounded-xl active:scale-95 transition-all uppercase"

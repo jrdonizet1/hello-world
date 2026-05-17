@@ -1,9 +1,59 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, Coins, Check, Lock, Palette, Type, Monitor, Sparkles, Star, Zap, XCircle, ChevronRight, Shield } from 'lucide-react';
+import { ShoppingBag, Coins, Check, Lock, Palette, Type, Monitor, Sparkles, Star, Zap, XCircle, ChevronRight, Shield, Crown, ShieldCheck, Infinity as InfinityIcon } from 'lucide-react';
 import { getShopItems, buyShopItem, getUserInventory, updateEquippedItems, getProfile } from '../../lib/server-functions';
 import { useGameStore } from '../../store/useGameStore';
 import { toast } from 'sonner';
+
+const NamePreview = ({ name, profile, skinColor, title, icon, effect }: any) => {
+  const isCycle = effect?.type === 'cycle';
+  const isGlow = effect?.type === 'glow';
+  
+  return (
+    <div className="flex flex-col items-center gap-1 p-4 bg-black/60 rounded-2xl border border-white/10 mb-4 min-h-[80px] justify-center">
+      <p className="text-[8px] font-black uppercase tracking-widest text-zinc-600 mb-2">Prévia de Exibição</p>
+      <div className="flex items-center gap-2">
+        {icon && (
+          <div className="text-white">
+            {icon === 'Zap' && <Zap size={14} className="text-cyan-400" />}
+            {icon === 'Crown' && <Crown size={14} className="text-yellow-500" />}
+            {icon === 'ShieldCheck' && <ShieldCheck size={14} className="text-emerald-500" />}
+            {icon === 'Infinity' && <InfinityIcon size={14} className="text-purple-500" />}
+          </div>
+        )}
+        <div className="flex flex-col items-center">
+          <motion.span 
+            className="text-lg font-black italic uppercase tracking-tight"
+            animate={isCycle ? {
+              color: ['#ff0000', '#00ff00', '#0000ff', '#ff00ff', '#ff0000'],
+            } : {
+              color: skinColor || '#ffffff',
+            }}
+            transition={isCycle ? { duration: 3, repeat: Infinity, ease: "linear" } : {}}
+            style={{
+              textShadow: isGlow ? `0 0 ${effect.intensity === 'high' ? '15px' : '8px'} ${skinColor || '#00f2ff'}` : 'none'
+            }}
+          >
+            {name}
+          </motion.span>
+          {title && (
+            <motion.span 
+              className="text-[8px] font-black uppercase tracking-[0.2em] opacity-70"
+              animate={isCycle ? {
+                color: ['#ff0000', '#00ff00', '#0000ff', '#ff00ff', '#ff0000'],
+              } : {
+                color: skinColor || '#ffffff',
+              }}
+              transition={isCycle ? { duration: 3, repeat: Infinity, ease: "linear" } : {}}
+            >
+              « {title} »
+            </motion.span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 interface ShopItem {
   id: string;
@@ -22,7 +72,7 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'COSMETICS' | 'POWERS' | 'MY_ITEMS'>('COSMETICS');
-  const [cosmeticCategory, setCosmeticCategory] = useState<'all' | 'skin' | 'title' | 'font' | 'arena_effect'>('all');
+  const [cosmeticCategory, setCosmeticCategory] = useState<'all' | 'skin' | 'title' | 'font' | 'arena_effect' | 'avatar'>('all');
 
   const loadData = async () => {
     try {
@@ -75,7 +125,14 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       if (item.category === 'skin') updateData.skin = item.item_data.color;
       else if (item.category === 'title') updateData.title = item.item_data.text;
       else if (item.category === 'font') updateData.font = item.item_data;
-      else if (item.category === 'arena_effect') updateData.arenaEffect = item.item_data;
+      else if (item.category === 'arena_effect') {
+        if (item.item_data.type === 'glow' || item.item_data.type === 'cycle') {
+          updateData.effect = item.item_data;
+        } else {
+          updateData.arenaEffect = item.item_data;
+        }
+      }
+      else if (item.category === 'avatar') updateData.icon = item.item_data.icon;
 
       await (updateEquippedItems as any)({ data: updateData });
       toast.success('Equipado com sucesso!');
@@ -90,7 +147,13 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     if (item.category === 'skin') return profile?.selected_skin === item.item_data.color;
     if (item.category === 'title') return profile?.selected_title === item.item_data.text;
     if (item.category === 'font') return JSON.stringify(profile?.selected_font) === JSON.stringify(item.item_data);
-    if (item.category === 'arena_effect') return JSON.stringify(profile?.selected_arena_effect) === JSON.stringify(item.item_data);
+    if (item.category === 'arena_effect') {
+      if (item.item_data.type === 'glow' || item.item_data.type === 'cycle') {
+        return JSON.stringify(profile?.selected_effect) === JSON.stringify(item.item_data);
+      }
+      return JSON.stringify(profile?.selected_arena_effect) === JSON.stringify(item.item_data);
+    }
+    if (item.category === 'avatar') return profile?.selected_icon === item.item_data.icon;
     return false;
   };
 
@@ -168,7 +231,8 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             { id: 'skin', label: 'Skins' },
             { id: 'title', label: 'Títulos' },
             { id: 'font', label: 'Fontes' },
-            { id: 'arena_effect', label: 'Efeitos' }
+            { id: 'arena_effect', label: 'Efeitos' },
+            { id: 'avatar', label: 'Ícones' }
           ].map((cat) => (
             <button
               key={cat.id}
@@ -185,7 +249,16 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         </div>
       )}
 
-      {/* Grid de Itens */}
+      {/* Prévia de Nome Dinâmica */}
+      {activeTab !== 'POWERS' && profile && (
+        <NamePreview 
+          name={profile.nickname}
+          skinColor={profile.selected_skin}
+          title={profile.selected_title}
+          icon={profile.selected_icon}
+          effect={profile.selected_effect}
+        />
+      )}
       <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-12">
           {items
@@ -229,6 +302,7 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                       {item.category === 'skin' ? <Palette size={14} /> : 
                        item.category === 'power_up' ? <Zap size={14} /> :
                        item.category === 'arena_effect' ? <Sparkles size={14} /> :
+                       item.category === 'avatar' ? <Star size={14} /> :
                        <Type size={14} />}
                     </div>
                   </div>
@@ -259,6 +333,14 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                           textShadow: item.item_data.glow ? `0 0 10px ${item.item_data.color}` : 'none'
                         }}>
                           « {item.item_data.text} »
+                        </div>
+                      )}
+                      {item.category === 'avatar' && (
+                        <div className="flex justify-center py-2 bg-black/40 rounded-xl border border-white/5">
+                          {item.item_data.icon === 'Zap' && <Zap size={24} className="text-cyan-400" />}
+                          {item.item_data.icon === 'Crown' && <Crown size={24} className="text-yellow-500" />}
+                          {item.item_data.icon === 'ShieldCheck' && <ShieldCheck size={24} className="text-emerald-500" />}
+                          {item.item_data.icon === 'Infinity' && <InfinityIcon size={24} className="text-purple-500" />}
                         </div>
                       )}
                       {item.category === 'power_up' && (

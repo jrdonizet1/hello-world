@@ -32,6 +32,8 @@ interface BrainLagState {
   userTitle: string | null;
   userFont: any | null;
   userArenaEffect: any | null;
+  userIcon: string | null;
+  userEffect: any | null;
   selectedThemes: string[];
   baseTime: number;
   accelerationEnabled: boolean;
@@ -57,7 +59,7 @@ interface BrainLagState {
   setCommand: (command: Command | null) => void;
   tick: (delta: number) => void;
   setRoom: (id: string | null, code: string | null, isHost: boolean) => void;
-  setCustomization: (skin: string | null, title: string | null, font?: any, arenaEffect?: any) => void;
+  setCustomization: (skin: string | null, title: string | null, font?: any, arenaEffect?: any, icon?: string | null, effect?: any) => void;
   setPowerCounts: (slow: number, shield: number) => void;
   increaseCombo: (reactionTime: number) => void;
   setDuelOpponent: (id: string | null, progress: number) => void;
@@ -84,6 +86,8 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
   userTitle: null,
   userFont: null,
   userArenaEffect: null,
+  userIcon: null,
+  userEffect: null,
   selectedThemes: ['COLOR', 'MATH'],
   baseTime: 2.2,
   accelerationIntensity: 'NORMAL',
@@ -99,11 +103,13 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
   powersUsedInSession: { slow: 0, shield: 0 },
   sessionUsedPower: false,
 
-  setCustomization: (skin, title, font, arenaEffect) => set({ 
+  setCustomization: (skin, title, font, arenaEffect, icon, effect) => set({ 
     userSkin: skin, 
     userTitle: title,
     userFont: font || null,
-    userArenaEffect: arenaEffect || null
+    userArenaEffect: arenaEffect || null,
+    userIcon: icon || null,
+    userEffect: effect || null
   }),
   setPowerCounts: (slow, shield) => set({ powerSlowCount: slow, powerShieldCount: shield }),
   setGameMode: (mode) => set({ gameMode: mode }),

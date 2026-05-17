@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/useGameStore';
-import { Trophy, Users, Zap, LogIn, User, LogOut, Plus, LogIn as JoinIcon, ChevronLeft, ChevronRight, Copy, Check, Shield, ShieldOff, Lock, UserPlus, RefreshCw, ShoppingBag, Share2, Timer, Infinity, Monitor, Globe, History, XCircle, CheckCircle2, ZapOff, Target } from 'lucide-react';
+import { Trophy, Users, Zap, LogIn, User, LogOut, Plus, LogIn as JoinIcon, ChevronLeft, ChevronRight, Copy, Check, Shield, ShieldOff, Lock, UserPlus, RefreshCw, ShoppingBag, Share2, Timer, Infinity, Monitor, Globe, History, XCircle, CheckCircle2, ZapOff, Target, Crown, ShieldCheck, Infinity as InfinityIcon } from 'lucide-react';
 import { lovable } from '@/integrations/lovable';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -202,7 +202,14 @@ export const Lobby: React.FC = () => {
         filter: `id=eq.${roomId}` 
       }, (payload) => {
         if (payload.new.status === 'STARTING') {
-          setCustomization(profile?.selected_skin, profile?.selected_title, profile?.selected_font, profile?.selected_arena_effect);
+          setCustomization(
+            profile?.selected_skin, 
+            profile?.selected_title, 
+            profile?.selected_font, 
+            profile?.selected_arena_effect,
+            profile?.selected_icon,
+            profile?.selected_effect
+          );
           startGame(
             undefined, 
             payload.new.selected_themes, 
@@ -358,7 +365,14 @@ export const Lobby: React.FC = () => {
       return;
     }
     try {
-      setCustomization(profile?.selected_skin, profile?.selected_title, profile?.selected_font, profile?.selected_arena_effect);
+      setCustomization(
+        profile?.selected_skin, 
+        profile?.selected_title, 
+        profile?.selected_font, 
+        profile?.selected_arena_effect,
+        profile?.selected_icon,
+        profile?.selected_effect
+      );
       await (startRoomGame as any)({ data: roomId });
       // The room status will change to STARTING, and the subscription will call startGame()
       // But we need to make sure startGame uses the room's baseTime and acceleration
@@ -742,7 +756,14 @@ export const Lobby: React.FC = () => {
                   <div className="grid grid-cols-2 gap-2">
                     <button 
                       onClick={() => {
-                        setCustomization(profile?.selected_skin, profile?.selected_title, profile?.selected_font, profile?.selected_arena_effect);
+                        setCustomization(
+                          profile?.selected_skin, 
+                          profile?.selected_title, 
+                          profile?.selected_font, 
+                          profile?.selected_arena_effect,
+                          profile?.selected_icon,
+                          profile?.selected_effect
+                        );
                         startGame('NORMAL', undefined, baseTime, accelerationIntensity);
                       }}
                       className="py-4 bg-white text-black font-black text-xs rounded-xl shadow-[0_0_15px_rgba(255,255,255,0.1)] active:scale-95 transition-all uppercase"
@@ -751,7 +772,14 @@ export const Lobby: React.FC = () => {
                     </button>
                     <button 
                       onClick={() => {
-                        setCustomization(profile?.selected_skin, profile?.selected_title, profile?.selected_font, profile?.selected_arena_effect);
+                        setCustomization(
+                          profile?.selected_skin, 
+                          profile?.selected_title, 
+                          profile?.selected_font, 
+                          profile?.selected_arena_effect,
+                          profile?.selected_icon,
+                          profile?.selected_effect
+                        );
                         startGame('BLITZ', undefined, baseTime, accelerationIntensity);
                       }}
                       className="py-4 bg-amber-500/10 border border-amber-500/30 text-amber-500 font-black text-xs rounded-xl active:scale-95 transition-all uppercase"
@@ -760,7 +788,14 @@ export const Lobby: React.FC = () => {
                     </button>
                     <button 
                       onClick={() => {
-                        setCustomization(profile?.selected_skin, profile?.selected_title, profile?.selected_font, profile?.selected_arena_effect);
+                        setCustomization(
+                          profile?.selected_skin, 
+                          profile?.selected_title, 
+                          profile?.selected_font, 
+                          profile?.selected_arena_effect,
+                          profile?.selected_icon,
+                          profile?.selected_effect
+                        );
                         startGame('SURVIVAL', undefined, baseTime, accelerationIntensity);
                       }}
                       className="col-span-2 py-4 bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 font-black text-xs rounded-xl active:scale-95 transition-all uppercase"
@@ -1196,21 +1231,31 @@ export const Lobby: React.FC = () => {
                           <span className={`relative inline-flex rounded-full h-3 w-3 ${p.is_ready || p.id === roomData?.host_id ? 'bg-green-500' : 'bg-red-500'}`}></span>
                           {p.is_ready && <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping"></span>}
                         </div>
-                        <div className="flex flex-col">
-                          <span 
-                            className="font-black italic uppercase text-xs tracking-tight"
-                            style={{ color: p.selected_skin || 'white' }}
-                          >
-                            {p.nickname || 'Anônimo'}
-                          </span>
-                          {p.selected_title && (
+                        <div className="flex items-center gap-2">
+                          {p.selected_icon && (
+                            <div className="text-white">
+                              {p.selected_icon === 'Zap' && <Zap size={14} className="text-cyan-400" />}
+                              {p.selected_icon === 'Crown' && <Crown size={14} className="text-yellow-500" />}
+                              {p.selected_icon === 'ShieldCheck' && <ShieldCheck size={14} className="text-emerald-500" />}
+                              {p.selected_icon === 'Infinity' && <InfinityIcon size={14} className="text-purple-500" />}
+                            </div>
+                          )}
+                          <div className="flex flex-col">
                             <span 
-                              className="text-[7px] font-black uppercase tracking-[0.2em] opacity-70"
+                              className="font-black italic uppercase text-xs tracking-tight"
                               style={{ color: p.selected_skin || 'white' }}
                             >
-                              « {p.selected_title} »
+                              {p.nickname || 'Anônimo'}
                             </span>
-                          )}
+                            {p.selected_title && (
+                              <span 
+                                className="text-[7px] font-black uppercase tracking-[0.2em] opacity-70"
+                                style={{ color: p.selected_skin || 'white' }}
+                              >
+                                « {p.selected_title} »
+                              </span>
+                            )}
+                          </div>
                         </div>
                         {p.id === session?.user?.id && (
                           <span className="text-[8px] uppercase tracking-widest text-cyan-500 font-bold bg-cyan-500/10 px-2 py-0.5 rounded-full border border-cyan-500/20">Você</span>
@@ -1281,15 +1326,25 @@ export const Lobby: React.FC = () => {
 
                 <div className="text-center space-y-1">
                   <div className="flex flex-col items-center gap-1">
-                    <h2 
-                      className="text-3xl font-black italic tracking-tighter uppercase"
-                      style={{ 
-                        color: profile?.selected_skin || 'white',
-                        textShadow: profile?.selected_title ? `0 0 15px ${profile?.selected_skin}40` : 'none'
-                      }}
-                    >
-                      {nickname || 'Cérebro Anônimo'}
-                    </h2>
+                    <div className="flex items-center gap-2">
+                      {profile?.selected_icon && (
+                        <div>
+                          {profile.selected_icon === 'Zap' && <Zap size={24} className="text-cyan-400" />}
+                          {profile.selected_icon === 'Crown' && <Crown size={24} className="text-yellow-500" />}
+                          {profile.selected_icon === 'ShieldCheck' && <ShieldCheck size={24} className="text-emerald-500" />}
+                          {profile.selected_icon === 'Infinity' && <InfinityIcon size={24} className="text-purple-500" />}
+                        </div>
+                      )}
+                      <h2 
+                        className="text-3xl font-black italic tracking-tighter uppercase"
+                        style={{ 
+                          color: profile?.selected_skin || 'white',
+                          textShadow: profile?.selected_title ? `0 0 15px ${profile?.selected_skin}40` : 'none'
+                        }}
+                      >
+                        {nickname || 'Cérebro Anônimo'}
+                      </h2>
+                    </div>
                     {profile?.selected_title && (
                       <span 
                         className="text-xs font-black uppercase tracking-[0.3em]"
@@ -1545,21 +1600,31 @@ export const Lobby: React.FC = () => {
                           {i + 1}
                         </div>
                         <div className="flex flex-col">
-                          <div className="flex flex-col">
-                            <span 
-                              className="text-sm font-black italic uppercase tracking-tight"
-                              style={{ color: entry.profiles?.selected_skin || 'white' }}
-                            >
-                              {entry.profiles?.nickname || 'Anônimo'}
-                            </span>
-                            {entry.profiles?.selected_title && (
+                          <div className="flex items-center gap-2">
+                            {entry.profiles?.selected_icon && (
+                              <div>
+                                {entry.profiles.selected_icon === 'Zap' && <Zap size={14} className="text-cyan-400" />}
+                                {entry.profiles.selected_icon === 'Crown' && <Crown size={14} className="text-yellow-500" />}
+                                {entry.profiles.selected_icon === 'ShieldCheck' && <ShieldCheck size={14} className="text-emerald-500" />}
+                                {entry.profiles.selected_icon === 'Infinity' && <InfinityIcon size={14} className="text-purple-500" />}
+                              </div>
+                            )}
+                            <div className="flex flex-col">
                               <span 
-                                className="text-[7px] font-black uppercase tracking-[0.2em] opacity-70"
+                                className="text-sm font-black italic uppercase tracking-tight"
                                 style={{ color: entry.profiles?.selected_skin || 'white' }}
                               >
-                                « {entry.profiles?.selected_title} »
+                                {entry.profiles?.nickname || 'Anônimo'}
                               </span>
-                            )}
+                              {entry.profiles?.selected_title && (
+                                <span 
+                                  className="text-[7px] font-black uppercase tracking-[0.2em] opacity-70"
+                                  style={{ color: entry.profiles?.selected_skin || 'white' }}
+                                >
+                                  « {entry.profiles?.selected_title} »
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>

@@ -477,7 +477,7 @@ export const updateEquippedItems = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async (args: any) => {
     const { data, context } = args;
-    const { skin, title, font, arenaEffect, icon, effect } = data;
+    const { skin, title, font, arenaEffect, icon, effect, avatarUrl } = data;
     const { userId } = context;
 
     const updateData: any = {};

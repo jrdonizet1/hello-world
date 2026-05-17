@@ -268,7 +268,11 @@ export const GameArena: React.FC = () => {
             {currentCommand?.type === 'COLOR' ? (
               <h2 
                 className="text-7xl sm:text-8xl font-black tracking-tighter leading-none uppercase italic drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]"
-                style={{ color: (currentCommand as any)?.displayColor }}
+                style={{ 
+                  color: (currentCommand as any)?.displayColor,
+                  fontFamily: userFont?.fontFamily || 'inherit',
+                  fontSize: userFont?.size ? `calc(5rem * ${userFont.size.replace('em','')})` : 'inherit'
+                }}
               >
                 {(currentCommand as any)?.displayWord}
               </h2>

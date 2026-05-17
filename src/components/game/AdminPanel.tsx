@@ -252,16 +252,25 @@ export const AdminPanel: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                 </div>
 
                 <div className="space-y-3">
-                  {filteredUsers.map((user) => (
-                    <div key={user.id} className="bg-zinc-900/40 border border-zinc-800 p-4 rounded-2xl flex items-center justify-between hover:bg-zinc-900/60 transition-colors">
+                  {filteredUsers.length > 0 ? filteredUsers.map((user) => (
+                    <div key={user.id} className="bg-zinc-900/40 border border-zinc-800 p-4 rounded-2xl flex items-center justify-between hover:bg-zinc-900/60 transition-colors group">
                       <div className="flex items-center gap-4">
                         <UserAvatar url={user.avatar_url} level={user.level} size="sm" frame={user.selected_frame} />
                         <div>
-                          <p className="font-black uppercase tracking-tight text-white flex items-center gap-2">
-                            {user.nickname || 'Anônimo'}
-                            {user.is_admin && <Shield size={12} className="text-red-500" />}
-                          </p>
-                          <p className="text-[8px] font-mono text-zinc-600 tracking-tighter">{user.id}</p>
+                          <div className="flex items-center gap-2">
+                            <UserIdentity 
+                              name={user.nickname || 'Anônimo'} 
+                              skin={user.selected_skin}
+                              title={user.selected_title}
+                              size="sm"
+                              showTitle={false}
+                            />
+                            {user.is_admin && <Shield size={12} className="text-red-500 fill-red-500/20" />}
+                            {(!user.nickname || user.nickname.startsWith('GUEST_')) && (
+                              <span className="text-[7px] px-1.5 py-0.5 bg-zinc-800 text-zinc-500 rounded uppercase font-black tracking-widest">Visitante</span>
+                            )}
+                          </div>
+                          <p className="text-[8px] font-mono text-zinc-600 tracking-tighter mt-0.5">{user.id}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-6">
@@ -271,22 +280,26 @@ export const AdminPanel: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                             <span className="text-yellow-500 font-black">{user.coins || 0}</span>
                             <button 
                               onClick={() => handleUpdateCoins(user.id, user.coins || 0)}
-                              className="p-1.5 hover:bg-yellow-500/10 rounded-lg text-yellow-500 transition-colors"
+                              className="p-1.5 hover:bg-yellow-500/10 rounded-lg text-yellow-500 transition-colors opacity-0 group-hover:opacity-100"
                             >
                               <Edit3 size={14} />
                             </button>
                           </div>
                         </div>
                         <div className="text-right hidden sm:block">
-                          <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Experiência</p>
-                          <p className="text-white font-black">{user.xp || 0} XP</p>
+                          <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Nível</p>
+                          <p className="text-white font-black">{user.level || 1} <span className="text-[8px] text-zinc-500 font-normal">({user.xp || 0} XP)</span></p>
                         </div>
-                        <button className="p-2 hover:bg-red-500/10 rounded-xl text-zinc-600 hover:text-red-500 transition-colors">
+                        <button className="p-2 hover:bg-red-500/10 rounded-xl text-zinc-600 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
                           <Trash2 size={18} />
                         </button>
                       </div>
                     </div>
-                  ))}
+                  )) : (
+                    <div className="py-20 text-center border-2 border-dashed border-zinc-800 rounded-3xl">
+                       <p className="text-zinc-600 font-black uppercase tracking-widest text-xs">Nenhum usuário encontrado</p>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -357,14 +370,16 @@ export const AdminPanel: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                       <div className="flex flex-col items-center gap-4 mb-6 p-4 bg-black/40 rounded-2xl border border-white/5">
                         {item.category === 'avatar' && <UserAvatar url={item.item_data.url} size="lg" showLevel={false} />}
                         {item.category === 'frame' && <UserAvatar url={null} size="lg" frame={item.item_data} showLevel={false} />}
-                        {item.category === 'title' && <UserIdentity name="Admin" title={item.item_data.text} showTitle={true} />}
+                        {item.category === 'title' && <UserIdentity name="User" title={item.item_data.text} showTitle={true} />}
                         {item.category === 'skin' && (
-                          <div className="w-12 h-12 rounded-full border-2 border-white/20 flex items-center justify-center" style={{ backgroundColor: item.item_data.color === 'rainbow' ? 'transparent' : item.item_data.color }}>
-                            {item.item_data.color === 'rainbow' && <div className="w-full h-full rounded-full bg-gradient-to-r from-red-500 via-green-500 to-blue-500 animate-pulse" />}
-                          </div>
+                          <UserIdentity name="User" skin={item.item_data} title="Skin Test" size="sm" />
+                        )}
+                        {item.category === 'font' && (
+                          <UserIdentity name="User" font={item.item_data} title="Font Test" size="sm" />
                         )}
                         {item.category === 'power_up' && <div className="p-4 bg-cyan-500/10 rounded-full text-cyan-400"><Zap size={32} /></div>}
-                        {(item.category === 'font' || item.category === 'arena_effect') && <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600 italic">Visual Effect</p>}
+                        {item.category === 'arena_effect' && <p className="text-[10px] font-black uppercase tracking-widest text-cyan-500 italic flex items-center gap-2"><Sparkles size={14} /> Arena FX</p>}
+
                       </div>
 
                       <h4 className="font-black italic uppercase text-lg mb-1">{item.name}</h4>
@@ -553,14 +568,26 @@ export const AdminPanel: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               </div>
 
               {/* Live Preview no Editor */}
-              <div className="w-full md:w-48 bg-black/40 rounded-3xl border border-white/5 p-6 flex flex-col items-center justify-center gap-4">
-                <p className="text-[8px] font-black text-zinc-500 uppercase tracking-[0.2em] text-center">Live Preview</p>
-                <div className="flex-1 flex items-center justify-center">
-                   {editingItem.category === 'avatar' && <UserAvatar url={editingItem.item_data?.url} size="lg" showLevel={false} />}
-                   {editingItem.category === 'frame' && <UserAvatar url={null} size="lg" frame={editingItem.item_data} showLevel={false} />}
-                   {editingItem.category === 'title' && <UserIdentity name="Preview" title={editingItem.item_data?.text} showTitle={true} />}
-                   {editingItem.category === 'skin' && <div className="w-16 h-16 rounded-full" style={{ backgroundColor: editingItem.item_data?.color || '#333' }} />}
-                   {editingItem.category === 'power_up' && <Zap size={48} className="text-cyan-400" />}
+              <div className="w-full md:w-56 bg-black/40 rounded-3xl border border-white/5 p-6 flex flex-col items-center justify-center gap-6">
+                <p className="text-[8px] font-black text-zinc-500 uppercase tracking-[0.2em] text-center">Neural Preview</p>
+                <div className="flex-1 flex flex-col items-center justify-center gap-4">
+                   <div className="relative">
+                     <UserAvatar 
+                       url={editingItem.category === 'avatar' ? editingItem.item_data?.url : null} 
+                       size="xl" 
+                       showLevel={false} 
+                       frame={editingItem.category === 'frame' ? editingItem.item_data : null}
+                     />
+                   </div>
+                   
+                   <UserIdentity 
+                     name="Neural-X" 
+                     skin={editingItem.category === 'skin' ? editingItem.item_data : null}
+                     title={editingItem.category === 'title' ? editingItem.item_data?.text : 'Explorer'}
+                     font={editingItem.category === 'font' ? editingItem.item_data : null}
+                     size="md"
+                     showTitle={true}
+                   />
                 </div>
                 <div className="w-full pt-4 border-t border-white/5">
                   <p className="text-[10px] font-black text-white text-center uppercase tracking-tight">{editingItem.name || 'Nome do Item'}</p>

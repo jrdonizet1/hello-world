@@ -44,7 +44,7 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'COSMETICS' | 'POWERS' | 'MY_ITEMS'>('COSMETICS');
-  const [cosmeticCategory, setCosmeticCategory] = useState<'all' | 'skin' | 'title' | 'font' | 'arena_effect' | 'avatar' | 'icon'>('all');
+  const [cosmeticCategory, setCosmeticCategory] = useState<'all' | 'skin' | 'title' | 'font' | 'arena_effect' | 'avatar'>('all');
 
   const loadData = async () => {
     try {
@@ -104,7 +104,6 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           updateData.arenaEffect = item.item_data;
         }
       }
-      else if (item.category === 'icon') updateData.icon = item.item_data;
       else if (item.category === 'avatar') updateData.avatarUrl = item.item_data.url;
 
       await (updateEquippedItems as any)({ data: updateData });
@@ -112,6 +111,26 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       await loadData();
     } catch (err: any) {
       toast.error('Erro ao equipar item');
+    }
+  };
+
+  const handleUnequip = async (category: string) => {
+    try {
+      const updateData: any = {};
+      if (category === 'skin') updateData.skin = null;
+      else if (category === 'title') updateData.title = null;
+      else if (category === 'font') updateData.font = null;
+      else if (category === 'arena_effect') {
+        updateData.effect = null;
+        updateData.arenaEffect = null;
+      }
+      else if (category === 'avatar') updateData.avatarUrl = null;
+
+      await (updateEquippedItems as any)({ data: updateData });
+      toast.success('Desequipado com sucesso!');
+      await loadData();
+    } catch (err: any) {
+      toast.error('Erro ao desequipar item');
     }
   };
 
@@ -199,28 +218,42 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
       {/* Sub-categorias para Cosméticos */}
       {activeTab === 'COSMETICS' && (
-        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-          {[
-            { id: 'all', label: 'Tudo' },
-            { id: 'skin', label: 'Skins' },
-            { id: 'title', label: 'Títulos' },
-            { id: 'font', label: 'Fontes' },
-            { id: 'arena_effect', label: 'Efeitos' },
-            { id: 'icon', label: 'Ícones' },
-            { id: 'avatar', label: 'Avatares' }
-          ].map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setCosmeticCategory(cat.id as any)}
-              className={`whitespace-nowrap px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest border transition-all ${
-                cosmeticCategory === cat.id
-                  ? 'bg-cyan-500/20 border-cyan-500 text-cyan-400'
-                  : 'bg-zinc-900 border-zinc-800 text-zinc-500'
-              }`}
-            >
-              {cat.label}
-            </button>
-          ))}
+        <div className="relative group">
+          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 px-8 scroll-smooth" id="shop-categories">
+            {[
+              { id: 'all', label: 'Tudo' },
+              { id: 'skin', label: 'Skins' },
+              { id: 'title', label: 'Títulos' },
+              { id: 'font', label: 'Fontes' },
+              { id: 'arena_effect', label: 'Efeitos' },
+              { id: 'avatar', label: 'Avatares' }
+            ].map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setCosmeticCategory(cat.id as any)}
+                className={`whitespace-nowrap px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest border transition-all ${
+                  cosmeticCategory === cat.id
+                    ? 'bg-cyan-500/20 border-cyan-500 text-cyan-400'
+                    : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:border-zinc-700'
+                }`}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
+          
+          <button 
+            onClick={() => document.getElementById('shop-categories')?.scrollBy({ left: -100, behavior: 'smooth' })}
+            className="absolute left-0 top-1/2 -translate-y-1/2 p-1 bg-black/80 rounded-full border border-white/10 text-zinc-400 hover:text-white group-hover:opacity-100 opacity-0 transition-opacity"
+          >
+            <ChevronRight className="rotate-180" size={14} />
+          </button>
+          <button 
+            onClick={() => document.getElementById('shop-categories')?.scrollBy({ left: 100, behavior: 'smooth' })}
+            className="absolute right-0 top-1/2 -translate-y-1/2 p-1 bg-black/80 rounded-full border border-white/10 text-zinc-400 hover:text-white group-hover:opacity-100 opacity-0 transition-opacity"
+          >
+            <ChevronRight size={14} />
+          </button>
         </div>
       )}
 
@@ -367,17 +400,27 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     )}
 
                     {owned ? (
-                      <button
-                        onClick={() => !equipped && handleEquip(item)}
-                        disabled={equipped}
-                        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                          equipped
-                            ? 'bg-cyan-500 text-black cursor-default'
-                            : 'bg-white/10 hover:bg-white/20 text-white active:scale-95'
-                        }`}
-                      >
-                        {equipped ? 'Equipado' : 'Equipar'}
-                      </button>
+                      <div className="flex gap-2">
+                        {equipped && (
+                          <button
+                            onClick={() => handleUnequip(item.category)}
+                            className="px-3 py-2 rounded-xl text-[10px] font-black uppercase bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-all border border-red-500/20"
+                          >
+                            Remover
+                          </button>
+                        )}
+                        <button
+                          onClick={() => !equipped && handleEquip(item)}
+                          disabled={equipped}
+                          className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                            equipped
+                              ? 'bg-cyan-500 text-black cursor-default'
+                              : 'bg-white/10 hover:bg-white/20 text-white active:scale-95'
+                          }`}
+                        >
+                          {equipped ? 'Equipado' : 'Equipar'}
+                        </button>
+                      </div>
                     ) : (
                       <button
                         onClick={() => handleBuy(item.id, item.price)}

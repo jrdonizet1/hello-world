@@ -17,6 +17,9 @@ interface BrainLagState {
   gameState: GameState;
   gameMode: GameMode;
   score: number;
+  combo: number;
+  multiplier: number;
+  maxCombo: number;
   timeRemaining: number;
   currentCommand: Command | null;
   playersCount: number;
@@ -43,12 +46,17 @@ interface BrainLagState {
   tick: (delta: number) => void;
   setRoom: (id: string | null, code: string | null, isHost: boolean) => void;
   setCustomization: (skin: string | null, title: string | null) => void;
+  increaseCombo: (reactionTime: number) => void;
+  resetCombo: () => void;
 }
 
 export const useGameStore = create<BrainLagState>((set, get) => ({
   gameState: 'LOBBY',
   gameMode: 'NORMAL',
   score: 0,
+  combo: 0,
+  multiplier: 1,
+  maxCombo: 0,
   timeRemaining: 10,
   currentCommand: null,
   playersCount: 0,
@@ -85,6 +93,9 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
       accelerationIntensity: currentAccelerationIntensity,
       accelerationEnabled: currentAcceleration,
       score: 0, 
+      combo: 0,
+      multiplier: 1,
+      maxCombo: 0,
       timeRemaining: mode === 'BLITZ' ? 1.2 : (mode === 'SURVIVAL' ? 5 : currentBaseTime),
       lastError: null 
     });
@@ -102,7 +113,7 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
     lastError: reason 
   }),
 
-  updateScore: (points) => set((state) => ({ score: state.score + points })),
+  updateScore: (points) => set((state) => ({ score: state.score + (points * state.multiplier) })),
 
   setCommand: (command) => set({ currentCommand: command }),
 
@@ -115,4 +126,25 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
     }
     return { timeRemaining: nextTime };
   }),
+  increaseCombo: (reactionTime) => set((state) => {
+    const newCombo = state.combo + 1;
+    let newMultiplier = 1;
+    
+    // Multiplier logic based on reaction time
+    if (reactionTime < 0.6) {
+      newMultiplier = Math.min(4, state.multiplier + 0.5);
+    } else if (reactionTime < 1.2) {
+      newMultiplier = Math.min(2, state.multiplier + 0.2);
+    } else {
+      newMultiplier = 1;
+    }
+
+    return { 
+      combo: newCombo, 
+      multiplier: newMultiplier,
+      maxCombo: Math.max(state.maxCombo, newCombo)
+    };
+  }),
+
+  resetCombo: () => set({ combo: 0, multiplier: 1 }),
 }));

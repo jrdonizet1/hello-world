@@ -7,7 +7,7 @@ export const saveScore = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async (args: any) => {
     const { data, context } = args;
-    const { score, themeScores } = data;
+    const { score, themeScores, maxCombo } = data;
     const { userId } = context;
 
     const { data: profile, error: profileError } = await supabaseAdmin
@@ -18,8 +18,8 @@ export const saveScore = createServerFn({ method: "POST" })
 
     if (profileError) throw new Error(profileError.message);
 
-    const xpGained = score * 10;
-    const coinsGained = Math.floor(score / 5);
+    const xpGained = (score * 10) + (maxCombo || 0);
+    const coinsGained = Math.floor(score / 5) + Math.floor((maxCombo || 0) / 10);
     const newXp = profile.xp + xpGained;
     const newCoins = (profile.coins || 0) + coinsGained;
     const newLevel = Math.floor(newXp / 1000) + 1;

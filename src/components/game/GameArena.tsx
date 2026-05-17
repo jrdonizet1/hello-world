@@ -88,7 +88,8 @@ export const GameArena: React.FC = () => {
     if (isCorrect) {
       increaseCombo(reactionTime);
       updateScore(1);
-      setCommand(generateCommand(Math.floor(score / 5) + 1, selectedThemes));
+      const nextScore = score + 1;
+      setCommand(generateCommand(Math.floor(nextScore / 5) + 1, selectedThemes, duelSeed ? duelSeed + nextScore : undefined));
       setLastCommandTime(Date.now());
       
       // Scalable difficulty logic based on GameMode and Acceleration Intensity

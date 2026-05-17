@@ -80,10 +80,12 @@ export const Lobby: React.FC = () => {
 
       if (error) throw error;
       
-      const formattedRooms = rooms.map(room => ({
-        ...room,
-        playerCount: room.profiles[0]?.count || 0
-      }));
+      const formattedRooms = rooms
+        .map(room => ({
+          ...room,
+          playerCount: (room.profiles as any)?.[0]?.count || 0
+        }))
+        .filter(room => room.playerCount > 0);
 
       setAvailableRooms(formattedRooms);
     } catch (err: any) {
@@ -746,7 +748,7 @@ export const Lobby: React.FC = () => {
               </div>
             </motion.div>
           )}
-          {view === 'PROFILE' && (
+          {view === 'PROFILE' && !session?.user?.is_anonymous && (
             <motion.div 
               key="profile"
               initial={{ opacity: 0, scale: 0.95 }}

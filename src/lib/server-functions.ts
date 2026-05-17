@@ -4,8 +4,11 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 export const saveScore = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ data: score, context }: { data: number, context: any }) => {
+  .handler(async ({ data, context }) => {
     const { userId } = context;
+    const score = (data as any).score;
+
+    if (typeof score !== 'number') throw new Error("Invalid score");
 
     // Check existing score
     const { data: currentEntry } = await supabaseAdmin
@@ -47,8 +50,11 @@ export const getLeaderboard = createServerFn({ method: "GET" })
 
 export const updateProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ data: nickname, context }: { data: string, context: any }) => {
+  .handler(async ({ data, context }) => {
     const { userId } = context;
+    const nickname = (data as any).nickname;
+
+    if (typeof nickname !== 'string') throw new Error("Invalid nickname");
 
     const { error } = await supabaseAdmin
       .from("profiles")

@@ -54,6 +54,15 @@ export const AdminPanel: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       toast.error(err.message);
     }
   };
+  const loadRooms = async () => {
+    try {
+      const data = await (getActiveRooms as any)();
+      setRooms(data || []);
+    } catch (err: any) {
+      toast.error(err.message);
+    }
+  };
+
 
   const loadSystem = async () => {
     try {

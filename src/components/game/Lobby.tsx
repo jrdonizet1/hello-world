@@ -203,7 +203,12 @@ export const Lobby: React.FC = () => {
       .select('*')
       .eq('id', roomId as string)
       .single();
-    if (data) setRoomData(data);
+    if (data) {
+      setRoomData(data);
+      if (data.selected_themes) {
+        setSelectedThemes(data.selected_themes);
+      }
+    }
   };
 
   const fetchProfile = async (userId: string) => {

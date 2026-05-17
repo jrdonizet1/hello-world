@@ -1,0 +1,2 @@
+ALTER TABLE public.shop_items DROP CONSTRAINT IF EXISTS shop_items_category_check;
+ALTER TABLE public.shop_items ADD CONSTRAINT shop_items_category_check CHECK (category IN ('skin', 'title', 'avatar', 'font', 'arena_effect', 'power_up', 'icon', 'frame'));

@@ -832,6 +832,37 @@ export const closeRoom = createServerFn({ method: "POST" })
     // Deletar sala
     const { error } = await supabaseAdmin.from("rooms").delete().eq("id", roomId);
 
+
+export const getSystemSettings = createServerFn({ method: "GET" })
+  .handler(async () => {
+    const { data, error } = await supabaseAdmin
+      .from("system_settings")
+      .select("*");
+
+    if (error) throw new Error(error.message);
+    
+    const settings: any = {};
+    data.forEach(s => {
+      settings[s.key] = s.value;
+    });
+    return settings;
+  });
+
+export const updateSystemSettings = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async (args: any) => {
+    const { data, context } = args;
+    const { key, value } = data;
+    const { userId } = context;
+
+    const { data: profile } = await supabaseAdmin.from("profiles").select("is_admin").eq("id", userId).single();
+    if (!profile?.is_admin) throw new Error("Acesso negado");
+
+    const { error } = await supabaseAdmin
+      .from("system_settings")
+      .upsert({ key, value, updated_at: new Date().toISOString() });
+
     if (error) throw new Error(error.message);
     return { success: true };
   });
+

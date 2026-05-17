@@ -4,24 +4,25 @@ import {
   Shield, Users, ShoppingBag, BarChart3, ChevronLeft, 
   Settings, Trash2, Edit3, Plus, Search, Coins, Zap, Star,
   UserCheck, UserMinus, Monitor, Layout, Sparkles, Type, Palette,
-  XCircle, Play, Timer, Lock, Globe
+  XCircle, Play, Timer, Lock, Globe, AlertTriangle, Bell, Save
 } from 'lucide-react';
 import { 
   getAdminStats, getAllUsers, updateUserCoins, 
   getShopItems, deleteShopItem, upsertShopItem,
-  getActiveRooms, closeRoom
+  getActiveRooms, closeRoom, getSystemSettings, updateSystemSettings
 } from '@/lib/server-functions';
 import { toast } from 'sonner';
 import { UserAvatar } from './UserAvatar';
 import { UserIdentity } from './UserIdentity';
 
 export const AdminPanel: React.FC<{ onBack: () => void }> = ({ onBack }) => {
-  const [activeTab, setActiveTab] = useState<'STATS' | 'USERS' | 'SHOP' | 'ROOMS'>('STATS');
+  const [activeTab, setActiveTab] = useState<'STATS' | 'USERS' | 'SHOP' | 'ROOMS' | 'SYSTEM'>('STATS');
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<any>(null);
   const [users, setUsers] = useState<any[]>([]);
   const [shopItems, setShopItems] = useState<any[]>([]);
   const [rooms, setRooms] = useState<any[]>([]);
+  const [systemSettings, setSystemSettings] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [editingItem, setEditingItem] = useState<any>(null);
   const [shopCategory, setShopCategory] = useState<string>('all');
@@ -54,10 +55,10 @@ export const AdminPanel: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     }
   };
 
-  const loadRooms = async () => {
+  const loadSystem = async () => {
     try {
-      const data = await (getActiveRooms as any)();
-      setRooms(data || []);
+      const data = await (getSystemSettings as any)();
+      setSystemSettings(data);
     } catch (err: any) {
       toast.error(err.message);
     }
@@ -70,6 +71,7 @@ export const AdminPanel: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       if (activeTab === 'USERS') await loadUsers();
       if (activeTab === 'SHOP') await loadShop();
       if (activeTab === 'ROOMS') await loadRooms();
+      if (activeTab === 'SYSTEM') await loadSystem();
       setLoading(false);
     };
     init();
@@ -165,7 +167,8 @@ export const AdminPanel: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           { id: 'STATS', label: 'Métricas', icon: BarChart3 },
           { id: 'USERS', label: 'Usuários', icon: Users },
           { id: 'SHOP', label: 'Loja', icon: ShoppingBag },
-          { id: 'ROOMS', label: 'Salas', icon: Globe }
+          { id: 'ROOMS', label: 'Salas', icon: Globe },
+          { id: 'SYSTEM', label: 'Sistema', icon: Settings }
         ].map((tab) => (
           <button
             key={tab.id}

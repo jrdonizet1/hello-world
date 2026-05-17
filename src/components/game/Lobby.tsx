@@ -63,8 +63,20 @@ export const Lobby: React.FC = () => {
       }
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
+    // Cleanup for room
+    const handleUnload = () => {
+      if (roomId) {
+        // Simple call, we don't await because it's unloading
+        leaveRoom();
+      }
+    };
+    window.addEventListener('beforeunload', handleUnload);
+
+    return () => {
+      subscription.unsubscribe();
+      window.removeEventListener('beforeunload', handleUnload);
+    };
+  }, [roomId]);
 
   useEffect(() => {
     if (view === 'ROOMS_LIST') {

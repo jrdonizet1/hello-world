@@ -40,6 +40,8 @@ export const Lobby: React.FC = () => {
   const [rewardLoading, setRewardLoading] = useState(false);
   const [onlineCount, setOnlineCount] = useState(0);
   const [currentTime, setCurrentTime] = useState(new Date().getTime());
+  const [baseTime, setBaseTime] = useState(2.2);
+  const [accelerationEnabled, setAccelerationEnabled] = useState(true);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date().getTime()), 1000);
@@ -241,6 +243,8 @@ export const Lobby: React.FC = () => {
       if (data.selected_themes) {
         setSelectedThemes(data.selected_themes);
       }
+      if (data.base_time) setBaseTime(Number(data.base_time));
+      if (data.acceleration_enabled !== undefined) setAccelerationEnabled(data.acceleration_enabled);
     }
   };
 
@@ -283,7 +287,7 @@ export const Lobby: React.FC = () => {
     try {
       if (roomId) await (leaveRoom as any)();
       const room = await (createRoom as any)({ 
-        data: { name: roomName, maxPlayers, isPrivate, password, selectedThemes } 
+        data: { name: roomName, maxPlayers, isPrivate, password, selectedThemes, baseTime, accelerationEnabled } 
       });
       setRoom(room.id, room.code, true);
       setView('WAITING');
@@ -342,6 +346,9 @@ export const Lobby: React.FC = () => {
     try {
       setCustomization(profile?.selected_skin, profile?.selected_title);
       await (startRoomGame as any)({ data: roomId });
+      // The room status will change to STARTING, and the subscription will call startGame()
+      // But we need to make sure startGame uses the room's baseTime and acceleration
+      startGame(undefined, selectedThemes, baseTime, accelerationEnabled);
     } catch (err: any) {
       toast.error(err.message);
     }

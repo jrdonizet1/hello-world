@@ -373,6 +373,9 @@ export const Lobby: React.FC = () => {
     { id: 'MATH', name: 'Matemática', icon: '🔢', color: 'text-blue-500' },
     { id: 'GENERAL', name: 'Gerais', icon: '🌍', color: 'text-green-500' },
     { id: 'CURIOSITY', name: 'Curiosidades', icon: '💡', color: 'text-yellow-500' },
+    { id: 'SEQUENCE', name: 'Padrões', icon: '🧩', color: 'text-purple-500' },
+    { id: 'CAPITAL', name: 'Capitais', icon: '🗺️', color: 'text-orange-500' },
+    { id: 'SCALE', name: 'Tamanhos', icon: '⚖️', color: 'text-cyan-500' },
   ];
 
   const toggleTheme = async (themeId: string) => {

@@ -207,10 +207,21 @@ export const GameArena: React.FC = () => {
         <motion.span 
           key={countDown}
           initial={{ scale: 3, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
+          animate={userSkin === 'rainbow' ? {
+            scale: 1,
+            opacity: 1,
+            color: ['#06b6d4', '#ec4899', '#eab308', '#22c55e', '#06b6d4'],
+          } : { 
+            scale: 1, 
+            opacity: 1,
+            color: userSkin || '#06b6d4' 
+          }}
+          transition={userSkin === 'rainbow' ? { 
+            color: { duration: 3, repeat: Infinity, ease: "linear" },
+            scale: { duration: 0.3 }
+          } : {}}
           exit={{ scale: 0, opacity: 0 }}
           className="text-9xl font-black italic glitch-effect"
-          style={{ color: userSkin || '#06b6d4' }}
         >
           {countDown}
         </motion.span>
@@ -321,11 +332,29 @@ export const GameArena: React.FC = () => {
         </div>
         <div className="flex flex-col">
           <span className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em]">Sincronia</span>
-          <span className="text-4xl font-black italic tabular-nums">{score.toFixed(1)}</span>
+          <motion.span 
+            className="text-4xl font-black italic tabular-nums"
+            animate={userSkin === 'rainbow' ? {
+              color: ['#06b6d4', '#ec4899', '#eab308', '#22c55e', '#06b6d4'],
+            } : {
+              color: 'white'
+            }}
+            transition={userSkin === 'rainbow' ? { duration: 3, repeat: Infinity, ease: "linear" } : {}}
+          >
+            {score.toFixed(1)}
+          </motion.span>
           {userTitle && (
-            <span className="text-[8px] font-black text-white/40 uppercase tracking-[0.3em] mt-1">
-              {userTitle}
-            </span>
+            <motion.span 
+              className="text-[8px] font-black uppercase tracking-[0.3em] mt-1"
+              animate={userSkin === 'rainbow' ? {
+                color: ['#06b6d4', '#ec4899', '#eab308', '#22c55e', '#06b6d4'],
+              } : {
+                color: 'rgba(255, 255, 255, 0.4)'
+              }}
+              transition={userSkin === 'rainbow' ? { duration: 3, repeat: Infinity, ease: "linear" } : {}}
+            >
+              « {userTitle} »
+            </motion.span>
           )}
         </div>
         
@@ -353,10 +382,15 @@ export const GameArena: React.FC = () => {
           <span className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em]">Estável</span>
           <span 
             className="text-2xl font-black tabular-nums"
-            style={{ color: userSkin || '#06b6d4' }}
+            animate={userSkin === 'rainbow' ? {
+              color: ['#06b6d4', '#ec4899', '#eab308', '#22c55e', '#06b6d4'],
+            } : {
+              color: userSkin || '#06b6d4'
+            }}
+            transition={userSkin === 'rainbow' ? { duration: 3, repeat: Infinity, ease: "linear" } : {}}
           >
             98%
-          </span>
+          </motion.span>
         </div>
       </div>
 

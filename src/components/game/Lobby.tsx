@@ -652,19 +652,25 @@ export const Lobby: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-1 gap-3">
-                <div className="flex gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   <button 
                     onClick={() => setView('SHOP')}
-                    className="flex-1 py-4 bg-zinc-900 border border-zinc-800 text-yellow-500 font-black text-xs rounded-2xl flex items-center justify-center gap-2 hover:bg-zinc-800 transition-all uppercase tracking-widest"
+                    className="py-4 bg-zinc-900 border border-zinc-800 text-yellow-500 font-black text-xs rounded-2xl flex items-center justify-center gap-2 hover:bg-zinc-800 transition-all uppercase tracking-widest"
                   >
                     <ShoppingBag size={18} /> Loja
+                  </button>
+                  <button 
+                    onClick={() => setView('MISSIONS')}
+                    className="py-4 bg-zinc-900 border border-zinc-800 text-emerald-400 font-black text-xs rounded-2xl flex items-center justify-center gap-2 hover:bg-zinc-800 transition-all uppercase tracking-widest"
+                  >
+                    <Target size={18} /> Missões
                   </button>
                   <button 
                     onClick={() => {
                       setView('RANKING');
                       fetchRankings();
                     }}
-                    className="flex-1 py-4 bg-zinc-900 border border-zinc-800 text-cyan-400 font-black text-xs rounded-2xl flex items-center justify-center gap-2 hover:bg-zinc-800 transition-all uppercase tracking-widest"
+                    className="py-4 bg-zinc-900 border border-zinc-800 text-cyan-400 font-black text-xs rounded-2xl flex items-center justify-center gap-2 hover:bg-zinc-800 transition-all uppercase tracking-widest"
                   >
                     <Trophy size={18} /> Ranking
                   </button>
@@ -684,7 +690,7 @@ export const Lobby: React.FC = () => {
                           setRewardLoading(false);
                         }
                       }}
-                      className="flex-1 py-4 bg-zinc-900 border border-zinc-800 text-emerald-500 font-black text-[10px] rounded-2xl flex items-center justify-center gap-2 hover:bg-zinc-800 transition-all uppercase tracking-widest disabled:opacity-50"
+                      className="py-4 bg-zinc-900 border border-zinc-800 text-emerald-500 font-black text-[10px] rounded-2xl flex items-center justify-center gap-2 hover:bg-zinc-800 transition-all uppercase tracking-widest disabled:opacity-50"
                     >
                       {rewardLoading ? (
                         <div className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>

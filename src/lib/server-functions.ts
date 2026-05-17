@@ -255,3 +255,58 @@ export const startRoomGame = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { success: true };
   });
+
+export const leaveRoom = createServerFn({ method: \"POST\" })
+  .middleware([requireSupabaseAuth])
+  .handler(async (args: any) => {
+    const { context } = args;
+    const { userId } = context;
+
+    // 1. Buscar a sala atual do usuário
+    const { data: profile } = await supabaseAdmin
+      .from(\"profiles\")
+      .select(\"room_id\")
+      .eq(\"id\", userId)
+      .single();
+
+    if (!profile || !profile.room_id) return { success: true };
+
+    const roomId = profile.room_id;
+
+    // 2. Remover usuário da sala
+    await supabaseAdmin
+      .from(\"profiles\")
+      .update({ room_id: null, is_ready: false })
+      .eq(\"id\", userId);
+
+    // 3. Verificar se ainda há jogadores
+    const { data: remainingPlayers } = await supabaseAdmin
+      .from(\"profiles\")
+      .select(\"id\")
+      .eq(\"room_id\", roomId);
+
+    if (!remainingPlayers || remainingPlayers.length === 0) {
+      // Deletar sala se vazia
+      await supabaseAdmin
+        .from(\"rooms\")
+        .delete()
+        .eq(\"id\", roomId);
+    } else {
+      // Verificar se o host saiu
+      const { data: room } = await supabaseAdmin
+        .from(\"rooms\")
+        .select(\"host_id\")
+        .eq(\"id\", roomId)
+        .single();
+
+      if (room && room.host_id === userId) {
+        // Passar host para o próximo jogador
+        await supabaseAdmin
+          .from(\"rooms\")
+          .update({ host_id: remainingPlayers[0].id })
+          .eq(\"id\", roomId);
+      }
+    }
+
+    return { success: true };
+  });

@@ -100,14 +100,23 @@ export const GameArena: React.FC = () => {
         </div>
         <div className="flex flex-col items-end">
           <span className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em]">Estável</span>
-          <span className="text-2xl font-black text-cyan-400 tabular-nums">98%</span>
+          <span 
+            className="text-2xl font-black tabular-nums"
+            style={{ color: userSkin || '#06b6d4' }}
+          >
+            98%
+          </span>
         </div>
       </div>
 
       {/* Timer Bar */}
       <div className="w-full h-3 bg-white/5 rounded-full overflow-hidden mb-12 border border-white/10 p-[2px]">
         <motion.div 
-          className={`h-full rounded-full ${timeRemaining < 0.8 ? 'bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-cyan-500'}`}
+          className="h-full rounded-full"
+          style={{ 
+            backgroundColor: timeRemaining < 0.8 ? '#ef4444' : (userSkin || '#06b6d4'),
+            boxShadow: timeRemaining < 0.8 ? '0 0 15px rgba(239,68,68,0.5)' : `0 0 15px ${(userSkin || '#06b6d4')}80`
+          }}
           animate={{ width: `${Math.max(0, (timeRemaining / 2.2) * 100)}%` }}
           transition={{ duration: 0.05, ease: 'linear' }}
         />

@@ -41,30 +41,42 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          coins: number
           created_at: string
           id: string
           is_ready: boolean | null
+          last_daily_reward: string | null
+          level: number
           nickname: string | null
           room_id: string | null
           updated_at: string
+          xp: number
         }
         Insert: {
           avatar_url?: string | null
+          coins?: number
           created_at?: string
           id: string
           is_ready?: boolean | null
+          last_daily_reward?: string | null
+          level?: number
           nickname?: string | null
           room_id?: string | null
           updated_at?: string
+          xp?: number
         }
         Update: {
           avatar_url?: string | null
+          coins?: number
           created_at?: string
           id?: string
           is_ready?: boolean | null
+          last_daily_reward?: string | null
+          level?: number
           nickname?: string | null
           room_id?: string | null
           updated_at?: string
+          xp?: number
         }
         Relationships: [
           {

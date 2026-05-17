@@ -5,7 +5,7 @@ import { Trophy, Users, Zap, LogIn, User, LogOut, Plus, LogIn as JoinIcon, Chevr
 import { lovable } from '@/integrations/lovable';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { updateProfile, createRoom, joinRoom, startRoomGame } from '@/lib/server-functions';
+import { updateProfile, createRoom, joinRoom, startRoomGame, claimDailyReward } from '@/lib/server-functions';
 
 type LobbyView = 'MAIN' | 'MULTIPLAYER' | 'CREATE_ROOM' | 'JOIN_ROOM' | 'WAITING' | 'VISITOR_NICK' | 'ROOMS_LIST';
 
@@ -13,6 +13,7 @@ export const Lobby: React.FC = () => {
   const { startGame, setRoom, roomId, roomCode, isHost } = useGameStore();
   const [session, setSession] = useState<any>(null);
   const [nickname, setNickname] = useState('');
+  const [profile, setProfile] = useState<any>(null);
   const [view, setView] = useState<LobbyView>('MAIN');
   const [loading, setLoading] = useState(false);
   
@@ -141,8 +142,11 @@ export const Lobby: React.FC = () => {
   };
 
   const fetchProfile = async (userId: string) => {
-    const { data } = await supabase.from('profiles').select('nickname').eq('id', userId).single();
-    if (data?.nickname) setNickname(data.nickname);
+    const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
+    if (data) {
+      setProfile(data);
+      if (data.nickname) setNickname(data.nickname);
+    }
   };
 
   const handleVisitorLogin = async () => {
@@ -300,10 +304,20 @@ export const Lobby: React.FC = () => {
                         <User size={20} className="text-cyan-400" />
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">Cérebro Conectado</span>
-                        <span className="text-sm font-black truncate max-w-[120px] text-white">
-                          {nickname || 'Cérebro Anônimo'}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-black truncate max-w-[120px] text-white">
+                            {nickname || 'Cérebro Anônimo'}
+                          </span>
+                          <span className="bg-cyan-500/20 text-cyan-400 text-[8px] font-black px-1.5 py-0.5 rounded border border-cyan-500/20">LVL {profile?.level || 1}</span>
+                        </div>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <div className="flex items-center gap-1">
+                            <div className="w-2 h-2 rounded-full bg-yellow-500 shadow-[0_0_5px_rgba(234,179,8,0.5)]"></div>
+                            <span className="text-[10px] font-black text-yellow-500">{profile?.coins || 0}</span>
+                          </div>
+                          <div className="w-1 h-1 rounded-full bg-zinc-800"></div>
+                          <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-tighter">XP {profile?.xp || 0}</span>
+                        </div>
                       </div>
                     </div>
                     <button onClick={() => supabase.auth.signOut()} className="text-zinc-600 hover:text-red-500 transition-colors"><LogOut size={18} /></button>
@@ -324,6 +338,23 @@ export const Lobby: React.FC = () => {
                 >
                   <Users size={20} /> ARENA MULTIPLAYER
                 </button>
+                
+                {session && (
+                  <button 
+                    onClick={async () => {
+                      try {
+                        const result = await (claimDailyReward as any)();
+                        toast.success(`Você resgatou ${result.reward} Brain Coins!`);
+                        fetchProfile(session.user.id);
+                      } catch (err: any) {
+                        toast.error(err.message);
+                      }
+                    }}
+                    className="w-full py-3 bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 font-black text-[10px] rounded-xl flex items-center justify-center gap-2 hover:bg-yellow-500/20 transition-all uppercase tracking-widest"
+                  >
+                    <Trophy size={14} /> Resgatar Recompensa Diária
+                  </button>
+                )}
               </div>
             </motion.div>
           )}

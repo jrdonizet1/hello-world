@@ -13,6 +13,7 @@ export const GameOver: React.FC = () => {
   const [session, setSession] = useState<any>(null);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [rewards, setRewards] = useState<{ xp: number; coins: number; leveledUp: boolean; newLevel: number } | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -44,8 +45,16 @@ export const GameOver: React.FC = () => {
     }
     setLoading(true);
     try {
-      await (saveScore as any)({ data: { score } });
-      toast.success('Score salvo no ranking global!');
+      const result = await (saveScore as any)({ data: { score } });
+      if (result.success) {
+        setRewards({
+          xp: result.xpGained,
+          coins: result.coinsGained,
+          leveledUp: result.leveledUp,
+          newLevel: result.newLevel
+        });
+        toast.success('Ganhos processados!');
+      }
       fetchLeaderboard();
     } catch (err: any) {
       toast.error('Erro ao salvar score: ' + err.message);
@@ -106,6 +115,31 @@ export const GameOver: React.FC = () => {
           </div>
         </div>
 
+        {rewards && (
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            className="mb-6 space-y-3 bg-cyan-500/10 border border-cyan-500/20 rounded-2xl p-4 overflow-hidden"
+          >
+            <div className="flex justify-between items-center">
+              <span className="text-[10px] font-black uppercase text-cyan-400">Recompensas</span>
+              {rewards.leveledUp && (
+                <span className="bg-yellow-500 text-black text-[8px] font-black px-2 py-0.5 rounded-full animate-bounce">LEVEL UP! Lvl {rewards.newLevel}</span>
+              )}
+            </div>
+            <div className="flex gap-4">
+              <div className="flex-1 bg-black/20 rounded-xl p-2 text-center">
+                <p className="text-[8px] text-white/40 font-bold uppercase">XP</p>
+                <p className="text-lg font-black text-white">+{rewards.xp}</p>
+              </div>
+              <div className="flex-1 bg-black/20 rounded-xl p-2 text-center border border-yellow-500/20">
+                <p className="text-[8px] text-yellow-500/60 font-bold uppercase">Coins</p>
+                <p className="text-lg font-black text-yellow-500">+{rewards.coins}</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         <div className="space-y-4">
           <p className="text-[10px] font-black uppercase tracking-widest text-white/40 border-b border-white/10 pb-2">Top Mundial</p>
           <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
@@ -144,7 +178,22 @@ export const GameOver: React.FC = () => {
           >
             <Home size={18} /> INÍCIO
           </button>
-          <button className="py-4 bg-cyan-500 text-black rounded-2xl flex items-center justify-center gap-2 font-bold text-sm">
+          <button 
+            onClick={() => {
+              const text = `🧠 Acabei de fazer ${score} pontos no BRAINLAG! Duvido você bater meu recorde. Jogue agora: ${window.location.origin}`;
+              if (navigator.share) {
+                navigator.share({
+                  title: 'BRAINLAG - Neural Multi-Chaos',
+                  text: text,
+                  url: window.location.origin,
+                });
+              } else {
+                navigator.clipboard.writeText(text);
+                toast.success('Link de desafio copiado para o seu cérebro!');
+              }
+            }}
+            className="py-4 bg-cyan-500 text-black rounded-2xl flex items-center justify-center gap-2 font-bold text-sm"
+          >
             <Share2 size={18} /> DESAFIAR
           </button>
         </div>

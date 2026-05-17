@@ -5,6 +5,56 @@ import { getShopItems, buyShopItem, getUserInventory, updateEquippedItems, getPr
 import { useGameStore } from '../../store/useGameStore';
 import { toast } from 'sonner';
 
+const NamePreview = ({ name, profile, skinColor, title, icon, effect }: any) => {
+  const isCycle = effect?.type === 'cycle';
+  const isGlow = effect?.type === 'glow';
+  
+  return (
+    <div className="flex flex-col items-center gap-1 p-4 bg-black/60 rounded-2xl border border-white/10 mb-4 min-h-[80px] justify-center">
+      <p className="text-[8px] font-black uppercase tracking-widest text-zinc-600 mb-2">Prévia de Exibição</p>
+      <div className="flex items-center gap-2">
+        {icon && (
+          <div className="text-white">
+            {icon === 'Zap' && <Zap size={14} className="text-cyan-400" />}
+            {icon === 'Crown' && <Crown size={14} className="text-yellow-500" />}
+            {icon === 'ShieldCheck' && <ShieldCheck size={14} className="text-emerald-500" />}
+            {icon === 'Infinity' && <InfinityIcon size={14} className="text-purple-500" />}
+          </div>
+        )}
+        <div className="flex flex-col items-center">
+          <motion.span 
+            className="text-lg font-black italic uppercase tracking-tight"
+            animate={isCycle ? {
+              color: ['#ff0000', '#00ff00', '#0000ff', '#ff00ff', '#ff0000'],
+            } : {
+              color: skinColor || '#ffffff',
+            }}
+            transition={isCycle ? { duration: 3, repeat: Infinity, ease: "linear" } : {}}
+            style={{
+              textShadow: isGlow ? `0 0 ${effect.intensity === 'high' ? '15px' : '8px'} ${skinColor || '#00f2ff'}` : 'none'
+            }}
+          >
+            {name}
+          </motion.span>
+          {title && (
+            <motion.span 
+              className="text-[8px] font-black uppercase tracking-[0.2em] opacity-70"
+              animate={isCycle ? {
+                color: ['#ff0000', '#00ff00', '#0000ff', '#ff00ff', '#ff0000'],
+              } : {
+                color: skinColor || '#ffffff',
+              }}
+              transition={isCycle ? { duration: 3, repeat: Infinity, ease: "linear" } : {}}
+            >
+              « {title} »
+            </motion.span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 interface ShopItem {
   id: string;
   name: string;

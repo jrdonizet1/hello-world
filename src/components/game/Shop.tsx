@@ -9,7 +9,7 @@ interface ShopItem {
   name: string;
   description: string;
   price: number;
-  category: 'skin' | 'title' | 'avatar';
+  category: 'skin' | 'title' | 'avatar' | 'font' | 'arena_effect';
   item_data: any;
 }
 

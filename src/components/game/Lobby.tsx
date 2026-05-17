@@ -37,6 +37,13 @@ export const Lobby: React.FC = () => {
   const [isReady, setIsReady] = useState(false);
   const [pendingAction, setPendingAction] = useState<{ type: 'CREATE' | 'JOIN', code?: string } | null>(null);
   const [rewardLoading, setRewardLoading] = useState(false);
+  
+  const isRewardAvailable = () => {
+    if (!profile?.last_daily_reward) return true;
+    const lastReward = new Date(profile.last_daily_reward).getTime();
+    const now = new Date().getTime();
+    return (now - lastReward) >= 24 * 60 * 60 * 1000;
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -56,8 +63,20 @@ export const Lobby: React.FC = () => {
       }
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
+    // Cleanup for room
+    const handleUnload = () => {
+      if (roomId) {
+        // Simple call, we don't await because it's unloading
+        leaveRoom();
+      }
+    };
+    window.addEventListener('beforeunload', handleUnload);
+
+    return () => {
+      subscription.unsubscribe();
+      window.removeEventListener('beforeunload', handleUnload);
+    };
+  }, [roomId]);
 
   useEffect(() => {
     if (view === 'ROOMS_LIST') {
@@ -324,10 +343,10 @@ export const Lobby: React.FC = () => {
                         }
                         setView('PROFILE');
                       }}
-                      className={`flex items-center gap-3 ${session?.user?.is_anonymous ? 'opacity-70 cursor-help' : 'cursor-pointer'} group`}
+                      className={`flex items-center gap-3 ${session?.user?.is_anonymous ? 'opacity-50 cursor-help' : 'cursor-pointer'} group`}
                     >
-                      <div className="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center border border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.2)] group-hover:scale-110 transition-transform">
-                        <User size={20} className="text-cyan-400" />
+                      <div className={`w-10 h-10 rounded-full ${session?.user?.is_anonymous ? 'bg-zinc-800' : 'bg-cyan-500/20'} flex items-center justify-center border ${session?.user?.is_anonymous ? 'border-zinc-700' : 'border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.2)]'} group-hover:scale-110 transition-transform`}>
+                        {session?.user?.is_anonymous ? <Lock size={16} className="text-zinc-500" /> : <User size={20} className="text-cyan-400" />}
                       </div>
                       <div className="flex flex-col">
                         <div className="flex items-center gap-2">
@@ -375,13 +394,13 @@ export const Lobby: React.FC = () => {
                 
                 {session && !session.user.is_anonymous && (
                   <button 
-                    disabled={rewardLoading || (profile?.last_daily_reward && new Date().getTime() - new Date(profile.last_daily_reward).getTime() < 24 * 60 * 60 * 1000)}
+                    disabled={rewardLoading || !isRewardAvailable()}
                     onClick={async () => {
                       setRewardLoading(true);
                       try {
                         const result = await (claimDailyReward as any)();
                         toast.success(`Você resgatou ${result.reward} Brain Coins!`);
-                        fetchProfile(session.user.id);
+                        await fetchProfile(session.user.id);
                       } catch (err: any) {
                         toast.error(err.message);
                       } finally {
@@ -395,7 +414,7 @@ export const Lobby: React.FC = () => {
                     ) : (
                       <>
                         <Trophy size={14} /> 
-                        {profile?.last_daily_reward && new Date().getTime() - new Date(profile.last_daily_reward).getTime() < 24 * 60 * 60 * 1000 
+                        {!isRewardAvailable()
                           ? 'Recompensa Resgatada' 
                           : 'Resgatar Recompensa Diária'}
                       </>

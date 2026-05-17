@@ -5,7 +5,7 @@ import { Trophy, Users, Zap, LogIn, User, LogOut, Plus, LogIn as JoinIcon, Chevr
 import { lovable } from '@/integrations/lovable';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { updateProfile, createRoom, joinRoom, startRoomGame, claimDailyReward, leaveRoom, getProfile, redeemReferralCode, updateRoomSettings, getGameHistory, getLeaderboard } from '@/lib/server-functions';
+import { updateProfile, createRoom, joinRoom, startRoomGame, claimDailyReward, leaveRoom, getProfile, redeemReferralCode, updateRoomSettings, getGameHistory, getLeaderboard, getSystemSettings } from '@/lib/server-functions';
 import { Shop } from './Shop';
 import { Missions } from './Missions';
 import { UserIdentity } from './UserIdentity';
@@ -46,6 +46,8 @@ export const Lobby: React.FC = () => {
   const [rankings, setRankings] = useState<any[]>([]);
   const [rankingCategory, setRankingCategory] = useState<string | null>(null);
   const scrollRef = React.useRef<HTMLDivElement>(null);
+  const [systemSettings, setSystemSettings] = useState<any>(null);
+
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date().getTime()), 1000);
@@ -78,7 +80,15 @@ export const Lobby: React.FC = () => {
       setOnlineCount(count || 0);
     };
     fetchOnlineCount();
+    const fetchSystemSettings = async () => {
+      try {
+        const data = await (getSystemSettings as any)();
+        setSystemSettings(data);
+      } catch (err) {}
+    };
+    fetchSystemSettings();
     const interval = setInterval(fetchOnlineCount, 30000);
+
     return () => clearInterval(interval);
   }, []);
 

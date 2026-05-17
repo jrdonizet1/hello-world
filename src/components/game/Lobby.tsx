@@ -1244,6 +1244,7 @@ export const Lobby: React.FC = () => {
                     </div>
                   ))}
                 </div>
+              </div>
 
               <div className="w-full space-y-3 pt-2">
                 {!isHost && (

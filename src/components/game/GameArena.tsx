@@ -47,7 +47,7 @@ export const GameArena: React.FC = () => {
           if (prev <= 1) {
             clearInterval(timer);
             setGameState('PLAYING');
-            setCommand(generateCommand(1, selectedThemes));
+            setCommand(generateCommand(1, selectedThemes, duelSeed || undefined));
             setLastCommandTime(Date.now());
             return 0;
           }

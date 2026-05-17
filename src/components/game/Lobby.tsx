@@ -966,6 +966,8 @@ export const Lobby: React.FC = () => {
                 </div>
               </div>
 
+              {isHost && <ThemeSelector />}
+
               <div className="w-full bg-zinc-900/30 border border-zinc-800/50 rounded-3xl p-5 min-h-[220px] shadow-lg">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-[10px] uppercase font-bold text-zinc-500 tracking-widest">Jogadores na Sala</h3>

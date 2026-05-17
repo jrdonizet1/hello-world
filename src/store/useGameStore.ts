@@ -14,6 +14,7 @@ export interface Command {
 
 interface BrainLagState {
   gameState: GameState;
+  gameMode: GameMode;
   score: number;
   timeRemaining: number;
   currentCommand: Command | null;
@@ -27,7 +28,8 @@ interface BrainLagState {
   userTitle: string | null;
   
   setGameState: (state: GameState) => void;
-  startGame: () => void;
+  setGameMode: (mode: GameMode) => void;
+  startGame: (mode?: GameMode) => void;
   endGame: (reason: string) => void;
   updateScore: (points: number) => void;
   setCommand: (command: Command | null) => void;
@@ -38,6 +40,7 @@ interface BrainLagState {
 
 export const useGameStore = create<BrainLagState>((set, get) => ({
   gameState: 'LOBBY',
+  gameMode: 'NORMAL',
   score: 0,
   timeRemaining: 10,
   currentCommand: null,
@@ -51,13 +54,14 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
   userTitle: null,
 
   setCustomization: (skin, title) => set({ userSkin: skin, userTitle: title }),
-
+  setGameMode: (mode) => set({ gameMode: mode }),
   setGameState: (state) => set({ gameState: state }),
   
-  startGame: () => set({ 
+  startGame: (mode = 'NORMAL') => set({ 
     gameState: 'PREPARE', 
+    gameMode: mode,
     score: 0, 
-    timeRemaining: 10,
+    timeRemaining: mode === 'BLITZ' ? 1.2 : (mode === 'SURVIVAL' ? 5 : 10),
     lastError: null 
   }),
 
@@ -81,7 +85,8 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
     if (state.gameState !== 'PLAYING') return state;
     const nextTime = state.timeRemaining - delta;
     if (nextTime <= 0) {
-      return { gameState: 'ELIMINATED', timeRemaining: 0, lastError: 'TEMPO ESGOTADO!' };
+      const errorMsg = state.gameMode === 'SURVIVAL' ? 'RECARGA NEURAL FALHOU!' : 'TEMPO ESGOTADO!';
+      return { gameState: 'ELIMINATED', timeRemaining: 0, lastError: errorMsg };
     }
     return { timeRemaining: nextTime };
   }),

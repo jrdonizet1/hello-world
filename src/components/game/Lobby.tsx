@@ -1280,7 +1280,25 @@ export const Lobby: React.FC = () => {
                 </div>
 
                 <div className="text-center space-y-1">
-                  <h2 className="text-2xl font-black text-white italic tracking-tighter uppercase">{nickname || 'Cérebro Anônimo'}</h2>
+                  <div className="flex flex-col items-center gap-1">
+                    <h2 
+                      className="text-3xl font-black italic tracking-tighter uppercase"
+                      style={{ 
+                        color: profile?.selected_skin || 'white',
+                        textShadow: profile?.selected_title ? `0 0 15px ${profile?.selected_skin}40` : 'none'
+                      }}
+                    >
+                      {nickname || 'Cérebro Anônimo'}
+                    </h2>
+                    {profile?.selected_title && (
+                      <span 
+                        className="text-xs font-black uppercase tracking-[0.3em]"
+                        style={{ color: profile?.selected_skin || 'white' }}
+                      >
+                        « {profile?.selected_title} »
+                      </span>
+                    )}
+                  </div>
                   <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">{session?.user?.email}</p>
                 </div>
 

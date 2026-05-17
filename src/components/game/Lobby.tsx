@@ -1555,21 +1555,31 @@ export const Lobby: React.FC = () => {
                           {i + 1}
                         </div>
                         <div className="flex flex-col">
-                          <div className="flex flex-col">
-                            <span 
-                              className="text-sm font-black italic uppercase tracking-tight"
-                              style={{ color: entry.profiles?.selected_skin || 'white' }}
-                            >
-                              {entry.profiles?.nickname || 'Anônimo'}
-                            </span>
-                            {entry.profiles?.selected_title && (
+                          <div className="flex items-center gap-2">
+                            {entry.profiles?.selected_icon && (
+                              <div>
+                                {entry.profiles.selected_icon === 'Zap' && <Zap size={14} className="text-cyan-400" />}
+                                {entry.profiles.selected_icon === 'Crown' && <Crown size={14} className="text-yellow-500" />}
+                                {entry.profiles.selected_icon === 'ShieldCheck' && <ShieldCheck size={14} className="text-emerald-500" />}
+                                {entry.profiles.selected_icon === 'Infinity' && <InfinityIcon size={14} className="text-purple-500" />}
+                              </div>
+                            )}
+                            <div className="flex flex-col">
                               <span 
-                                className="text-[7px] font-black uppercase tracking-[0.2em] opacity-70"
+                                className="text-sm font-black italic uppercase tracking-tight"
                                 style={{ color: entry.profiles?.selected_skin || 'white' }}
                               >
-                                « {entry.profiles?.selected_title} »
+                                {entry.profiles?.nickname || 'Anônimo'}
                               </span>
-                            )}
+                              {entry.profiles?.selected_title && (
+                                <span 
+                                  className="text-[7px] font-black uppercase tracking-[0.2em] opacity-70"
+                                  style={{ color: entry.profiles?.selected_skin || 'white' }}
+                                >
+                                  « {entry.profiles?.selected_title} »
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>

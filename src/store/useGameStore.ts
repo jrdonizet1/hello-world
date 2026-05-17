@@ -142,12 +142,22 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
 
   tick: (delta) => set((state) => {
     if (state.gameState !== 'PLAYING') return state;
-    const nextTime = state.timeRemaining - delta;
+    
+    // Check for "Slow Motion" power
+    const hasSlowMotion = state.activePowers.some(p => p.id === 'slow' && p.expiresAt > Date.now());
+    const actualDelta = hasSlowMotion ? delta * 0.4 : delta;
+    
+    const nextTime = state.timeRemaining - actualDelta;
     if (nextTime <= 0) {
       const errorMsg = state.gameMode === 'SURVIVAL' ? 'RECARGA NEURAL FALHOU!' : 'TEMPO ESGOTADO!';
       return { gameState: 'ELIMINATED', timeRemaining: 0, lastError: errorMsg };
     }
-    return { timeRemaining: nextTime };
+    
+    // Cleanup expired powers
+    const now = Date.now();
+    const activePowers = state.activePowers.filter(p => p.expiresAt > now);
+    
+    return { timeRemaining: nextTime, activePowers };
   }),
   increaseCombo: (reactionTime) => set((state) => {
     const newCombo = state.combo + 1;

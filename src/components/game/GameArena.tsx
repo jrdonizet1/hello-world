@@ -251,7 +251,7 @@ export const GameArena: React.FC = () => {
       {/* Main Command Area */}
       <motion.div 
         animate={controls}
-        className="flex-1 flex flex-col items-center justify-center text-center px-4 mb-8"
+        className="flex-1 flex flex-col items-center justify-center text-center px-4 mb-8 z-10"
       >
         <AnimatePresence mode="wait">
           <motion.div

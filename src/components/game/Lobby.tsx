@@ -422,7 +422,26 @@ export const Lobby: React.FC = () => {
                     )}
                   </button>
                 )}
+
+                <button 
+                  onClick={() => setView('SHOP')}
+                  className="w-full py-4 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 text-yellow-500 font-black text-xs rounded-2xl flex items-center justify-center gap-2 hover:from-yellow-500/30 hover:to-orange-500/30 transition-all uppercase tracking-[0.2em] shadow-[0_0_20px_rgba(234,179,8,0.1)]"
+                >
+                  <ShoppingBag size={18} /> LOJA DE ITENS
+                </button>
               </div>
+            </motion.div>
+          )}
+
+          {view === 'SHOP' && (
+            <motion.div 
+              key="shop"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="w-full"
+            >
+              <Shop onClose={() => setView('MAIN')} />
             </motion.div>
           )}
 

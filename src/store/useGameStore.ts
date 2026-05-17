@@ -32,7 +32,7 @@ interface BrainLagState {
   userTitle: string | null;
   userFont: any | null;
   userArenaEffect: any | null;
-  userIcon: string | null;
+  userIcon: any | null;
   userEffect: any | null;
   selectedThemes: string[];
   baseTime: number;
@@ -59,7 +59,7 @@ interface BrainLagState {
   setCommand: (command: Command | null) => void;
   tick: (delta: number) => void;
   setRoom: (id: string | null, code: string | null, isHost: boolean) => void;
-  setCustomization: (skin: string | null, title: string | null, font?: any, arenaEffect?: any, icon?: string | null, effect?: any) => void;
+  setCustomization: (skin: string | null, title: string | null, font?: any, arenaEffect?: any, icon?: any | null, effect?: any) => void;
   setPowerCounts: (slow: number, shield: number) => void;
   increaseCombo: (reactionTime: number) => void;
   setDuelOpponent: (id: string | null, progress: number) => void;

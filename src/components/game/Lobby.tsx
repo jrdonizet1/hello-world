@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { updateProfile, createRoom, joinRoom, startRoomGame, claimDailyReward, leaveRoom, getProfile, redeemReferralCode, updateRoomSettings, getGameHistory, getLeaderboard } from '@/lib/server-functions';
 import { Shop } from './Shop';
 import { Missions } from './Missions';
+import { UserIdentity } from './UserIdentity';
 
 type LobbyView = 'MAIN' | 'MULTIPLAYER' | 'CREATE_ROOM' | 'JOIN_ROOM' | 'WAITING' | 'VISITOR_NICK' | 'ROOMS_LIST' | 'PROFILE' | 'SHOP' | 'REFERRAL' | 'OFFLINE_SETTINGS' | 'HISTORY' | 'RANKING' | 'MISSIONS';
 
@@ -247,7 +248,7 @@ export const Lobby: React.FC = () => {
   const fetchPlayers = async () => {
     const { data } = await supabase
       .from('profiles')
-      .select('id, nickname, is_ready, selected_skin, selected_title')
+      .select('id, nickname, is_ready, selected_skin, selected_title, selected_icon, selected_effect, selected_font')
       .eq('room_id', roomId as string);
     if (data) setPlayers(data);
   };
@@ -899,7 +900,10 @@ export const Lobby: React.FC = () => {
               exit={{ opacity: 0, scale: 0.9 }}
               className="w-full"
             >
-              <Shop onClose={() => setView('MAIN')} />
+              <Shop onClose={() => {
+                setView('MAIN');
+                if (session?.user?.id) fetchProfile(session.user.id);
+              }} />
             </motion.div>
           )}
 
@@ -1231,32 +1235,15 @@ export const Lobby: React.FC = () => {
                           <span className={`relative inline-flex rounded-full h-3 w-3 ${p.is_ready || p.id === roomData?.host_id ? 'bg-green-500' : 'bg-red-500'}`}></span>
                           {p.is_ready && <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping"></span>}
                         </div>
-                        <div className="flex items-center gap-2">
-                          {p.selected_icon && (
-                            <div className="text-white">
-                              {p.selected_icon === 'Zap' && <Zap size={14} className="text-cyan-400" />}
-                              {p.selected_icon === 'Crown' && <Crown size={14} className="text-yellow-500" />}
-                              {p.selected_icon === 'ShieldCheck' && <ShieldCheck size={14} className="text-emerald-500" />}
-                              {p.selected_icon === 'Infinity' && <InfinityIcon size={14} className="text-purple-500" />}
-                            </div>
-                          )}
-                          <div className="flex flex-col">
-                            <span 
-                              className="font-black italic uppercase text-xs tracking-tight"
-                              style={{ color: p.selected_skin || 'white' }}
-                            >
-                              {p.nickname || 'Anônimo'}
-                            </span>
-                            {p.selected_title && (
-                              <span 
-                                className="text-[7px] font-black uppercase tracking-[0.2em] opacity-70"
-                                style={{ color: p.selected_skin || 'white' }}
-                              >
-                                « {p.selected_title} »
-                              </span>
-                            )}
-                          </div>
-                        </div>
+                        <UserIdentity 
+                          name={p.nickname || 'Anônimo'}
+                          skin={p.selected_skin}
+                          title={p.selected_title}
+                          icon={p.selected_icon}
+                          effect={p.selected_effect}
+                          font={p.selected_font}
+                          size="md"
+                        />
                         {p.id === session?.user?.id && (
                           <span className="text-[8px] uppercase tracking-widest text-cyan-500 font-bold bg-cyan-500/10 px-2 py-0.5 rounded-full border border-cyan-500/20">Você</span>
                         )}
@@ -1326,33 +1313,15 @@ export const Lobby: React.FC = () => {
 
                 <div className="text-center space-y-1">
                   <div className="flex flex-col items-center gap-1">
-                    <div className="flex items-center gap-2">
-                      {profile?.selected_icon && (
-                        <div>
-                          {profile.selected_icon === 'Zap' && <Zap size={24} className="text-cyan-400" />}
-                          {profile.selected_icon === 'Crown' && <Crown size={24} className="text-yellow-500" />}
-                          {profile.selected_icon === 'ShieldCheck' && <ShieldCheck size={24} className="text-emerald-500" />}
-                          {profile.selected_icon === 'Infinity' && <InfinityIcon size={24} className="text-purple-500" />}
-                        </div>
-                      )}
-                      <h2 
-                        className="text-3xl font-black italic tracking-tighter uppercase"
-                        style={{ 
-                          color: profile?.selected_skin || 'white',
-                          textShadow: profile?.selected_title ? `0 0 15px ${profile?.selected_skin}40` : 'none'
-                        }}
-                      >
-                        {nickname || 'Cérebro Anônimo'}
-                      </h2>
-                    </div>
-                    {profile?.selected_title && (
-                      <span 
-                        className="text-xs font-black uppercase tracking-[0.3em]"
-                        style={{ color: profile?.selected_skin || 'white' }}
-                      >
-                        « {profile?.selected_title} »
-                      </span>
-                    )}
+                    <UserIdentity 
+                      name={nickname || 'Cérebro Anônimo'}
+                      skin={profile?.selected_skin}
+                      title={profile?.selected_title}
+                      icon={profile?.selected_icon}
+                      effect={profile?.selected_effect}
+                      font={profile?.selected_font}
+                      size="xl"
+                    />
                   </div>
                   <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">{session?.user?.email}</p>
                 </div>
@@ -1600,32 +1569,15 @@ export const Lobby: React.FC = () => {
                           {i + 1}
                         </div>
                         <div className="flex flex-col">
-                          <div className="flex items-center gap-2">
-                            {entry.profiles?.selected_icon && (
-                              <div>
-                                {entry.profiles.selected_icon === 'Zap' && <Zap size={14} className="text-cyan-400" />}
-                                {entry.profiles.selected_icon === 'Crown' && <Crown size={14} className="text-yellow-500" />}
-                                {entry.profiles.selected_icon === 'ShieldCheck' && <ShieldCheck size={14} className="text-emerald-500" />}
-                                {entry.profiles.selected_icon === 'Infinity' && <InfinityIcon size={14} className="text-purple-500" />}
-                              </div>
-                            )}
-                            <div className="flex flex-col">
-                              <span 
-                                className="text-sm font-black italic uppercase tracking-tight"
-                                style={{ color: entry.profiles?.selected_skin || 'white' }}
-                              >
-                                {entry.profiles?.nickname || 'Anônimo'}
-                              </span>
-                              {entry.profiles?.selected_title && (
-                                <span 
-                                  className="text-[7px] font-black uppercase tracking-[0.2em] opacity-70"
-                                  style={{ color: entry.profiles?.selected_skin || 'white' }}
-                                >
-                                  « {entry.profiles?.selected_title} »
-                                </span>
-                              )}
-                            </div>
-                          </div>
+                          <UserIdentity 
+                            name={entry.profiles?.nickname || 'Anônimo'}
+                            skin={entry.profiles?.selected_skin}
+                            title={entry.profiles?.selected_title}
+                            icon={entry.profiles?.selected_icon}
+                            effect={entry.profiles?.selected_effect}
+                            font={entry.profiles?.selected_font}
+                            size="md"
+                          />
                         </div>
                       </div>
                       

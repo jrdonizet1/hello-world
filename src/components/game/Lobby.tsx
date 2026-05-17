@@ -306,13 +306,16 @@ export const Lobby: React.FC = () => {
                   </>
                 ) : (
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center border border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.2)]">
+                    <div 
+                      onClick={() => setView('PROFILE')}
+                      className="flex items-center gap-3 cursor-pointer group"
+                    >
+                      <div className="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center border border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.2)] group-hover:scale-110 transition-transform">
                         <User size={20} className="text-cyan-400" />
                       </div>
                       <div className="flex flex-col">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-black truncate max-w-[120px] text-white">
+                          <span className="text-sm font-black truncate max-w-[120px] text-white group-hover:text-cyan-400 transition-colors">
                             {nickname || 'Cérebro Anônimo'}
                           </span>
                           <span className="bg-cyan-500/20 text-cyan-400 text-[8px] font-black px-1.5 py-0.5 rounded border border-cyan-500/20">LVL {profile?.level || 1}</span>
@@ -327,7 +330,7 @@ export const Lobby: React.FC = () => {
                         </div>
                       </div>
                     </div>
-                    <button onClick={() => supabase.auth.signOut()} className="text-zinc-600 hover:text-red-500 transition-colors"><LogOut size={18} /></button>
+                    <button onClick={() => supabase.auth.signOut()} className="text-zinc-600 hover:text-red-500 transition-colors ml-4"><LogOut size={18} /></button>
                   </div>
                 )}
               </div>

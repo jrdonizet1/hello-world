@@ -480,6 +480,85 @@ export const Lobby: React.FC = () => {
             </motion.div>
           )}
 
+          {view === 'REFERRAL' && (
+            <motion.div 
+              key="referral"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-6"
+            >
+              <button onClick={() => setView('MAIN')} className="flex items-center gap-1 text-zinc-500 font-bold text-[10px] uppercase tracking-[0.2em] mb-2 hover:text-white transition-colors">
+                <ChevronLeft size={14} /> Voltar
+              </button>
+
+              <div className="bg-zinc-900/50 border border-zinc-800 p-8 rounded-3xl backdrop-blur-xl text-center space-y-6">
+                <div className="w-16 h-16 bg-cyan-500/20 rounded-full flex items-center justify-center border border-cyan-500/30 mx-auto shadow-[0_0_20px_rgba(6,182,212,0.2)]">
+                  <UserPlus size={32} className="text-cyan-400" />
+                </div>
+                
+                <div>
+                  <h3 className="text-xl font-black text-white italic">INDIQUE E GANHE</h3>
+                  <p className="text-zinc-500 text-xs mt-1">Convide amigos para a arena neural e ganhe <span className="text-yellow-500 font-bold">250 moedas</span> por cada um que entrar!</p>
+                </div>
+
+                <div className="space-y-3 pt-2">
+                  <div className="bg-zinc-950 border border-zinc-800 p-4 rounded-2xl">
+                    <p className="text-[8px] font-black text-zinc-600 uppercase tracking-widest mb-2">Seu Código</p>
+                    <div className="flex items-center justify-center gap-4">
+                      <span className="text-2xl font-black tracking-[0.3em] text-white uppercase">{profile?.referral_code || '------'}</span>
+                      <button 
+                        onClick={() => {
+                          if (profile?.referral_code) {
+                            navigator.clipboard.writeText(profile.referral_code);
+                            toast.success('Código copiado!');
+                          }
+                        }}
+                        className="p-2 bg-zinc-900 hover:bg-zinc-800 rounded-lg text-zinc-500 hover:text-white transition-colors"
+                      >
+                        <Copy size={16} />
+                      </button>
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={() => {
+                      const link = `${window.location.origin}?ref=${profile?.referral_code}`;
+                      const text = `🧠 Ei! Entre na Arena Neural do BRAINLAG comigo! Use meu link para ganhar 100 moedas iniciais: ${link}`;
+                      
+                      if (navigator.share) {
+                        navigator.share({
+                          title: 'BRAINLAG - Convite para Arena',
+                          text: text,
+                          url: link
+                        });
+                      } else {
+                        const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+                        window.open(whatsappUrl, '_blank');
+                      }
+                    }}
+                    className="w-full py-5 bg-cyan-500 text-black font-black rounded-2xl shadow-[0_0_20px_rgba(6,182,212,0.3)] active:scale-95 transition-all flex items-center justify-center gap-2"
+                  >
+                    <Share2 size={20} className="fill-current" /> CONVIDAR VIA WHATSAPP
+                  </button>
+
+                  <div className="pt-4 border-t border-zinc-800">
+                    <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+                      Você já indicou <span className="text-cyan-400">{profile?.referral_count || 0}</span> amigos
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-yellow-500/5 border border-yellow-500/10 p-4 rounded-2xl flex items-start gap-3">
+                <Trophy size={16} className="text-yellow-500 mt-0.5" />
+                <p className="text-[10px] text-yellow-500/80 leading-relaxed">
+                  <strong>DICA:</strong> Compartilhe seu link em grupos! Seus amigos também ganham <span className="font-black">100 moedas</span> ao se cadastrarem pelo seu link.
+                </p>
+              </div>
+            </motion.div>
+          )}
+
           {view === 'SHOP' && (
             <motion.div 
               key="shop"

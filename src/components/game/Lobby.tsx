@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { updateProfile, createRoom, joinRoom, startRoomGame, claimDailyReward, leaveRoom, getProfile, redeemReferralCode, updateRoomSettings } from '@/lib/server-functions';
 import { Shop } from './Shop';
 
-type LobbyView = 'MAIN' | 'MULTIPLAYER' | 'CREATE_ROOM' | 'JOIN_ROOM' | 'WAITING' | 'VISITOR_NICK' | 'ROOMS_LIST' | 'PROFILE' | 'SHOP' | 'REFERRAL';
+type LobbyView = 'MAIN' | 'MULTIPLAYER' | 'CREATE_ROOM' | 'JOIN_ROOM' | 'WAITING' | 'VISITOR_NICK' | 'ROOMS_LIST' | 'PROFILE' | 'SHOP' | 'REFERRAL' | 'OFFLINE_SETTINGS';
 
 export const Lobby: React.FC = () => {
   const { startGame, setRoom, roomId, roomCode, isHost, setCustomization, selectedThemes, setSelectedThemes } = useGameStore();
@@ -517,10 +517,7 @@ export const Lobby: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <button 
-                  onClick={() => {
-                    setCustomization(profile?.selected_skin, profile?.selected_title);
-                    startGame('NORMAL');
-                  }}
+                  onClick={() => setView('OFFLINE_SETTINGS')}
                   className="flex flex-col items-center justify-center p-6 bg-white text-black font-black rounded-3xl shadow-[0_0_20px_rgba(255,255,255,0.1)] active:scale-95 transition-all group"
                 >
                   <Monitor size={32} className="mb-2 group-hover:scale-110 transition-transform" />
@@ -539,8 +536,6 @@ export const Lobby: React.FC = () => {
                   <span className="text-sm uppercase">Online</span>
                 </button>
               </div>
-
-              <ThemeSelector />
 
               <div className="grid grid-cols-1 gap-3">
                 <div className="flex gap-2">
@@ -588,6 +583,66 @@ export const Lobby: React.FC = () => {
                     <UserPlus size={14} /> Sistema de Indicação
                   </button>
                 )}
+              </div>
+            </motion.div>
+          )}
+
+          {view === 'OFFLINE_SETTINGS' && (
+            <motion.div 
+              key="offline-settings"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-6"
+            >
+              <button onClick={() => setView('MAIN')} className="flex items-center gap-1 text-zinc-500 font-bold text-[10px] uppercase tracking-[0.2em] mb-2 hover:text-white transition-colors">
+                <ChevronLeft size={14} /> Voltar ao Menu
+              </button>
+
+              <div className="text-center space-y-2">
+                <h3 className="text-xl font-black italic uppercase tracking-widest text-white">Configuração Neural</h3>
+                <p className="text-zinc-500 text-[10px] uppercase font-bold tracking-widest">Personalize sua experiência solo</p>
+              </div>
+
+              <ThemeSelector />
+
+              <div className="space-y-4 pt-2">
+                <div className="bg-zinc-900/40 border border-zinc-800/50 p-4 rounded-3xl backdrop-blur-xl">
+                  <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-4 text-center">Modo de Jogo</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button 
+                      onClick={() => {
+                        setCustomization(profile?.selected_skin, profile?.selected_title);
+                        startGame('NORMAL');
+                      }}
+                      className="py-4 bg-white text-black font-black text-xs rounded-xl shadow-[0_0_15px_rgba(255,255,255,0.1)] active:scale-95 transition-all uppercase"
+                    >
+                      Normal
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setCustomization(profile?.selected_skin, profile?.selected_title);
+                        startGame('BLITZ');
+                      }}
+                      className="py-4 bg-amber-500/10 border border-amber-500/30 text-amber-500 font-black text-xs rounded-xl active:scale-95 transition-all uppercase"
+                    >
+                      Blitz
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setCustomization(profile?.selected_skin, profile?.selected_title);
+                        startGame('SURVIVAL');
+                      }}
+                      className="col-span-2 py-4 bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 font-black text-xs rounded-xl active:scale-95 transition-all uppercase"
+                    >
+                      Survival
+                    </button>
+                  </div>
+                </div>
+
+                <p className="text-center text-zinc-600 text-[8px] font-bold uppercase tracking-widest px-4">
+                  Seu progresso offline também garante XP e moedas baseados na pontuação final!
+                </p>
               </div>
             </motion.div>
           )}

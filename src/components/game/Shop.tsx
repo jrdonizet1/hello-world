@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, Coins, Check, Lock, Palette, Type } from 'lucide-react';
+import { ShoppingBag, Coins, Check, Lock, Palette, Type, Monitor, Sparkles } from 'lucide-react';
 import { getShopItems, buyShopItem, getUserInventory, updateEquippedItems, getProfile } from '../../lib/server-functions';
 import { toast } from 'sonner';
 
@@ -9,7 +9,7 @@ interface ShopItem {
   name: string;
   description: string;
   price: number;
-  category: 'skin' | 'title' | 'avatar';
+  category: 'skin' | 'title' | 'avatar' | 'font' | 'arena_effect';
   item_data: any;
 }
 
@@ -63,11 +63,13 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
   const handleEquip = async (item: ShopItem) => {
     try {
-      if (item.category === 'skin') {
-        await (updateEquippedItems as any)({ data: { skin: item.item_data.color } });
-      } else if (item.category === 'title') {
-        await (updateEquippedItems as any)({ data: { title: item.item_data.text } });
-      }
+      const updateData: any = {};
+      if (item.category === 'skin') updateData.skin = item.item_data.color;
+      else if (item.category === 'title') updateData.title = item.item_data.text;
+      else if (item.category === 'font') updateData.font = item.item_data;
+      else if (item.category === 'arena_effect') updateData.arenaEffect = item.item_data;
+
+      await (updateEquippedItems as any)({ data: updateData });
       toast.success('Equipado com sucesso!');
       await loadData();
     } catch (err: any) {
@@ -86,6 +88,8 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const isEquipped = (item: ShopItem) => {
     if (item.category === 'skin') return profile?.selected_skin === item.item_data.color;
     if (item.category === 'title') return profile?.selected_title === item.item_data.text;
+    if (item.category === 'font') return JSON.stringify(profile?.selected_font) === JSON.stringify(item.item_data);
+    if (item.category === 'arena_effect') return JSON.stringify(profile?.selected_arena_effect) === JSON.stringify(item.item_data);
     return false;
   };
 
@@ -130,7 +134,10 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             >
               {/* Category Icon */}
               <div className="absolute top-4 right-4 opacity-20">
-                {item.category === 'skin' ? <Palette className="w-8 h-8" /> : <Type className="w-8 h-8" />}
+                {item.category === 'skin' ? <Palette className="w-8 h-8" /> : 
+                 item.category === 'font' ? <Type className="w-8 h-8" /> :
+                 item.category === 'arena_effect' ? <Sparkles className="w-8 h-8" /> :
+                 <Type className="w-8 h-8" />}
               </div>
 
               <div className="flex flex-col h-full justify-between gap-4">

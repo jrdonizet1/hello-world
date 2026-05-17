@@ -30,6 +30,8 @@ interface BrainLagState {
   isHost: boolean;
   userSkin: string | null;
   userTitle: string | null;
+  userFont: any | null;
+  userArenaEffect: any | null;
   selectedThemes: string[];
   baseTime: number;
   accelerationEnabled: boolean;
@@ -45,7 +47,7 @@ interface BrainLagState {
   setCommand: (command: Command | null) => void;
   tick: (delta: number) => void;
   setRoom: (id: string | null, code: string | null, isHost: boolean) => void;
-  setCustomization: (skin: string | null, title: string | null) => void;
+  setCustomization: (skin: string | null, title: string | null, font?: any, arenaEffect?: any) => void;
   increaseCombo: (reactionTime: number) => void;
   resetCombo: () => void;
 }
@@ -67,12 +69,19 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
   isHost: false,
   userSkin: '#06b6d4', // Padrão cyan-400
   userTitle: null,
+  userFont: null,
+  userArenaEffect: null,
   selectedThemes: ['COLOR', 'MATH'],
   baseTime: 2.2,
   accelerationIntensity: 'NORMAL',
   accelerationEnabled: true,
 
-  setCustomization: (skin, title) => set({ userSkin: skin, userTitle: title }),
+  setCustomization: (skin, title, font, arenaEffect) => set({ 
+    userSkin: skin, 
+    userTitle: title,
+    userFont: font || null,
+    userArenaEffect: arenaEffect || null
+  }),
   setGameMode: (mode) => set({ gameMode: mode }),
   setSelectedThemes: (themes) => set({ selectedThemes: themes }),
   setGameSettings: (baseTime, accelerationIntensity) => set({ baseTime, accelerationIntensity, accelerationEnabled: accelerationIntensity !== 'OFF' }),

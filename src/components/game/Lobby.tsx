@@ -202,7 +202,7 @@ export const Lobby: React.FC = () => {
         filter: `id=eq.${roomId}` 
       }, (payload) => {
         if (payload.new.status === 'STARTING') {
-          setCustomization(profile?.selected_skin, profile?.selected_title);
+          setCustomization(profile?.selected_skin, profile?.selected_title, profile?.selected_font, profile?.selected_arena_effect);
           startGame(
             undefined, 
             payload.new.selected_themes, 
@@ -358,7 +358,7 @@ export const Lobby: React.FC = () => {
       return;
     }
     try {
-      setCustomization(profile?.selected_skin, profile?.selected_title);
+      setCustomization(profile?.selected_skin, profile?.selected_title, profile?.selected_font, profile?.selected_arena_effect);
       await (startRoomGame as any)({ data: roomId });
       // The room status will change to STARTING, and the subscription will call startGame()
       // But we need to make sure startGame uses the room's baseTime and acceleration
@@ -742,7 +742,7 @@ export const Lobby: React.FC = () => {
                   <div className="grid grid-cols-2 gap-2">
                     <button 
                       onClick={() => {
-                        setCustomization(profile?.selected_skin, profile?.selected_title);
+                        setCustomization(profile?.selected_skin, profile?.selected_title, profile?.selected_font, profile?.selected_arena_effect);
                         startGame('NORMAL', undefined, baseTime, accelerationIntensity);
                       }}
                       className="py-4 bg-white text-black font-black text-xs rounded-xl shadow-[0_0_15px_rgba(255,255,255,0.1)] active:scale-95 transition-all uppercase"
@@ -751,7 +751,7 @@ export const Lobby: React.FC = () => {
                     </button>
                     <button 
                       onClick={() => {
-                        setCustomization(profile?.selected_skin, profile?.selected_title);
+                        setCustomization(profile?.selected_skin, profile?.selected_title, profile?.selected_font, profile?.selected_arena_effect);
                         startGame('BLITZ', undefined, baseTime, accelerationIntensity);
                       }}
                       className="py-4 bg-amber-500/10 border border-amber-500/30 text-amber-500 font-black text-xs rounded-xl active:scale-95 transition-all uppercase"
@@ -760,7 +760,7 @@ export const Lobby: React.FC = () => {
                     </button>
                     <button 
                       onClick={() => {
-                        setCustomization(profile?.selected_skin, profile?.selected_title);
+                        setCustomization(profile?.selected_skin, profile?.selected_title, profile?.selected_font, profile?.selected_arena_effect);
                         startGame('SURVIVAL', undefined, baseTime, accelerationIntensity);
                       }}
                       className="col-span-2 py-4 bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 font-black text-xs rounded-xl active:scale-95 transition-all uppercase"

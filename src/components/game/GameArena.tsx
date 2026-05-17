@@ -18,6 +18,8 @@ export const GameArena: React.FC = () => {
     endGame,
     userSkin,
     userTitle,
+    userFont,
+    userArenaEffect,
     gameMode,
     selectedThemes,
     baseTime,
@@ -148,9 +150,50 @@ export const GameArena: React.FC = () => {
   }
 
   return (
-    <div className={`flex flex-col h-full relative p-6 transition-colors duration-200 ${isWrong ? 'bg-red-900' : ''}`}>
+    <div className={`flex flex-col h-full relative p-6 transition-colors duration-200 overflow-hidden ${isWrong ? 'bg-red-900' : ''}`}>
+      {/* Arena Effects Background */}
+      {userArenaEffect && (
+        <div className="absolute inset-0 pointer-events-none z-0">
+          {userArenaEffect.type === 'grid' && (
+            <div 
+              className="absolute inset-0 opacity-20"
+              style={{ 
+                backgroundImage: `linear-gradient(${userArenaEffect.color}33 1px, transparent 1px), linear-gradient(90deg, ${userArenaEffect.color}33 1px, transparent 1px)`,
+                backgroundSize: '40px 40px',
+                transform: 'perspective(500px) rotateX(60deg) translateY(0%)',
+                animation: 'grid-move 2s linear infinite'
+              }}
+            />
+          )}
+          {userArenaEffect.type === 'binary' && (
+            <div className="absolute inset-0 opacity-10 font-mono text-[10px] flex justify-around select-none">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <div key={i} className="animate-fall" style={{ animationDelay: `${i * 0.5}s`, color: userArenaEffect.color }}>
+                  {Array.from({ length: 20 }).map((_, j) => (
+                    <div key={j}>{Math.round(Math.random())}</div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+      
+      <style>{`
+        @keyframes grid-move {
+          from { transform: perspective(500px) rotateX(60deg) translateY(0); }
+          to { transform: perspective(500px) rotateX(60deg) translateY(40px); }
+        }
+        @keyframes fall {
+          from { transform: translateY(-100%); }
+          to { transform: translateY(100%); }
+        }
+        .animate-fall {
+          animation: fall 10s linear infinite;
+        }
+      `}</style>
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-6 z-10">
         <div className="flex flex-col">
           <span className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em]">Sincronia</span>
           <span className="text-4xl font-black italic tabular-nums">{score.toFixed(1)}</span>
@@ -193,7 +236,7 @@ export const GameArena: React.FC = () => {
       </div>
 
       {/* Timer Bar */}
-      <div className="w-full h-3 bg-white/5 rounded-full overflow-hidden mb-12 border border-white/10 p-[2px]">
+      <div className="w-full h-3 bg-white/5 rounded-full overflow-hidden mb-12 border border-white/10 p-[2px] z-10">
         <motion.div 
           className="h-full rounded-full"
           style={{ 
@@ -208,7 +251,7 @@ export const GameArena: React.FC = () => {
       {/* Main Command Area */}
       <motion.div 
         animate={controls}
-        className="flex-1 flex flex-col items-center justify-center text-center px-4 mb-8"
+        className="flex-1 flex flex-col items-center justify-center text-center px-4 mb-8 z-10"
       >
         <AnimatePresence mode="wait">
           <motion.div
@@ -225,18 +268,27 @@ export const GameArena: React.FC = () => {
             {currentCommand?.type === 'COLOR' ? (
               <h2 
                 className="text-7xl sm:text-8xl font-black tracking-tighter leading-none uppercase italic drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]"
-                style={{ color: (currentCommand as any)?.displayColor }}
+                style={{ 
+                  color: (currentCommand as any)?.displayColor,
+                  fontFamily: userFont?.fontFamily || 'inherit',
+                  fontSize: userFont?.size ? `calc(5rem * ${userFont.size.replace('em','')})` : 'inherit'
+                }}
               >
                 {(currentCommand as any)?.displayWord}
               </h2>
             ) : (
-              <h2 className={`font-black tracking-tighter leading-none uppercase italic glitch-effect ${
-                ((currentCommand as any)?.displayWord || currentCommand?.text || '').length > 20 
-                  ? 'text-3xl sm:text-4xl' 
-                  : ((currentCommand as any)?.displayWord || currentCommand?.text || '').length > 10
-                    ? 'text-5xl sm:text-6xl'
-                    : 'text-7xl sm:text-8xl'
-              }`}>
+              <h2 
+                className={`font-black tracking-tighter leading-none uppercase italic glitch-effect ${
+                  ((currentCommand as any)?.displayWord || currentCommand?.text || '').length > 20 
+                    ? 'text-3xl sm:text-4xl' 
+                    : ((currentCommand as any)?.displayWord || currentCommand?.text || '').length > 10
+                      ? 'text-5xl sm:text-6xl'
+                      : 'text-7xl sm:text-8xl'
+                }`}
+                style={{
+                  fontFamily: userFont?.fontFamily || 'inherit',
+                }}
+              >
                 {(currentCommand as any)?.displayWord || currentCommand?.text}
               </h2>
             )}
@@ -245,7 +297,7 @@ export const GameArena: React.FC = () => {
       </motion.div>
 
       {/* Interaction Area */}
-      <div className="flex gap-4 h-[25%] mb-8">
+      <div className="flex gap-4 h-[25%] mb-8 z-10">
         <button 
           onClick={() => handleAction(false)}
           className="flex-1 rounded-3xl bg-red-500/10 border-2 border-red-500/50 flex flex-col items-center justify-center gap-2 active:scale-95 active:bg-red-500/20 transition-all text-red-500"

@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { updateProfile, createRoom, joinRoom, startRoomGame, claimDailyReward, leaveRoom, getProfile, redeemReferralCode, updateRoomSettings, getGameHistory } from '@/lib/server-functions';
 import { Shop } from './Shop';
 
-type LobbyView = 'MAIN' | 'MULTIPLAYER' | 'CREATE_ROOM' | 'JOIN_ROOM' | 'WAITING' | 'VISITOR_NICK' | 'ROOMS_LIST' | 'PROFILE' | 'SHOP' | 'REFERRAL' | 'OFFLINE_SETTINGS' | 'HISTORY';
+type LobbyView = 'MAIN' | 'MULTIPLAYER' | 'CREATE_ROOM' | 'JOIN_ROOM' | 'WAITING' | 'VISITOR_NICK' | 'ROOMS_LIST' | 'PROFILE' | 'SHOP' | 'REFERRAL' | 'OFFLINE_SETTINGS' | 'HISTORY' | 'RANKING';
 
 export const Lobby: React.FC = () => {
   const { startGame, setRoom, roomId, roomCode, isHost, setCustomization, selectedThemes, setSelectedThemes } = useGameStore();
@@ -43,6 +43,8 @@ export const Lobby: React.FC = () => {
   const [baseTime, setBaseTime] = useState(2.2);
   const [accelerationIntensity, setAccelerationIntensity] = useState<'OFF' | 'SLOW' | 'NORMAL' | 'INSANE'>('NORMAL');
   const [history, setHistory] = useState<any[]>([]);
+  const [rankings, setRankings] = useState<any[]>([]);
+  const [rankingCategory, setRankingCategory] = useState<string | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date().getTime()), 1000);
@@ -520,6 +522,19 @@ export const Lobby: React.FC = () => {
     }
   };
 
+  const fetchRankings = async (category: string | null = null) => {
+    setLoading(true);
+    setRankingCategory(category);
+    try {
+      const data = await (getLeaderboard as any)({ data: category });
+      setRankings(data || []);
+    } catch (err) {
+      toast.error('Erro ao carregar rankings');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="flex flex-col items-center justify-between h-full p-8 pb-12 overflow-y-auto">
       <div className="mt-4 text-center">
@@ -628,6 +643,15 @@ export const Lobby: React.FC = () => {
                   <div className="absolute top-2 right-2 flex items-center gap-1 bg-cyan-500/20 px-2 py-0.5 rounded-full">
                     <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></div>
                     <span className="text-[8px] tracking-widest">{onlineCount}</span>
+                    <button 
+                      onClick={() => {
+                        setView('RANKING');
+                        fetchRankings();
+                      }}
+                      className="flex-1 py-4 bg-zinc-900 border border-zinc-800 text-cyan-400 font-black text-xs rounded-2xl flex items-center justify-center gap-2 hover:bg-zinc-800 transition-all uppercase tracking-widest"
+                    >
+                      <Trophy size={18} /> Ranking
+                    </button>
                   </div>
                   <Globe size={32} className="mb-2 group-hover:scale-110 transition-transform" />
                   <span className="text-sm uppercase">Online</span>
@@ -1385,6 +1409,94 @@ export const Lobby: React.FC = () => {
                         <span className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest">
                           Sua: {item.user_answer ? 'SIM' : 'NÃO'} • Correta: {item.is_correct ? 'SIM' : 'NÃO'}
                         </span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </motion.div>
+          )}
+
+          {view === 'RANKING' && (
+            <motion.div 
+              key="ranking"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.05 }}
+              className="space-y-6"
+            >
+              <button onClick={() => setView('MAIN')} className="flex items-center gap-1 text-zinc-500 font-bold text-[10px] uppercase tracking-[0.2em] mb-2 hover:text-white transition-colors">
+                <ChevronLeft size={14} /> Voltar ao Menu
+              </button>
+
+              <div className="text-center space-y-1">
+                <h3 className="text-xl font-black italic uppercase tracking-widest text-white">Elite Neural</h3>
+                <p className="text-zinc-500 text-[10px] uppercase font-bold tracking-widest">Global Hall of Fame</p>
+              </div>
+
+              <div className="flex overflow-x-auto gap-2 pb-2 no-scrollbar">
+                <button 
+                  onClick={() => fetchRankings(null)}
+                  className={`flex-shrink-0 px-4 py-2 rounded-xl text-[8px] font-black uppercase tracking-widest border transition-all ${rankingCategory === null ? 'bg-white text-black border-white' : 'bg-black/20 border-white/5 text-zinc-500'}`}
+                >
+                  Geral
+                </button>
+                {THEMES.map(theme => (
+                  <button 
+                    key={theme.id}
+                    onClick={() => fetchRankings(theme.id)}
+                    className={`flex-shrink-0 px-4 py-2 rounded-xl text-[8px] font-black uppercase tracking-widest border transition-all ${rankingCategory === theme.id ? 'bg-cyan-500 text-white border-cyan-400' : 'bg-black/20 border-white/5 text-zinc-500'}`}
+                  >
+                    {theme.name}
+                  </button>
+                ))}
+              </div>
+
+              <div className="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar pr-1">
+                {loading ? (
+                  <div className="flex flex-col items-center justify-center py-20 gap-4">
+                    <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                  </div>
+                ) : rankings.length === 0 ? (
+                  <div className="text-center py-20 bg-zinc-900/30 border border-zinc-800/50 rounded-3xl">
+                    <p className="text-zinc-600 text-[10px] font-black uppercase tracking-widest">Nenhum registro nesta categoria</p>
+                  </div>
+                ) : (
+                  rankings.map((entry, i) => (
+                    <div 
+                      key={entry.user_id} 
+                      className={`flex items-center justify-between p-4 rounded-2xl border backdrop-blur-sm ${
+                        entry.user_id === session?.user?.id 
+                          ? 'bg-cyan-500/10 border-cyan-500/30' 
+                          : 'bg-zinc-900/40 border-white/5'
+                      }`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs ${
+                          i === 0 ? 'bg-yellow-500 text-black shadow-[0_0_15px_rgba(234,179,8,0.5)]' :
+                          i === 1 ? 'bg-gray-300 text-black' :
+                          i === 2 ? 'bg-amber-600 text-black' :
+                          'bg-zinc-800 text-zinc-500'
+                        }`}>
+                          {i + 1}
+                        </div>
+                        <div className="flex flex-col">
+                          <span className={`text-sm font-black uppercase tracking-tight ${entry.user_id === session?.user?.id ? 'text-cyan-400' : 'text-white'}`}>
+                            {entry.profiles?.nickname || 'Anônimo'}
+                          </span>
+                          <span className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest">
+                            {rankingCategory ? 'Recorde Temático' : 'Recorde Geral'}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="text-right">
+                        <span className={`text-xl font-black italic tabular-nums ${
+                          i === 0 ? 'text-yellow-500' : 'text-white'
+                        }`}>
+                          {rankingCategory ? entry[`score_${rankingCategory.toLowerCase()}`] : entry.score}
+                        </span>
+                        <div className="text-[8px] font-black text-zinc-500 uppercase tracking-tighter">Pontos</div>
                       </div>
                     </div>
                   ))

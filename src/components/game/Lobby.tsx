@@ -244,7 +244,7 @@ export const Lobby: React.FC = () => {
         setSelectedThemes(data.selected_themes);
       }
       if (data.base_time) setBaseTime(Number(data.base_time));
-      if (data.acceleration_enabled !== undefined) setAccelerationEnabled(data.acceleration_enabled);
+      if (data.acceleration_enabled !== null) setAccelerationEnabled(data.acceleration_enabled);
     }
   };
 

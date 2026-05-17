@@ -276,6 +276,14 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                           « {item.item_data.text} »
                         </div>
                       )}
+                      {item.category === 'avatar' && (
+                        <div className="flex justify-center py-2 bg-black/40 rounded-xl border border-white/5">
+                          {item.item_data.icon === 'Zap' && <Zap size={24} className="text-cyan-400" />}
+                          {item.item_data.icon === 'Crown' && <Crown size={24} className="text-yellow-500" />}
+                          {item.item_data.icon === 'ShieldCheck' && <ShieldCheck size={24} className="text-emerald-500" />}
+                          {item.item_data.icon === 'Infinity' && <InfinityIcon size={24} className="text-purple-500" />}
+                        </div>
+                      )}
                       {item.category === 'power_up' && (
                         <div className="flex items-center gap-2 text-zinc-400">
                           <div className={`p-2 rounded-lg bg-black/40 border border-white/5`}>

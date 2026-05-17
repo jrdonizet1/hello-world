@@ -34,7 +34,10 @@ export const GameArena: React.FC = () => {
     duelSeed,
     setDuelOpponent,
     activePowers,
-    usePower
+    usePower,
+    powerSlowCount,
+    powerShieldCount,
+    hasShield
   } = useGameStore();
   
   const [lastCommandTime, setLastCommandTime] = useState(Date.now());

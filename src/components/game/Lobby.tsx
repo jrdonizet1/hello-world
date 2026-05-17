@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/useGameStore';
-import { Trophy, Users, Zap, LogIn, User, LogOut } from 'lucide-react';
+import { Trophy, Users, Zap, LogIn, User, LogOut, Plus, LogIn as JoinIcon, ChevronLeft } from 'lucide-react';
 import { lovable } from '@/integrations/lovable';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { updateProfile } from '@/lib/server-functions';
+import { updateProfile, createRoom, joinRoom, startRoomGame } from '@/lib/server-functions';
 
 export const Lobby: React.FC = () => {
-  const { startGame } = useGameStore();
+  const { startGame, setRoom, roomId, roomCode, isHost } = useGameStore();
   const [session, setSession] = useState<any>(null);
   const [nickname, setNickname] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const [view, setView] = useState<'MAIN' | 'MULTIPLAYER' | 'WAITING'>('MAIN');
+  const [joinCode, setJoinCode] = useState('');
+  const [players, setPlayers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -26,6 +30,55 @@ export const Lobby: React.FC = () => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Real-time subscriptions for Multiplayer
+  useEffect(() => {
+    if (!roomId) return;
+
+    // Fetch initial players
+    fetchPlayers();
+
+    // Subscribe to room changes (for game start)
+    const roomChannel = supabase
+      .channel(`room-${roomId}`)
+      .on('postgres_changes', { 
+        event: 'UPDATE', 
+        schema: 'public', 
+        table: 'rooms',
+        filter: `id=eq.${roomId}` 
+      }, (payload) => {
+        if (payload.new.status === 'STARTING') {
+          startGame();
+        }
+      })
+      .subscribe();
+
+    // Subscribe to profile changes (for player list)
+    const profilesChannel = supabase
+      .channel(`profiles-${roomId}`)
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'profiles',
+        filter: `room_id=eq.${roomId}` 
+      }, () => {
+        fetchPlayers();
+      })
+      .subscribe();
+
+    return () => {
+      roomChannel.unsubscribe();
+      profilesChannel.unsubscribe();
+    };
+  }, [roomId]);
+
+  const fetchPlayers = async () => {
+    const { data } = await supabase
+      .from('profiles')
+      .select('nickname')
+      .eq('room_id', roomId);
+    if (data) setPlayers(data);
+  };
 
   const fetchProfile = async (userId: string) => {
     const { data } = await supabase.from('profiles').select('nickname').eq('id', userId).single();
@@ -48,6 +101,49 @@ export const Lobby: React.FC = () => {
     }
   };
 
+  const handleCreateRoom = async () => {
+    if (!session) return toast.error('Faça login para criar sala');
+    setLoading(true);
+    try {
+      const room = await createRoom();
+      setRoom(room.id, room.code, true);
+      setView('WAITING');
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleJoinRoom = async () => {
+    if (!session) return toast.error('Faça login para entrar');
+    if (!joinCode) return toast.error('Digite o código');
+    setLoading(true);
+    try {
+      const room = await joinRoom({ data: joinCode });
+      setRoom(room.id, room.code, false);
+      setView('WAITING');
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStartGame = async () => {
+    try {
+      await startRoomGame({ data: roomId });
+    } catch (err: any) {
+      toast.error(err.message);
+    }
+  };
+
+  const handleLeaveRoom = async () => {
+    await (updateProfile as any)({ data: { roomId: null } });
+    setRoom(null, null, false);
+    setView('MULTIPLAYER');
+  };
+
   return (
     <div className="flex flex-col items-center justify-between h-full p-8 pb-12 overflow-y-auto">
       <div className="mt-8 text-center">
@@ -58,91 +154,163 @@ export const Lobby: React.FC = () => {
         >
           BRAINLAG
         </motion.h1>
-        <p className="text-cyan-400 font-mono text-sm tracking-[0.3em] mt-2">MULTIPLAYER NEURAL CHAOS</p>
+        <p className="text-cyan-400 font-mono text-sm tracking-[0.3em] mt-2 uppercase">Neural Chaos</p>
       </div>
 
       <div className="w-full max-w-sm space-y-6">
-        {/* Profile / Auth Section */}
-        <div className="bg-white/5 border border-white/10 p-5 rounded-3xl backdrop-blur-xl">
-          {!session ? (
-            <div className="flex flex-col items-center gap-3">
-              <p className="text-[10px] font-black uppercase text-white/40 tracking-widest text-center">
-                CONECTE PARA RANKING GLOBAL
-              </p>
-              <button 
-                onClick={handleLogin}
-                className="w-full py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-2xl flex items-center justify-center gap-2 font-black text-xs transition-all"
-              >
-                <Zap size={16} className="text-cyan-400" /> ENTRAR COM GOOGLE
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center border border-cyan-500/30">
-                    <User size={16} className="text-cyan-400" />
+        <AnimatePresence mode="wait">
+          {view === 'MAIN' && (
+            <motion.div 
+              key="main"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className="space-y-4"
+            >
+              {/* Profile Card */}
+              <div className="bg-white/5 border border-white/10 p-5 rounded-3xl backdrop-blur-xl">
+                {!session ? (
+                  <button 
+                    onClick={handleLogin}
+                    className="w-full py-4 bg-white/10 hover:bg-white/20 border border-white/20 rounded-2xl flex items-center justify-center gap-2 font-black text-xs transition-all"
+                  >
+                    <Zap size={16} className="text-cyan-400" /> ENTRAR COM GOOGLE
+                  </button>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center border border-cyan-500/30">
+                        <User size={20} className="text-cyan-400" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[8px] font-black text-white/40 uppercase">Status Online</span>
+                        <span className="text-sm font-black truncate max-w-[120px]">
+                          {nickname || 'Cérebro Anônimo'}
+                        </span>
+                      </div>
+                    </div>
+                    <button onClick={() => supabase.auth.signOut()} className="text-white/20 hover:text-red-500"><LogOut size={18} /></button>
                   </div>
-                  <div className="flex flex-col">
-                    <span className="text-[8px] font-black text-white/40 uppercase">Agente Neural</span>
-                    <span className="text-sm font-black truncate max-w-[120px]">
-                      {nickname || 'Cérebro Anônimo'}
-                    </span>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => supabase.auth.signOut()}
-                  className="text-white/40 hover:text-red-500 transition-colors"
-                >
-                  <LogOut size={16} />
-                </button>
+                )}
               </div>
 
-              {isEditing ? (
-                <div className="flex gap-2">
-                  <input 
-                    value={nickname}
-                    onChange={(e) => setNickname(e.target.value)}
-                    placeholder="Seu Nickname..."
-                    className="flex-1 bg-black/40 border border-white/20 rounded-xl px-3 py-2 text-xs font-bold outline-none focus:border-cyan-500/50"
-                  />
-                  <button 
-                    onClick={handleSaveNickname}
-                    className="px-4 bg-cyan-500 text-black rounded-xl text-[10px] font-black uppercase"
-                  >
-                    SALVAR
-                  </button>
-                </div>
-              ) : (
+              <div className="grid grid-cols-1 gap-3">
                 <button 
-                  onClick={() => setIsEditing(true)}
-                  className="w-full py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black text-white/40 uppercase hover:bg-white/10 transition-all"
+                  onClick={startGame}
+                  className="w-full py-6 bg-white text-black font-black text-2xl rounded-2xl shadow-[0_0_20px_rgba(255,255,255,0.3)]"
                 >
-                  EDITAR PERFIL
+                  SOLO RUN
                 </button>
-              )}
-            </div>
+                <button 
+                  onClick={() => setView('MULTIPLAYER')}
+                  className="w-full py-4 bg-cyan-500/10 border-2 border-cyan-500/50 text-cyan-500 font-black text-lg rounded-2xl flex items-center justify-center gap-2"
+                >
+                  <Users size={20} /> ARENA MULTIPLAYER
+                </button>
+              </div>
+            </motion.div>
           )}
-        </div>
 
-        <motion.button
-          whileTap={{ scale: 0.95 }}
-          onClick={startGame}
-          className="w-full py-6 bg-white text-black font-black text-2xl rounded-2xl shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_40px_rgba(255,255,255,0.5)] transition-shadow"
-        >
-          INICIAR CAOS
-        </motion.button>
-        
-        <p className="text-center text-gray-500 text-[10px] font-bold uppercase tracking-widest leading-relaxed">
-          A COR BATE COM A PALAVRA? <br />
-          DECIDA RÁPIDO: SIM OU NÃO.
-        </p>
+          {view === 'MULTIPLAYER' && (
+            <motion.div 
+              key="multi"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-4"
+            >
+              <button onClick={() => setView('MAIN')} className="flex items-center gap-1 text-white/40 font-bold text-xs uppercase tracking-widest mb-2">
+                <ChevronLeft size={16} /> Voltar
+              </button>
+
+              <div className="space-y-3">
+                <button 
+                  onClick={handleCreateRoom}
+                  disabled={loading}
+                  className="w-full py-5 bg-white/5 border-2 border-dashed border-white/20 rounded-2xl flex flex-col items-center justify-center gap-1 hover:bg-white/10 transition-all"
+                >
+                  <Plus className="text-cyan-400" />
+                  <span className="font-black text-xs uppercase">Criar Nova Sala</span>
+                </button>
+
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                    <JoinIcon size={18} className="text-white/20" />
+                  </div>
+                  <input 
+                    type="text" 
+                    placeholder="CÓDIGO DA SALA"
+                    value={joinCode}
+                    onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                    className="w-full bg-white/5 border-2 border-white/10 rounded-2xl py-5 px-12 font-black text-center tracking-[0.5em] outline-none focus:border-cyan-500/50"
+                  />
+                </div>
+                
+                <button 
+                  onClick={handleJoinRoom}
+                  disabled={loading}
+                  className="w-full py-4 bg-cyan-500 text-black font-black rounded-2xl shadow-[0_0_20px_rgba(6,182,212,0.3)]"
+                >
+                  ENTRAR NA ARENA
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {view === 'WAITING' && (
+            <motion.div 
+              key="waiting"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="space-y-6"
+            >
+              <div className="text-center">
+                <span className="text-[10px] font-black text-cyan-400 uppercase tracking-[0.3em]">Arena Conectada</span>
+                <h2 className="text-5xl font-black italic tracking-widest mt-1">{roomCode}</h2>
+                <p className="text-white/40 text-[10px] mt-2 font-bold uppercase">Compartilhe o código com seus amigos</p>
+              </div>
+
+              <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="text-xs font-black uppercase text-white/40 tracking-widest">Jogadores ({players.length})</span>
+                  <div className="flex gap-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-500/40"></div>
+                  </div>
+                </div>
+                <div className="space-y-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                  {players.map((p, i) => (
+                    <div key={i} className="flex items-center gap-2 text-sm font-bold bg-white/5 p-3 rounded-xl border border-white/5">
+                      <div className="w-2 h-2 rounded-full bg-cyan-500"></div>
+                      {p.nickname || 'Cérebro Conectando...'}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {isHost ? (
+                  <button 
+                    onClick={handleStartGame}
+                    className="w-full py-5 bg-white text-black font-black text-xl rounded-2xl shadow-[0_0_30px_rgba(255,255,255,0.4)]"
+                  >
+                    INICIAR PARTIDA
+                  </button>
+                ) : (
+                  <div className="w-full py-5 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center gap-3">
+                    <div className="w-4 h-4 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="font-black text-xs text-white/40 uppercase tracking-widest">Aguardando Host...</span>
+                  </div>
+                )}
+                <button onClick={handleLeaveRoom} className="w-full py-3 text-red-500/50 font-black text-[10px] uppercase tracking-widest">Sair da Sala</button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      <div className="flex gap-4">
-        <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center border border-white/10">
-          <Trophy size={20} className="text-yellow-400" />
-        </div>
+      <div className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
+        {view === 'MAIN' ? 'Ready to Sync' : 'Lobby Sincronizado'}
       </div>
     </div>
   );

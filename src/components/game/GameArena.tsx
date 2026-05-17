@@ -83,6 +83,7 @@ export const GameArena: React.FC = () => {
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0, opacity: 0 }}
           className="text-9xl font-black italic glitch-effect"
+          style={{ color: userSkin || '#06b6d4' }}
         >
           {countDown}
         </motion.span>

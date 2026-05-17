@@ -26,10 +26,12 @@ interface BrainLagState {
   isHost: boolean;
   userSkin: string | null;
   userTitle: string | null;
+  selectedThemes: string[];
   
   setGameState: (state: GameState) => void;
   setGameMode: (mode: GameMode) => void;
-  startGame: (mode?: GameMode) => void;
+  setSelectedThemes: (themes: string[]) => void;
+  startGame: (mode?: GameMode, themes?: string[]) => void;
   endGame: (reason: string) => void;
   updateScore: (points: number) => void;
   setCommand: (command: Command | null) => void;

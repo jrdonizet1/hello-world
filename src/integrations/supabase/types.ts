@@ -200,6 +200,8 @@ export type Database = {
           last_daily_reward: string | null
           level: number
           nickname: string | null
+          power_shield_count: number | null
+          power_slow_count: number | null
           referral_code: string | null
           referral_count: number | null
           referred_by_id: string | null
@@ -222,6 +224,8 @@ export type Database = {
           last_daily_reward?: string | null
           level?: number
           nickname?: string | null
+          power_shield_count?: number | null
+          power_slow_count?: number | null
           referral_code?: string | null
           referral_count?: number | null
           referred_by_id?: string | null
@@ -244,6 +248,8 @@ export type Database = {
           last_daily_reward?: string | null
           level?: number
           nickname?: string | null
+          power_shield_count?: number | null
+          power_slow_count?: number | null
           referral_code?: string | null
           referral_count?: number | null
           referred_by_id?: string | null
@@ -334,7 +340,9 @@ export type Database = {
           id: string
           item_data: Json
           name: string
+          preview_url: string | null
           price: number
+          rarity: string | null
         }
         Insert: {
           category: string
@@ -343,7 +351,9 @@ export type Database = {
           id?: string
           item_data?: Json
           name: string
+          preview_url?: string | null
           price?: number
+          rarity?: string | null
         }
         Update: {
           category?: string
@@ -352,7 +362,9 @@ export type Database = {
           id?: string
           item_data?: Json
           name?: string
+          preview_url?: string | null
           price?: number
+          rarity?: string | null
         }
         Relationships: []
       }
@@ -361,18 +373,21 @@ export type Database = {
           id: string
           item_id: string
           purchased_at: string | null
+          quantity: number | null
           user_id: string
         }
         Insert: {
           id?: string
           item_id: string
           purchased_at?: string | null
+          quantity?: number | null
           user_id: string
         }
         Update: {
           id?: string
           item_id?: string
           purchased_at?: string | null
+          quantity?: number | null
           user_id?: string
         }
         Relationships: [

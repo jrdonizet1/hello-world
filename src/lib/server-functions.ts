@@ -630,22 +630,26 @@ export const claimMissionReward = createServerFn({ method: "POST" })
 
     if (claimError) throw new Error(claimError.message);
 
-    // Adicionar moedas e XP ao perfil
+    // Adicionar moedas, XP e poderes ao perfil
     const { data: profile } = await supabaseAdmin
       .from("profiles")
-      .select("coins, xp")
+      .select("coins, xp, power_slow_count, power_shield_count")
       .eq("id", userId)
       .single();
 
     const missionData = userMission.missions as any;
     const newCoins = (profile?.coins || 0) + (missionData.reward_coins || 0);
     const newXp = (profile?.xp || 0) + (missionData.reward_xp || 0);
+    const newSlow = (profile?.power_slow_count || 0) + (missionData.reward_power_slow || 0);
+    const newShield = (profile?.power_shield_count || 0) + (missionData.reward_power_shield || 0);
 
     await supabaseAdmin
       .from("profiles")
       .update({ 
         coins: newCoins,
-        xp: newXp
+        xp: newXp,
+        power_slow_count: newSlow,
+        power_shield_count: newShield
       })
       .eq("id", userId);
 
@@ -653,6 +657,8 @@ export const claimMissionReward = createServerFn({ method: "POST" })
       success: true, 
       reward_coins: missionData.reward_coins,
       reward_xp: missionData.reward_xp,
+      reward_power_slow: missionData.reward_power_slow,
+      reward_power_shield: missionData.reward_power_shield,
       totalCoins: newCoins
     };
   });

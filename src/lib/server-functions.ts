@@ -703,7 +703,7 @@ export const getAdminStats = createServerFn({ method: "GET" })
       { count: visitorsCount }
     ] = await Promise.all([
       supabaseAdmin.from("profiles").select("id", { count: "exact", head: true }),
-      supabaseAdmin.from("rooms").select("id", { count: "exact", head: true }).eq('status', 'LOBBY'),
+      supabaseAdmin.from("rooms").select("id").eq('status', 'LOBBY').not('host_id', 'is', null),
       supabaseAdmin.from("profiles").select("coins"),
       supabaseAdmin.from("shop_items").select("id", { count: "exact", head: true }),
       // Contagem aproximada de visitantes (profiles sem email ou metadados de auth que indiquem Google)
@@ -715,7 +715,7 @@ export const getAdminStats = createServerFn({ method: "GET" })
 
     return {
       totalUsers: totalUsers || 0,
-      activeRooms: activeRooms || 0,
+      activeRooms: (activeRooms as any)?.length || 0,
       totalCoins: coinsSum,
       totalItems: totalItems || 0,
       visitorsCount: 0 // Será calculado melhor no front se necessário ou via RPC
@@ -810,7 +810,7 @@ export const getActiveRooms = createServerFn({ method: "GET" })
       .from("rooms")
       .select(`
         *,
-        profiles:profiles(count)
+        players:profiles(id, nickname, avatar_url)
       `)
       .order("created_at", { ascending: false });
 
@@ -831,7 +831,41 @@ export const closeRoom = createServerFn({ method: "POST" })
     await supabaseAdmin.from("profiles").update({ room_id: null, is_ready: false }).eq("room_id", roomId);
     // Deletar sala
     const { error } = await supabaseAdmin.from("rooms").delete().eq("id", roomId);
+    if (error) throw new Error(error.message);
+    return { success: true };
+  });
+
+
+export const getSystemSettings = createServerFn({ method: "GET" })
+  .handler(async () => {
+    const { data, error } = await supabaseAdmin
+      .from("system_settings")
+      .select("*");
+
+    if (error) throw new Error(error.message);
+    
+    const settings: any = {};
+    data.forEach(s => {
+      settings[s.key] = s.value;
+    });
+    return settings;
+  });
+
+export const updateSystemSettings = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async (args: any) => {
+    const { data, context } = args;
+    const { key, value } = data;
+    const { userId } = context;
+
+    const { data: profile } = await supabaseAdmin.from("profiles").select("is_admin").eq("id", userId).single();
+    if (!profile?.is_admin) throw new Error("Acesso negado");
+
+    const { error } = await supabaseAdmin
+      .from("system_settings")
+      .upsert({ key, value, updated_at: new Date().toISOString() });
 
     if (error) throw new Error(error.message);
     return { success: true };
   });
+

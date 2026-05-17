@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/useGameStore';
-import { Trophy, Users, Zap, LogIn, User, LogOut, Plus, LogIn as JoinIcon, ChevronLeft, ChevronRight, Copy, Check, Shield, ShieldOff, Lock, UserPlus, RefreshCw, ShoppingBag, Share2, Timer, Infinity, Monitor, Globe, History, XCircle, CheckCircle2, ZapOff, Target, Crown, ShieldCheck, Infinity as InfinityIcon, ShieldAlert } from 'lucide-react';
+import { Trophy, Users, Zap, LogIn, User, LogOut, Plus, LogIn as JoinIcon, ChevronLeft, ChevronRight, Copy, Check, Shield, ShieldOff, Lock, UserPlus, RefreshCw, ShoppingBag, Share2, Timer, Infinity, Monitor, Globe, History, XCircle, CheckCircle2, ZapOff, Target, Crown, ShieldCheck, Infinity as InfinityIcon, ShieldAlert, Bell } from 'lucide-react';
 import { lovable } from '@/integrations/lovable';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { updateProfile, createRoom, joinRoom, startRoomGame, claimDailyReward, leaveRoom, getProfile, redeemReferralCode, updateRoomSettings, getGameHistory, getLeaderboard } from '@/lib/server-functions';
+import { updateProfile, createRoom, joinRoom, startRoomGame, claimDailyReward, leaveRoom, getProfile, redeemReferralCode, updateRoomSettings, getGameHistory, getLeaderboard, getSystemSettings } from '@/lib/server-functions';
 import { Shop } from './Shop';
 import { Missions } from './Missions';
 import { UserIdentity } from './UserIdentity';
@@ -46,6 +46,8 @@ export const Lobby: React.FC = () => {
   const [rankings, setRankings] = useState<any[]>([]);
   const [rankingCategory, setRankingCategory] = useState<string | null>(null);
   const scrollRef = React.useRef<HTMLDivElement>(null);
+  const [systemSettings, setSystemSettings] = useState<any>(null);
+
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date().getTime()), 1000);
@@ -78,7 +80,15 @@ export const Lobby: React.FC = () => {
       setOnlineCount(count || 0);
     };
     fetchOnlineCount();
+    const fetchSystemSettings = async () => {
+      try {
+        const data = await (getSystemSettings as any)();
+        setSystemSettings(data);
+      } catch (err) {}
+    };
+    fetchSystemSettings();
     const interval = setInterval(fetchOnlineCount, 30000);
+
     return () => clearInterval(interval);
   }, []);
 
@@ -542,8 +552,39 @@ export const Lobby: React.FC = () => {
     }
   };
 
+  if (systemSettings?.maintenance_mode?.enabled && !profile?.is_admin) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full p-8 text-center space-y-8 bg-black overflow-hidden">
+        <div className="relative">
+          <div className="absolute inset-0 bg-red-500/20 blur-[100px] animate-pulse"></div>
+          <ShieldAlert size={120} className="text-red-500 relative animate-pulse" />
+        </div>
+        <div className="space-y-4 relative">
+          <h2 className="text-4xl font-black italic uppercase tracking-tighter text-white">Neural Maintenance</h2>
+          <p className="text-zinc-500 font-mono text-sm leading-relaxed max-w-md mx-auto">
+            {systemSettings.maintenance_mode.message || "A arena está passando por uma reconfiguração sináptica. Volte em breve."}
+          </p>
+        </div>
+        <div className="pt-8 border-t border-zinc-900 w-full max-w-xs">
+          <p className="text-[10px] font-black text-zinc-700 uppercase tracking-[0.3em]">Cortex Systems v2.0</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col items-center justify-between h-full p-8 pb-12 overflow-y-auto">
+    <div className="flex flex-col items-center justify-between h-full p-8 pb-12 overflow-y-auto relative">
+      {systemSettings?.global_announcement?.active && (
+        <motion.div 
+          initial={{ y: -50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="absolute top-0 left-0 right-0 z-50 py-2 px-6 bg-cyan-500 flex items-center justify-center gap-3"
+        >
+          <Bell size={14} className="text-black" />
+          <p className="text-[10px] font-black uppercase tracking-widest text-black text-center">{systemSettings.global_announcement.text}</p>
+        </motion.div>
+      )}
+
       <div className="mt-4 text-center">
         <motion.h1 
           initial={{ y: -20 }}

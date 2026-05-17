@@ -4,24 +4,25 @@ import {
   Shield, Users, ShoppingBag, BarChart3, ChevronLeft, 
   Settings, Trash2, Edit3, Plus, Search, Coins, Zap, Star,
   UserCheck, UserMinus, Monitor, Layout, Sparkles, Type, Palette,
-  XCircle, Play, Timer, Lock, Globe
+  XCircle, Play, Timer, Lock, Globe, AlertTriangle, Bell, Save
 } from 'lucide-react';
 import { 
   getAdminStats, getAllUsers, updateUserCoins, 
   getShopItems, deleteShopItem, upsertShopItem,
-  getActiveRooms, closeRoom
+  getActiveRooms, closeRoom, getSystemSettings, updateSystemSettings
 } from '@/lib/server-functions';
 import { toast } from 'sonner';
 import { UserAvatar } from './UserAvatar';
 import { UserIdentity } from './UserIdentity';
 
 export const AdminPanel: React.FC<{ onBack: () => void }> = ({ onBack }) => {
-  const [activeTab, setActiveTab] = useState<'STATS' | 'USERS' | 'SHOP' | 'ROOMS'>('STATS');
+  const [activeTab, setActiveTab] = useState<'STATS' | 'USERS' | 'SHOP' | 'ROOMS' | 'SYSTEM'>('STATS');
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<any>(null);
   const [users, setUsers] = useState<any[]>([]);
   const [shopItems, setShopItems] = useState<any[]>([]);
   const [rooms, setRooms] = useState<any[]>([]);
+  const [systemSettings, setSystemSettings] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [editingItem, setEditingItem] = useState<any>(null);
   const [shopCategory, setShopCategory] = useState<string>('all');
@@ -53,11 +54,20 @@ export const AdminPanel: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       toast.error(err.message);
     }
   };
-
   const loadRooms = async () => {
     try {
       const data = await (getActiveRooms as any)();
       setRooms(data || []);
+    } catch (err: any) {
+      toast.error(err.message);
+    }
+  };
+
+
+  const loadSystem = async () => {
+    try {
+      const data = await (getSystemSettings as any)();
+      setSystemSettings(data);
     } catch (err: any) {
       toast.error(err.message);
     }
@@ -70,6 +80,7 @@ export const AdminPanel: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       if (activeTab === 'USERS') await loadUsers();
       if (activeTab === 'SHOP') await loadShop();
       if (activeTab === 'ROOMS') await loadRooms();
+      if (activeTab === 'SYSTEM') await loadSystem();
       setLoading(false);
     };
     init();
@@ -165,7 +176,8 @@ export const AdminPanel: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           { id: 'STATS', label: 'Métricas', icon: BarChart3 },
           { id: 'USERS', label: 'Usuários', icon: Users },
           { id: 'SHOP', label: 'Loja', icon: ShoppingBag },
-          { id: 'ROOMS', label: 'Salas', icon: Globe }
+          { id: 'ROOMS', label: 'Salas', icon: Globe },
+          { id: 'SYSTEM', label: 'Sistema', icon: Settings }
         ].map((tab) => (
           <button
             key={tab.id}
@@ -252,16 +264,25 @@ export const AdminPanel: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                 </div>
 
                 <div className="space-y-3">
-                  {filteredUsers.map((user) => (
-                    <div key={user.id} className="bg-zinc-900/40 border border-zinc-800 p-4 rounded-2xl flex items-center justify-between hover:bg-zinc-900/60 transition-colors">
+                  {filteredUsers.length > 0 ? filteredUsers.map((user) => (
+                    <div key={user.id} className="bg-zinc-900/40 border border-zinc-800 p-4 rounded-2xl flex items-center justify-between hover:bg-zinc-900/60 transition-colors group">
                       <div className="flex items-center gap-4">
                         <UserAvatar url={user.avatar_url} level={user.level} size="sm" frame={user.selected_frame} />
                         <div>
-                          <p className="font-black uppercase tracking-tight text-white flex items-center gap-2">
-                            {user.nickname || 'Anônimo'}
-                            {user.is_admin && <Shield size={12} className="text-red-500" />}
-                          </p>
-                          <p className="text-[8px] font-mono text-zinc-600 tracking-tighter">{user.id}</p>
+                          <div className="flex items-center gap-2">
+                            <UserIdentity 
+                              name={user.nickname || 'Anônimo'} 
+                              skin={user.selected_skin}
+                              title={user.selected_title}
+                              size="sm"
+                              showTitle={false}
+                            />
+                            {user.is_admin && <Shield size={12} className="text-red-500 fill-red-500/20" />}
+                            {(!user.nickname || user.nickname.startsWith('GUEST_')) && (
+                              <span className="text-[7px] px-1.5 py-0.5 bg-zinc-800 text-zinc-500 rounded uppercase font-black tracking-widest">Visitante</span>
+                            )}
+                          </div>
+                          <p className="text-[8px] font-mono text-zinc-600 tracking-tighter mt-0.5">{user.id}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-6">
@@ -271,22 +292,26 @@ export const AdminPanel: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                             <span className="text-yellow-500 font-black">{user.coins || 0}</span>
                             <button 
                               onClick={() => handleUpdateCoins(user.id, user.coins || 0)}
-                              className="p-1.5 hover:bg-yellow-500/10 rounded-lg text-yellow-500 transition-colors"
+                              className="p-1.5 hover:bg-yellow-500/10 rounded-lg text-yellow-500 transition-colors opacity-0 group-hover:opacity-100"
                             >
                               <Edit3 size={14} />
                             </button>
                           </div>
                         </div>
                         <div className="text-right hidden sm:block">
-                          <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Experiência</p>
-                          <p className="text-white font-black">{user.xp || 0} XP</p>
+                          <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Nível</p>
+                          <p className="text-white font-black">{user.level || 1} <span className="text-[8px] text-zinc-500 font-normal">({user.xp || 0} XP)</span></p>
                         </div>
-                        <button className="p-2 hover:bg-red-500/10 rounded-xl text-zinc-600 hover:text-red-500 transition-colors">
+                        <button className="p-2 hover:bg-red-500/10 rounded-xl text-zinc-600 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
                           <Trash2 size={18} />
                         </button>
                       </div>
                     </div>
-                  ))}
+                  )) : (
+                    <div className="py-20 text-center border-2 border-dashed border-zinc-800 rounded-3xl">
+                       <p className="text-zinc-600 font-black uppercase tracking-widest text-xs">Nenhum usuário encontrado</p>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -357,14 +382,16 @@ export const AdminPanel: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                       <div className="flex flex-col items-center gap-4 mb-6 p-4 bg-black/40 rounded-2xl border border-white/5">
                         {item.category === 'avatar' && <UserAvatar url={item.item_data.url} size="lg" showLevel={false} />}
                         {item.category === 'frame' && <UserAvatar url={null} size="lg" frame={item.item_data} showLevel={false} />}
-                        {item.category === 'title' && <UserIdentity name="Admin" title={item.item_data.text} showTitle={true} />}
+                        {item.category === 'title' && <UserIdentity name="User" title={item.item_data.text} showTitle={true} />}
                         {item.category === 'skin' && (
-                          <div className="w-12 h-12 rounded-full border-2 border-white/20 flex items-center justify-center" style={{ backgroundColor: item.item_data.color === 'rainbow' ? 'transparent' : item.item_data.color }}>
-                            {item.item_data.color === 'rainbow' && <div className="w-full h-full rounded-full bg-gradient-to-r from-red-500 via-green-500 to-blue-500 animate-pulse" />}
-                          </div>
+                          <UserIdentity name="User" skin={item.item_data} title="Skin Test" size="sm" />
+                        )}
+                        {item.category === 'font' && (
+                          <UserIdentity name="User" font={item.item_data} title="Font Test" size="sm" />
                         )}
                         {item.category === 'power_up' && <div className="p-4 bg-cyan-500/10 rounded-full text-cyan-400"><Zap size={32} /></div>}
-                        {(item.category === 'font' || item.category === 'arena_effect') && <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600 italic">Visual Effect</p>}
+                        {item.category === 'arena_effect' && <p className="text-[10px] font-black uppercase tracking-widest text-cyan-500 italic flex items-center gap-2"><Sparkles size={14} /> Arena FX</p>}
+
                       </div>
 
                       <h4 className="font-black italic uppercase text-lg mb-1">{item.name}</h4>
@@ -423,17 +450,31 @@ export const AdminPanel: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                       <div className="grid grid-cols-2 gap-3 pt-4 border-t border-zinc-800">
                         <div className="text-center p-2 bg-black/40 rounded-xl">
                           <p className="text-[8px] font-black text-zinc-600 uppercase mb-1">Jogadores</p>
-                          <p className="text-sm font-black">{room.profiles?.[0]?.count || 0} / {room.max_players}</p>
+                          <p className="text-sm font-black">{room.players?.length || 0} / {room.max_players}</p>
                         </div>
                         <div className="text-center p-2 bg-black/40 rounded-xl">
-                          <p className="text-[8px] font-black text-zinc-600 uppercase mb-1">Tempo Base</p>
-                          <p className="text-sm font-black italic">{room.base_time}s</p>
+                          <p className="text-[8px] font-black text-zinc-600 uppercase mb-1">Privacidade</p>
+                          <p className="text-[10px] font-black uppercase text-zinc-400">{room.is_private ? 'Privada' : 'Pública'}</p>
                         </div>
                       </div>
 
-                      <div className="flex flex-wrap gap-1">
+                      {room.players && room.players.length > 0 && (
+                        <div className="pt-4 space-y-2">
+                          <p className="text-[8px] font-black text-zinc-600 uppercase">Em Campo:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {room.players.map((p: any) => (
+                              <div key={p.id} className="flex items-center gap-1.5 bg-zinc-800/50 px-2 py-1 rounded-lg">
+                                <UserAvatar url={p.avatar_url} size="sm" showLevel={false} className="scale-75 -ml-1" />
+                                <span className="text-[9px] font-bold text-zinc-300 truncate max-w-[80px]">{p.nickname || 'Anônimo'}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex flex-wrap gap-1 pt-2">
                         {room.selected_themes?.map((t: string) => (
-                          <span key={t} className="text-[7px] font-black px-2 py-0.5 bg-zinc-800 rounded-full text-zinc-500 uppercase tracking-widest">{t}</span>
+                          <span key={t} className="text-[7px] font-black px-2 py-0.5 bg-cyan-500/10 rounded-full text-cyan-500/50 uppercase tracking-widest">{t}</span>
                         ))}
                       </div>
                     </div>
@@ -450,6 +491,115 @@ export const AdminPanel: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           </AnimatePresence>
         )}
       </div>
+            {activeTab === 'SYSTEM' && systemSettings && (
+              <motion.div 
+                key="system"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="grid grid-cols-1 md:grid-cols-2 gap-8"
+              >
+                {/* Maintenance Mode */}
+                <div className="bg-zinc-900/40 border border-zinc-800 p-8 rounded-[40px] space-y-6">
+                  <div className="flex items-center gap-4 mb-2">
+                    <div className="p-3 bg-red-500/10 rounded-2xl text-red-500">
+                      <AlertTriangle size={24} />
+                    </div>
+                    <div>
+                      <h4 className="text-xl font-black italic uppercase">Modo de Manutenção</h4>
+                      <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Travar entrada na arena</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-black/40 rounded-2xl border border-zinc-800">
+                    <span className="text-xs font-black uppercase tracking-widest">Status da Arena</span>
+                    <button 
+                      onClick={async () => {
+                        const newVal = !systemSettings.maintenance_mode.enabled;
+                        await (updateSystemSettings as any)({ data: { key: 'maintenance_mode', value: { ...systemSettings.maintenance_mode, enabled: newVal } } });
+                        loadSystem();
+                        toast.success(newVal ? 'Modo manutenção ativado' : 'Arena aberta novamente');
+                      }}
+                      className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                        systemSettings.maintenance_mode.enabled ? 'bg-red-500 text-white shadow-[0_0_20px_rgba(239,68,68,0.4)]' : 'bg-green-500 text-black'
+                      }`}
+                    >
+                      {systemSettings.maintenance_mode.enabled ? 'ATIVADO' : 'DESATIVADO'}
+                    </button>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-zinc-500 uppercase">Mensagem de Bloqueio</label>
+                    <textarea 
+                      className="w-full bg-black border border-zinc-800 rounded-2xl p-4 text-xs font-bold outline-none focus:border-red-500/30 min-h-[100px]"
+                      value={systemSettings.maintenance_mode.message}
+                      onChange={(e) => setSystemSettings({
+                        ...systemSettings, 
+                        maintenance_mode: { ...systemSettings.maintenance_mode, message: e.target.value }
+                      })}
+                    />
+                    <button 
+                      onClick={async () => {
+                        await (updateSystemSettings as any)({ data: { key: 'maintenance_mode', value: systemSettings.maintenance_mode } });
+                        toast.success('Mensagem atualizada');
+                      }}
+                      className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+                    >
+                      Salvar Mensagem
+                    </button>
+                  </div>
+                </div>
+
+                {/* Global Announcement */}
+                <div className="bg-zinc-900/40 border border-zinc-800 p-8 rounded-[40px] space-y-6">
+                  <div className="flex items-center gap-4 mb-2">
+                    <div className="p-3 bg-cyan-500/10 rounded-2xl text-cyan-500">
+                      <Bell size={24} />
+                    </div>
+                    <div>
+                      <h4 className="text-xl font-black italic uppercase">Comunicado Neural</h4>
+                      <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Mensagem global para todos</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-black/40 rounded-2xl border border-zinc-800">
+                    <span className="text-xs font-black uppercase tracking-widest">Exibir Comunicado</span>
+                    <button 
+                      onClick={async () => {
+                        const newVal = !systemSettings.global_announcement.active;
+                        await (updateSystemSettings as any)({ data: { key: 'global_announcement', value: { ...systemSettings.global_announcement, active: newVal } } });
+                        loadSystem();
+                      }}
+                      className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                        systemSettings.global_announcement.active ? 'bg-cyan-500 text-black shadow-[0_0_20px_rgba(6,182,212,0.4)]' : 'bg-zinc-800 text-zinc-500'
+                      }`}
+                    >
+                      {systemSettings.global_announcement.active ? 'ATIVO' : 'OCULTO'}
+                    </button>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-zinc-500 uppercase">Texto do Comunicado</label>
+                    <textarea 
+                      className="w-full bg-black border border-zinc-800 rounded-2xl p-4 text-xs font-bold outline-none focus:border-cyan-500/30 min-h-[100px]"
+                      value={systemSettings.global_announcement.text}
+                      onChange={(e) => setSystemSettings({
+                        ...systemSettings, 
+                        global_announcement: { ...systemSettings.global_announcement, text: e.target.value }
+                      })}
+                    />
+                    <button 
+                      onClick={async () => {
+                        await (updateSystemSettings as any)({ data: { key: 'global_announcement', value: systemSettings.global_announcement } });
+                        toast.success('Comunicado atualizado');
+                      }}
+                      className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+                    >
+                      <Save size={14} /> Atualizar Comunicado
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
 
       {/* Item Editor Modal (mesmo de antes mas com preview dinâmico) */}
       <AnimatePresence>
@@ -553,14 +703,26 @@ export const AdminPanel: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               </div>
 
               {/* Live Preview no Editor */}
-              <div className="w-full md:w-48 bg-black/40 rounded-3xl border border-white/5 p-6 flex flex-col items-center justify-center gap-4">
-                <p className="text-[8px] font-black text-zinc-500 uppercase tracking-[0.2em] text-center">Live Preview</p>
-                <div className="flex-1 flex items-center justify-center">
-                   {editingItem.category === 'avatar' && <UserAvatar url={editingItem.item_data?.url} size="lg" showLevel={false} />}
-                   {editingItem.category === 'frame' && <UserAvatar url={null} size="lg" frame={editingItem.item_data} showLevel={false} />}
-                   {editingItem.category === 'title' && <UserIdentity name="Preview" title={editingItem.item_data?.text} showTitle={true} />}
-                   {editingItem.category === 'skin' && <div className="w-16 h-16 rounded-full" style={{ backgroundColor: editingItem.item_data?.color || '#333' }} />}
-                   {editingItem.category === 'power_up' && <Zap size={48} className="text-cyan-400" />}
+              <div className="w-full md:w-56 bg-black/40 rounded-3xl border border-white/5 p-6 flex flex-col items-center justify-center gap-6">
+                <p className="text-[8px] font-black text-zinc-500 uppercase tracking-[0.2em] text-center">Neural Preview</p>
+                <div className="flex-1 flex flex-col items-center justify-center gap-4">
+                   <div className="relative">
+                     <UserAvatar 
+                       url={editingItem.category === 'avatar' ? editingItem.item_data?.url : null} 
+                       size="xl" 
+                       showLevel={false} 
+                       frame={editingItem.category === 'frame' ? editingItem.item_data : null}
+                     />
+                   </div>
+                   
+                   <UserIdentity 
+                     name="Neural-X" 
+                     skin={editingItem.category === 'skin' ? editingItem.item_data : null}
+                     title={editingItem.category === 'title' ? editingItem.item_data?.text : 'Explorer'}
+                     font={editingItem.category === 'font' ? editingItem.item_data : null}
+                     size="md"
+                     showTitle={true}
+                   />
                 </div>
                 <div className="w-full pt-4 border-t border-white/5">
                   <p className="text-[10px] font-black text-white text-center uppercase tracking-tight">{editingItem.name || 'Nome do Item'}</p>

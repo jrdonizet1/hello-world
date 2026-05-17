@@ -25,9 +25,15 @@ export const UserIdentity: React.FC<UserIdentityProps> = ({
   size = 'md',
   showTitle = true
 }) => {
+  // Handle skin as object if it comes from shop JSON
+  const skinData = typeof skin === 'string' ? { color: skin } : (skin || {});
+  const skinColor = (skinData as any).color;
+  const skinClass = (skinData as any).cssClass;
+
   const isCycle = effect?.type === 'cycle';
   const isGlow = effect?.type === 'glow';
-  const isRainbowSkin = skin === 'rainbow';
+  const isRainbowSkin = skinColor === 'rainbow' || skin === 'rainbow';
+
 
   const fontStyles = font ? {
     fontFamily: font.fontFamily,
@@ -62,13 +68,13 @@ export const UserIdentity: React.FC<UserIdentityProps> = ({
       )}
       <div className="flex flex-col">
         <motion.span 
-          className={`font-black italic uppercase tracking-tight ${nameSizeClasses[size]}`}
+          className={`font-black italic uppercase tracking-tight ${nameSizeClasses[size]} ${skinClass || ''} ${skinColor === 'holographic' ? 'holographic-text' : ''}`}
           animate={isCycle ? {
             color: ['#ff0000', '#00ff00', '#0000ff', '#ff00ff', '#ff0000'],
           } : isRainbowSkin ? {
             color: ['#06b6d4', '#ec4899', '#eab308', '#22c55e', '#06b6d4'],
           } : {
-            color: skin || '#ffffff',
+            color: (skinColor && skinColor !== 'holographic') ? skinColor : '#ffffff',
           }}
           transition={(isCycle || isRainbowSkin) ? { duration: 3, repeat: Infinity, ease: "linear" } : {}}
           style={{

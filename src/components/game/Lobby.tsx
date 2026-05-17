@@ -756,7 +756,14 @@ export const Lobby: React.FC = () => {
                   <div className="grid grid-cols-2 gap-2">
                     <button 
                       onClick={() => {
-                        setCustomization(profile?.selected_skin, profile?.selected_title, profile?.selected_font, profile?.selected_arena_effect);
+                        setCustomization(
+                          profile?.selected_skin, 
+                          profile?.selected_title, 
+                          profile?.selected_font, 
+                          profile?.selected_arena_effect,
+                          profile?.selected_icon,
+                          profile?.selected_effect
+                        );
                         startGame('NORMAL', undefined, baseTime, accelerationIntensity);
                       }}
                       className="py-4 bg-white text-black font-black text-xs rounded-xl shadow-[0_0_15px_rgba(255,255,255,0.1)] active:scale-95 transition-all uppercase"

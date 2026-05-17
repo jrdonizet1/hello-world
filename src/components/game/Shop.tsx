@@ -9,7 +9,8 @@ interface ShopItem {
   name: string;
   description: string;
   price: number;
-  category: 'skin' | 'title' | 'avatar' | 'font' | 'arena_effect';
+  category: 'skin' | 'title' | 'avatar' | 'font' | 'arena_effect' | 'power_up';
+  rarity?: 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY';
   item_data: any;
 }
 

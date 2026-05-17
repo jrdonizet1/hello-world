@@ -131,6 +131,7 @@ export const Lobby: React.FC = () => {
         filter: `id=eq.${roomId}` 
       }, (payload) => {
         if (payload.new.status === 'STARTING') {
+          setCustomization(profile?.selected_skin, profile?.selected_title);
           startGame();
         }
       })

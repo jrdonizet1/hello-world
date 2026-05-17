@@ -249,7 +249,16 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         </div>
       )}
 
-      {/* Grid de Itens */}
+      {/* Prévia de Nome Dinâmica */}
+      {activeTab !== 'POWERS' && profile && (
+        <NamePreview 
+          name={profile.nickname}
+          skinColor={profile.selected_skin}
+          title={profile.selected_title}
+          icon={profile.selected_icon}
+          effect={profile.selected_effect}
+        />
+      )}
       <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-12">
           {items

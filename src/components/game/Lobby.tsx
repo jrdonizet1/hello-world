@@ -1438,16 +1438,16 @@ export const Lobby: React.FC = () => {
               <div className="relative group">
                 <button 
                   onClick={() => {
-                    if (scrollRef.current) scrollRef.current.scrollBy({ left: -100, behavior: 'smooth' });
+                    if (scrollRef.current) scrollRef.current.scrollBy({ left: -120, behavior: 'smooth' });
                   }}
-                  className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-black/60 border border-white/10 p-1.5 rounded-full backdrop-blur-md text-zinc-400 hover:text-white transition-all opacity-0 group-hover:opacity-100"
+                  className="absolute left-[-10px] top-1/2 -translate-y-1/2 z-10 bg-black/80 border border-white/10 p-1.5 rounded-full backdrop-blur-md text-cyan-400 hover:text-white transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)]"
                 >
                   <ChevronLeft size={16} />
                 </button>
                 
                 <div 
                   ref={scrollRef}
-                  className="flex overflow-x-auto gap-2 pb-2 no-scrollbar px-2"
+                  className="flex overflow-x-auto gap-2 pb-2 no-scrollbar px-6 mask-fade-edges"
                 >
                   <button 
                     onClick={() => fetchRankings(null)}
@@ -1468,9 +1468,9 @@ export const Lobby: React.FC = () => {
 
                 <button 
                   onClick={() => {
-                    if (scrollRef.current) scrollRef.current.scrollBy({ left: 100, behavior: 'smooth' });
+                    if (scrollRef.current) scrollRef.current.scrollBy({ left: 120, behavior: 'smooth' });
                   }}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-black/60 border border-white/10 p-1.5 rounded-full backdrop-blur-md text-zinc-400 hover:text-white transition-all opacity-0 group-hover:opacity-100"
+                  className="absolute right-[-10px] top-1/2 -translate-y-1/2 z-10 bg-black/80 border border-white/10 p-1.5 rounded-full backdrop-blur-md text-cyan-400 hover:text-white transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)]"
                 >
                   <ChevronRight size={16} />
                 </button>

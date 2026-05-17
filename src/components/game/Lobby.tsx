@@ -1232,32 +1232,15 @@ export const Lobby: React.FC = () => {
                           <span className={`relative inline-flex rounded-full h-3 w-3 ${p.is_ready || p.id === roomData?.host_id ? 'bg-green-500' : 'bg-red-500'}`}></span>
                           {p.is_ready && <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping"></span>}
                         </div>
-                        <div className="flex items-center gap-2">
-                          {p.selected_icon && (
-                            <div className="text-white">
-                              {p.selected_icon === 'Zap' && <Zap size={14} className="text-cyan-400" />}
-                              {p.selected_icon === 'Crown' && <Crown size={14} className="text-yellow-500" />}
-                              {p.selected_icon === 'ShieldCheck' && <ShieldCheck size={14} className="text-emerald-500" />}
-                              {p.selected_icon === 'Infinity' && <InfinityIcon size={14} className="text-purple-500" />}
-                            </div>
-                          )}
-                          <div className="flex flex-col">
-                            <span 
-                              className="font-black italic uppercase text-xs tracking-tight"
-                              style={{ color: p.selected_skin || 'white' }}
-                            >
-                              {p.nickname || 'Anônimo'}
-                            </span>
-                            {p.selected_title && (
-                              <span 
-                                className="text-[7px] font-black uppercase tracking-[0.2em] opacity-70"
-                                style={{ color: p.selected_skin || 'white' }}
-                              >
-                                « {p.selected_title} »
-                              </span>
-                            )}
-                          </div>
-                        </div>
+                        <UserIdentity 
+                          name={p.nickname || 'Anônimo'}
+                          skin={p.selected_skin}
+                          title={p.selected_title}
+                          icon={p.selected_icon}
+                          effect={p.selected_effect}
+                          font={p.selected_font}
+                          size="md"
+                        />
                         {p.id === session?.user?.id && (
                           <span className="text-[8px] uppercase tracking-widest text-cyan-500 font-bold bg-cyan-500/10 px-2 py-0.5 rounded-full border border-cyan-500/20">Você</span>
                         )}

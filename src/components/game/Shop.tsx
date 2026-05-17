@@ -142,20 +142,26 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               key={item.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`p-4 rounded-2xl border-2 transition-all relative overflow-hidden ${
+              className={`p-5 rounded-3xl border-2 transition-all relative overflow-hidden flex flex-col ${
                 equipped 
-                  ? 'border-cyan-500 bg-cyan-500/10' 
+                  ? 'border-cyan-500 bg-cyan-500/10 shadow-[0_0_20px_rgba(6,182,212,0.15)]' 
                   : owned 
                     ? 'border-white/20 bg-white/5' 
-                    : 'border-white/5 bg-black/40'
+                    : rarityColors[currentRarity]
               }`}
             >
-              {/* Category Icon */}
-              <div className="absolute top-4 right-4 opacity-20">
-                {item.category === 'skin' ? <Palette className="w-8 h-8" /> : 
-                 item.category === 'font' ? <Type className="w-8 h-8" /> :
-                 item.category === 'arena_effect' ? <Sparkles className="w-8 h-8" /> :
-                 <Type className="w-8 h-8" />}
+              {/* Rarity Tag */}
+              <div className="flex justify-between items-start mb-4">
+                <span className={`text-[8px] font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded-full border ${
+                  currentRarity === 'LEGENDARY' ? 'bg-yellow-500/20 border-yellow-500/30' : 'bg-black/20 border-white/5'
+                }`}>
+                  {rarityLabel[currentRarity]}
+                </span>
+                <div className="opacity-40">
+                  {item.category === 'skin' ? <Palette size={14} /> : 
+                   item.category === 'power_up' ? <Sparkles size={14} /> :
+                   <Type size={14} />}
+                </div>
               </div>
 
               <div className="flex flex-col h-full justify-between gap-4">

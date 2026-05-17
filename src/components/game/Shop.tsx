@@ -126,7 +126,8 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       }
       return JSON.stringify(profile?.selected_arena_effect) === JSON.stringify(item.item_data);
     }
-    if (item.category === 'avatar') return JSON.stringify(profile?.selected_icon) === JSON.stringify(item.item_data);
+    if (item.category === 'icon') return JSON.stringify(profile?.selected_icon) === JSON.stringify(item.item_data);
+    if (item.category === 'avatar') return profile?.avatar_url === item.item_data.url;
     return false;
   };
 
@@ -205,7 +206,8 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             { id: 'title', label: 'Títulos' },
             { id: 'font', label: 'Fontes' },
             { id: 'arena_effect', label: 'Efeitos' },
-            { id: 'avatar', label: 'Ícones' }
+            { id: 'icon', label: 'Ícones' },
+            { id: 'avatar', label: 'Avatares' }
           ].map((cat) => (
             <button
               key={cat.id}
@@ -226,11 +228,13 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       {activeTab !== 'POWERS' && profile && (
         <NamePreview 
           name={profile.nickname}
+          profile={profile}
           skinColor={profile.selected_skin}
           title={profile.selected_title}
           icon={profile.selected_icon}
           effect={profile.selected_effect}
           font={profile.selected_font}
+          avatarUrl={profile.avatar_url}
         />
       )}
       <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
@@ -276,7 +280,8 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                       {item.category === 'skin' ? <Palette size={14} /> : 
                        item.category === 'power_up' ? <Zap size={14} /> :
                        item.category === 'arena_effect' ? <Sparkles size={14} /> :
-                       item.category === 'avatar' ? <Star size={14} /> :
+                       item.category === 'icon' ? <Star size={14} /> :
+                       item.category === 'avatar' ? <Monitor size={14} /> :
                        <Type size={14} />}
                     </div>
                   </div>
@@ -309,12 +314,21 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                           « {item.item_data.text} »
                         </div>
                       )}
-                      {item.category === 'avatar' && (
+                      {item.category === 'icon' && (
                         <div className="flex justify-center py-2 bg-black/40 rounded-xl border border-white/5 min-h-[50px] items-center">
                           <UserIdentity 
                             name="" 
                             icon={item.item_data} 
                             showTitle={false}
+                          />
+                        </div>
+                      )}
+                      {item.category === 'avatar' && (
+                        <div className="flex justify-center py-2 min-h-[80px] items-center">
+                          <UserAvatar 
+                            url={item.item_data.url} 
+                            showLevel={false}
+                            size="lg"
                           />
                         </div>
                       )}

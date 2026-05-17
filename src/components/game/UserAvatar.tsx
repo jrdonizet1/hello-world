@@ -32,17 +32,44 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
     xl: 48
   };
 
-  const frameStyles = frame ? {
-    borderColor: frame.color || 'transparent',
-    borderStyle: frame.style || 'solid',
+  const frameStyles: React.CSSProperties = frame ? {
+    borderColor: frame.color && frame.color !== 'rainbow' ? frame.color : 'transparent',
+    borderStyle: frame.style && frame.style !== 'ultra' && frame.style !== 'focus-ring' ? frame.style : 'solid',
     borderWidth: size === 'xl' ? '4px' : '2px',
-    boxShadow: frame.glow ? `0 0 15px ${frame.color || '#06b6d4'}` : 'none',
+    boxShadow: frame.glow && frame.color !== 'rainbow' ? `0 0 15px ${frame.color || '#06b6d4'}` : 'none',
   } : {};
+
+  const getFrameClasses = () => {
+    if (!frame) return '';
+    let classes = '';
+    
+    if (frame.effect === 'rgbBorder' || frame.color === 'rainbow') {
+      classes += ' animate-rgbBorder';
+    }
+    
+    if (frame.style === 'ultra') {
+      classes += ' frame-ultra';
+    }
+    
+    if (frame.style === 'focus-ring') {
+      classes += ' frame-focus-ring';
+    }
+    
+    if (frame.animated && frame.effect === 'rotatingLight') {
+      // For rotating light, we'll apply it via a wrapper if needed or just use the animation
+      // Since it's a border, we can use a spin on a pseudo-element or just simple pulse
+      classes += ' animate-spin-slow';
+    } else if (frame.animated && !frame.effect) {
+      classes += ' animate-pulse';
+    }
+    
+    return classes;
+  };
 
   return (
     <div className={`relative ${className}`}>
       <div 
-        className={`${sizeClasses[size]} rounded-full bg-cyan-500/20 flex items-center justify-center border-2 border-cyan-500/30 shadow-[0_0_20px_rgba(6,182,212,0.2)] overflow-hidden transition-all`}
+        className={`${sizeClasses[size]} rounded-full bg-cyan-500/20 flex items-center justify-center border-2 border-cyan-500/30 shadow-[0_0_20px_rgba(6,182,212,0.2)] overflow-hidden transition-all ${getFrameClasses()}`}
         style={frameStyles}
       >
         {url && url.trim() !== '' ? (

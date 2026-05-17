@@ -164,7 +164,7 @@ export const createRoom = createServerFn({ method: "POST" })
   .handler(async (args: any) => {
     const { data: roomSettings, context } = args;
     const { userId } = context;
-    const { name, maxPlayers, isPrivate, password, selectedThemes, baseTime, accelerationEnabled } = roomSettings;
+    const { name, maxPlayers, isPrivate, password, selectedThemes, baseTime, accelerationIntensity } = roomSettings;
 
     const code = Math.random().toString(36).substring(2, 6).toUpperCase();
 
@@ -180,7 +180,8 @@ export const createRoom = createServerFn({ method: "POST" })
         password: password || null,
         selected_themes: selectedThemes || ['COLOR', 'MATH'],
         base_time: baseTime || 2.2,
-        acceleration_enabled: accelerationEnabled !== undefined ? accelerationEnabled : true
+        acceleration_intensity: accelerationIntensity || 'NORMAL',
+        acceleration_enabled: accelerationIntensity !== 'OFF'
       })
       .select()
       .single();
@@ -403,7 +404,7 @@ export const updateRoomSettings = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async (args: any) => {
     const { data, context } = args;
-    const { roomId, selectedThemes, baseTime, accelerationEnabled } = data;
+    const { roomId, selectedThemes, baseTime, accelerationIntensity } = data;
     const { userId } = context;
 
     const { data: room } = await supabaseAdmin
@@ -417,7 +418,10 @@ export const updateRoomSettings = createServerFn({ method: "POST" })
     const updateData: any = {};
     if (selectedThemes) updateData.selected_themes = selectedThemes;
     if (baseTime !== undefined) updateData.base_time = baseTime;
-    if (accelerationEnabled !== undefined) updateData.acceleration_enabled = accelerationEnabled;
+    if (accelerationIntensity !== undefined) {
+      updateData.acceleration_intensity = accelerationIntensity;
+      updateData.acceleration_enabled = accelerationIntensity !== 'OFF';
+    }
 
     const { error } = await supabaseAdmin
       .from("rooms")

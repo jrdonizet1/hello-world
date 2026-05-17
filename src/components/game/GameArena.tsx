@@ -19,7 +19,7 @@ export const GameArena: React.FC = () => {
     gameMode,
     selectedThemes,
     baseTime,
-    accelerationEnabled
+    accelerationIntensity
   } = useGameStore();
 
   const [countDown, setCountDown] = useState(3);
@@ -63,7 +63,7 @@ export const GameArena: React.FC = () => {
       updateScore(1);
       setCommand(generateCommand(Math.floor(score / 5) + 1, selectedThemes));
       
-      // Scalable difficulty logic based on GameMode
+      // Scalable difficulty logic based on GameMode and Acceleration Intensity
       let nextTime = baseTime;
       
       // Complexity bonus (extra time for harder themes)
@@ -73,19 +73,26 @@ export const GameArena: React.FC = () => {
       if (currentCommand.theme === 'SEQUENCE') complexityBonus = 0.3;
       if (currentCommand.theme === 'SCALE') complexityBonus = 0.3;
       
+      const getShrinkFactor = () => {
+        if (accelerationIntensity === 'OFF') return 0;
+        if (accelerationIntensity === 'SLOW') return 0.015;
+        if (accelerationIntensity === 'NORMAL') return 0.035;
+        if (accelerationIntensity === 'INSANE') return 0.06;
+        return 0.035;
+      };
+
+      const shrinkFactor = getShrinkFactor();
+
       if (gameMode === 'BLITZ') {
-        // Blitz mode: Time always resets to a very tight window that shrinks
-        const shrink = accelerationEnabled ? (score * 0.02) : 0;
-        nextTime = Math.max(0.5, 1.2 - shrink);
+        const shrink = score * shrinkFactor * 0.5;
+        nextTime = Math.max(0.4, 1.2 - shrink);
       } else if (gameMode === 'SURVIVAL') {
-        // Survival mode: Each correct answer ADDS a small amount of time, capped at a max
-        const shrink = accelerationEnabled ? (score * 0.01) : 0;
-        const bonus = Math.max(0.3, 0.8 - shrink) + complexityBonus;
+        const shrink = score * shrinkFactor * 0.3;
+        const bonus = Math.max(0.2, 0.8 - shrink) + complexityBonus;
         nextTime = Math.min(5, timeRemaining + bonus);
       } else {
-        // Normal mode: Standard window
-        const shrink = accelerationEnabled ? (score * 0.035) : 0;
-        nextTime = Math.max(0.6, baseTime - shrink) + complexityBonus;
+        const shrink = score * shrinkFactor;
+        nextTime = Math.max(0.5, baseTime - shrink) + complexityBonus;
       }
       
       useGameStore.setState({ timeRemaining: nextTime });

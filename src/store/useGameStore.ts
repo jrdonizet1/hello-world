@@ -36,6 +36,9 @@ interface BrainLagState {
   baseTime: number;
   accelerationEnabled: boolean;
   accelerationIntensity: 'OFF' | 'SLOW' | 'NORMAL' | 'INSANE';
+  duelOpponentProgress: number;
+  duelOpponentId: string | null;
+  duelSeed: number | null;
   
   setGameState: (state: GameState) => void;
   setGameMode: (mode: GameMode) => void;

@@ -68,13 +68,10 @@ export const GameArena: React.FC = () => {
       
       // Complexity bonus (extra time for harder themes)
       let complexityBonus = 0;
-      if (currentCommand.type === 'MATH') complexityBonus = 0.4;
-      if (currentCommand.type === 'TAP') {
-        // Checking subtypes via text or other identifiers if needed, but for now:
-        if (currentCommand.text.includes('CAPITAL')) complexityBonus = 0.5;
-        if (currentCommand.text.includes('QUAL O PRÓXIMO')) complexityBonus = 0.3;
-        if (currentCommand.text.includes('MAIOR QUE')) complexityBonus = 0.3;
-      }
+      if (currentCommand.theme === 'MATH') complexityBonus = 0.4;
+      if (currentCommand.theme === 'CAPITAL') complexityBonus = 0.5;
+      if (currentCommand.theme === 'SEQUENCE') complexityBonus = 0.3;
+      if (currentCommand.theme === 'SCALE') complexityBonus = 0.3;
       
       if (gameMode === 'BLITZ') {
         // Blitz mode: Time always resets to a very tight window that shrinks

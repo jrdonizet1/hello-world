@@ -477,6 +477,8 @@ export const Lobby: React.FC = () => {
                 )}
               </div>
 
+              <ThemeSelector />
+
               <div className="grid grid-cols-1 gap-3">
                 <div className="grid grid-cols-1 gap-2">
                   <button 

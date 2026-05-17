@@ -722,6 +722,101 @@ export const Lobby: React.FC = () => {
               </div>
             </motion.div>
           )}
+          {view === 'PROFILE' && (
+            <motion.div 
+              key="profile"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.05 }}
+              className="space-y-6"
+            >
+              <button onClick={() => setView('MAIN')} className="flex items-center gap-1 text-zinc-500 font-bold text-[10px] uppercase tracking-[0.2em] mb-2 hover:text-white transition-colors">
+                <ChevronLeft size={14} /> Voltar
+              </button>
+
+              <div className="bg-zinc-900/50 border border-zinc-800 p-8 rounded-[40px] backdrop-blur-xl flex flex-col items-center gap-6">
+                <div className="relative">
+                  <div className="w-24 h-24 rounded-full bg-cyan-500/20 flex items-center justify-center border-2 border-cyan-500/30 shadow-[0_0_30px_rgba(6,182,212,0.3)]">
+                    <User size={48} className="text-cyan-400" />
+                  </div>
+                  <div className="absolute -bottom-2 -right-2 bg-yellow-500 text-black text-[10px] font-black px-2 py-1 rounded-lg shadow-lg">
+                    LVL {profile?.level || 1}
+                  </div>
+                </div>
+
+                <div className="text-center space-y-1">
+                  <h2 className="text-2xl font-black text-white italic tracking-tighter uppercase">{nickname || 'Cérebro Anônimo'}</h2>
+                  <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">{session?.user?.email}</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 w-full">
+                  <div className="bg-zinc-900/80 border border-zinc-800 p-4 rounded-3xl text-center">
+                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block mb-1">Moedas</span>
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]"></div>
+                      <span className="text-xl font-black text-white">{profile?.coins || 0}</span>
+                    </div>
+                  </div>
+                  <div className="bg-zinc-900/80 border border-zinc-800 p-4 rounded-3xl text-center">
+                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block mb-1">Total XP</span>
+                    <span className="text-xl font-black text-cyan-400">{profile?.xp || 0}</span>
+                  </div>
+                </div>
+
+                <div className="w-full bg-zinc-900 border border-zinc-800 rounded-3xl p-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Nível Atual</span>
+                    <span className="text-xs font-black text-white">Nível {profile?.level || 1}</span>
+                  </div>
+                  <div className="h-2 w-full bg-zinc-800 rounded-full overflow-hidden p-[1px] border border-zinc-700">
+                    <motion.div 
+                      className="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 rounded-full"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${((profile?.xp || 0) % 1000) / 10}%` }}
+                    />
+                  </div>
+                  <p className="text-[8px] text-center font-bold text-zinc-600 uppercase tracking-widest">
+                    {((profile?.xp || 0) % 1000)} / 1000 XP para o próximo nível
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="bg-zinc-900/30 border border-zinc-800/50 p-4 rounded-2xl">
+                   <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-3 text-center">Editar Nickname</h3>
+                   <div className="flex gap-2">
+                     <input 
+                       type="text" 
+                       value={nickname}
+                       onChange={(e) => setNickname(e.target.value)}
+                       className="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2 font-bold text-sm outline-none focus:border-cyan-500/50 text-white"
+                     />
+                     <button 
+                       onClick={async () => {
+                         try {
+                           await (updateProfile as any)({ data: { nickname } });
+                           toast.success('Nickname atualizado!');
+                           fetchProfile(session.user.id);
+                         } catch (err) {
+                           toast.error('Erro ao atualizar');
+                         }
+                       }}
+                       className="px-4 py-2 bg-cyan-500 text-black font-black text-xs rounded-xl active:scale-95 transition-all"
+                     >
+                       SALVAR
+                     </button>
+                   </div>
+                </div>
+
+                <button 
+                  onClick={() => supabase.auth.signOut()}
+                  className="w-full py-4 bg-red-500/10 border border-red-500/20 text-red-500 font-black text-[10px] rounded-2xl flex items-center justify-center gap-2 hover:bg-red-500/20 transition-all uppercase tracking-[0.2em]"
+                >
+                  <LogOut size={14} /> Encerrar Protocolo (Sair)
+                </button>
+              </div>
+            </motion.div>
+          )}
         </AnimatePresence>
       </div>
 

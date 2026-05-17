@@ -202,7 +202,7 @@ export const Lobby: React.FC = () => {
         filter: `id=eq.${roomId}` 
       }, (payload) => {
         if (payload.new.status === 'STARTING') {
-          setCustomization(profile?.selected_skin, profile?.selected_title);
+          setCustomization(profile?.selected_skin, profile?.selected_title, profile?.selected_font, profile?.selected_arena_effect);
           startGame(
             undefined, 
             payload.new.selected_themes, 

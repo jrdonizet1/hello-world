@@ -5,20 +5,24 @@ import { getShopItems, buyShopItem, getUserInventory, updateEquippedItems, getPr
 import { useGameStore } from '../../store/useGameStore';
 import { toast } from 'sonner';
 import { UserIdentity } from './UserIdentity';
+import { UserAvatar } from './UserAvatar';
 
-const NamePreview = ({ name, profile, skinColor, title, icon, effect, font }: any) => {
+const NamePreview = ({ name, profile, skinColor, title, icon, effect, font, avatarUrl }: any) => {
   return (
-    <div className="flex flex-col items-center gap-1 p-4 bg-black/60 rounded-2xl border border-white/10 mb-4 min-h-[100px] justify-center overflow-hidden">
-      <p className="text-[8px] font-black uppercase tracking-widest text-zinc-600 mb-2">Prévia de Identidade Neural</p>
-      <UserIdentity 
-        name={name}
-        skin={skinColor}
-        title={title}
-        icon={icon}
-        effect={effect}
-        font={font}
-        size="xl"
-      />
+    <div className="flex flex-col items-center gap-4 p-6 bg-black/60 rounded-[32px] border border-white/10 mb-4 min-h-[160px] justify-center overflow-hidden">
+      <p className="text-[8px] font-black uppercase tracking-widest text-zinc-600">Prévia de Identidade Neural</p>
+      <div className="flex flex-col items-center gap-4">
+        <UserAvatar url={avatarUrl} level={profile?.level} size="lg" />
+        <UserIdentity 
+          name={name}
+          skin={skinColor}
+          title={title}
+          icon={icon}
+          effect={effect}
+          font={font}
+          size="xl"
+        />
+      </div>
     </div>
   );
 };
@@ -28,7 +32,7 @@ interface ShopItem {
   name: string;
   description: string;
   price: number;
-  category: 'skin' | 'title' | 'avatar' | 'font' | 'arena_effect' | 'power_up';
+  category: 'skin' | 'title' | 'avatar' | 'font' | 'arena_effect' | 'power_up' | 'icon';
   rarity?: 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY';
   item_data: any;
 }
@@ -40,7 +44,7 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'COSMETICS' | 'POWERS' | 'MY_ITEMS'>('COSMETICS');
-  const [cosmeticCategory, setCosmeticCategory] = useState<'all' | 'skin' | 'title' | 'font' | 'arena_effect' | 'avatar'>('all');
+  const [cosmeticCategory, setCosmeticCategory] = useState<'all' | 'skin' | 'title' | 'font' | 'arena_effect' | 'avatar' | 'icon'>('all');
 
   const loadData = async () => {
     try {
@@ -100,7 +104,8 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           updateData.arenaEffect = item.item_data;
         }
       }
-      else if (item.category === 'avatar') updateData.icon = item.item_data;
+      else if (item.category === 'icon') updateData.icon = item.item_data;
+      else if (item.category === 'avatar') updateData.avatarUrl = item.item_data.url;
 
       await (updateEquippedItems as any)({ data: updateData });
       toast.success('Equipado com sucesso!');
@@ -121,7 +126,8 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       }
       return JSON.stringify(profile?.selected_arena_effect) === JSON.stringify(item.item_data);
     }
-    if (item.category === 'avatar') return JSON.stringify(profile?.selected_icon) === JSON.stringify(item.item_data);
+    if (item.category === 'icon') return JSON.stringify(profile?.selected_icon) === JSON.stringify(item.item_data);
+    if (item.category === 'avatar') return profile?.avatar_url === item.item_data.url;
     return false;
   };
 
@@ -200,7 +206,8 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             { id: 'title', label: 'Títulos' },
             { id: 'font', label: 'Fontes' },
             { id: 'arena_effect', label: 'Efeitos' },
-            { id: 'avatar', label: 'Ícones' }
+            { id: 'icon', label: 'Ícones' },
+            { id: 'avatar', label: 'Avatares' }
           ].map((cat) => (
             <button
               key={cat.id}
@@ -221,11 +228,13 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       {activeTab !== 'POWERS' && profile && (
         <NamePreview 
           name={profile.nickname}
+          profile={profile}
           skinColor={profile.selected_skin}
           title={profile.selected_title}
           icon={profile.selected_icon}
           effect={profile.selected_effect}
           font={profile.selected_font}
+          avatarUrl={profile.avatar_url}
         />
       )}
       <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
@@ -271,7 +280,8 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                       {item.category === 'skin' ? <Palette size={14} /> : 
                        item.category === 'power_up' ? <Zap size={14} /> :
                        item.category === 'arena_effect' ? <Sparkles size={14} /> :
-                       item.category === 'avatar' ? <Star size={14} /> :
+                       item.category === 'icon' ? <Star size={14} /> :
+                       item.category === 'avatar' ? <Monitor size={14} /> :
                        <Type size={14} />}
                     </div>
                   </div>
@@ -304,12 +314,21 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                           « {item.item_data.text} »
                         </div>
                       )}
-                      {item.category === 'avatar' && (
+                      {item.category === 'icon' && (
                         <div className="flex justify-center py-2 bg-black/40 rounded-xl border border-white/5 min-h-[50px] items-center">
                           <UserIdentity 
                             name="" 
                             icon={item.item_data} 
                             showTitle={false}
+                          />
+                        </div>
+                      )}
+                      {item.category === 'avatar' && (
+                        <div className="flex justify-center py-2 min-h-[80px] items-center">
+                          <UserAvatar 
+                            url={item.item_data.url} 
+                            showLevel={false}
+                            size="lg"
                           />
                         </div>
                       )}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Zap, Crown, ShieldCheck, Infinity as InfinityIcon, Monitor } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 
 interface UserIdentityProps {
   name: string;
@@ -37,18 +37,41 @@ export const UserIdentity: React.FC<UserIdentityProps> = ({
   const getIcon = () => {
     if (!icon) return null;
     
-    // Handle legacy string icon
-    if (typeof icon === 'string') {
-      if (icon === 'Zap') return <Zap size={size === 'sm' ? 12 : 16} className="text-cyan-400" />;
-      if (icon === 'Crown') return <Crown size={size === 'sm' ? 12 : 16} className="text-yellow-500" />;
-      if (icon === 'ShieldCheck') return <ShieldCheck size={size === 'sm' ? 12 : 16} className="text-emerald-500" />;
-      if (icon === 'Infinity') return <InfinityIcon size={size === 'sm' ? 12 : 16} className="text-purple-500" />;
-      if (icon === 'Monitor') return <Monitor size={size === 'sm' ? 12 : 16} className="text-blue-400" />;
-      return null;
+    const iconSize = size === 'sm' ? 12 : 16;
+
+    // Handle legacy string icon or new object with .icon property
+    const iconName = typeof icon === 'string' ? icon : icon.icon;
+    const iconColor = typeof icon === 'object' ? icon.color : null;
+
+    if (iconName) {
+      // Mapping common names to Lucide icons
+      const iconMap: Record<string, string> = {
+        'Zap': 'Zap',
+        'Crown': 'Crown',
+        'ShieldCheck': 'ShieldCheck',
+        'Infinity': 'Infinity',
+        'Monitor': 'Monitor',
+        'Flame': 'Flame',
+        'Gem': 'Gem',
+        'Skull': 'Skull',
+        'Star': 'Star'
+      };
+
+      const lucideName = iconMap[iconName] || iconName;
+      const IconComponent = (LucideIcons as any)[lucideName];
+
+      if (IconComponent) {
+        return (
+          <IconComponent 
+            size={iconSize} 
+            style={{ color: iconColor || (iconName === 'Zap' ? '#06b6d4' : (iconName === 'Crown' ? '#eab308' : '#ffffff')) }} 
+          />
+        );
+      }
     }
 
-    // Handle new object icon
-    if (icon.type === 'image' || icon.url) {
+    // Handle image/gif icons
+    if (icon.url) {
       return (
         <img 
           src={icon.url} 
@@ -56,16 +79,6 @@ export const UserIdentity: React.FC<UserIdentityProps> = ({
           className={`${size === 'sm' ? 'w-4 h-4' : 'w-6 h-6'} rounded-md object-cover border border-white/10`} 
         />
       );
-    }
-
-    // Handle Lucide icon from object
-    if (icon.icon) {
-      const iconName = icon.icon;
-      if (iconName === 'Zap') return <Zap size={size === 'sm' ? 12 : 16} className="text-cyan-400" />;
-      if (iconName === 'Crown') return <Crown size={size === 'sm' ? 12 : 16} className="text-yellow-500" />;
-      if (iconName === 'ShieldCheck') return <ShieldCheck size={size === 'sm' ? 12 : 16} className="text-emerald-500" />;
-      if (iconName === 'Infinity') return <InfinityIcon size={size === 'sm' ? 12 : 16} className="text-purple-500" />;
-      if (iconName === 'Monitor') return <Monitor size={size === 'sm' ? 12 : 16} className="text-blue-400" />;
     }
 
     return null;

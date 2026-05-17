@@ -46,7 +46,7 @@ export const GameOver: React.FC = () => {
     setLoading(true);
     try {
       const themeScores: any = {};
-      if (selectedThemes.length === 1) {
+      if (selectedThemes && selectedThemes.length === 1) {
         themeScores[selectedThemes[0]] = score;
       }
       

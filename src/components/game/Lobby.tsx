@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { updateProfile, createRoom, joinRoom, startRoomGame, claimDailyReward, leaveRoom, getProfile, redeemReferralCode } from '@/lib/server-functions';
 import { Shop } from './Shop';
 
-type LobbyView = 'MAIN' | 'MULTIPLAYER' | 'CREATE_ROOM' | 'JOIN_ROOM' | 'WAITING' | 'VISITOR_NICK' | 'ROOMS_LIST' | 'PROFILE' | 'SHOP';
+type LobbyView = 'MAIN' | 'MULTIPLAYER' | 'CREATE_ROOM' | 'JOIN_ROOM' | 'WAITING' | 'VISITOR_NICK' | 'ROOMS_LIST' | 'PROFILE' | 'SHOP' | 'REFERRAL';
 
 export const Lobby: React.FC = () => {
   const { startGame, setRoom, roomId, roomCode, isHost, setCustomization } = useGameStore();

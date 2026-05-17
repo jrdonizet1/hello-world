@@ -54,6 +54,12 @@ export const Lobby: React.FC = () => {
       localStorage.setItem('pending_referral', ref);
     }
 
+    const joinParam = params.get('join');
+    if (joinParam) {
+      setJoinCode(joinParam.toUpperCase());
+      setPendingAction({ type: 'JOIN', code: joinParam.toUpperCase() });
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session) {

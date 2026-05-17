@@ -1535,6 +1535,20 @@ export const Lobby: React.FC = () => {
               </div>
             </motion.div>
           )}
+          {view === 'MISSIONS' && (
+            <motion.div
+              key="missions"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="w-full h-full"
+            >
+              <Missions 
+                onBack={() => setView('MAIN')} 
+                onUpdateProfile={() => session?.user?.id && fetchProfile(session.user.id)}
+              />
+            </motion.div>
+          )}
         </AnimatePresence>
       </div>
 

@@ -79,8 +79,9 @@ export const GameArena: React.FC = () => {
     const channel = supabase.channel(`duel-${roomId}`);
     
     channel
-      .on('broadcast', { event: 'score_update' }, ({ payload }) => {
-        if (payload.userId !== supabase.auth.getUser()) { // Basic check
+      .on('broadcast', { event: 'score_update' }, async ({ payload }) => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user && payload.userId !== user.id) {
           setDuelOpponent(payload.userId, payload.score);
         }
       })

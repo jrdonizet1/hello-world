@@ -32,7 +32,9 @@ export const GameArena: React.FC = () => {
     isMultiplayer,
     duelOpponentProgress,
     duelSeed,
-    setDuelOpponent
+    setDuelOpponent,
+    activePowers,
+    usePower
   } = useGameStore();
   
   const [lastCommandTime, setLastCommandTime] = useState(Date.now());

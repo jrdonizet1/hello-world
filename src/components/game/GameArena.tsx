@@ -150,7 +150,48 @@ export const GameArena: React.FC = () => {
   }
 
   return (
-    <div className={`flex flex-col h-full relative p-6 transition-colors duration-200 ${isWrong ? 'bg-red-900' : ''}`}>
+    <div className={`flex flex-col h-full relative p-6 transition-colors duration-200 overflow-hidden ${isWrong ? 'bg-red-900' : ''}`}>
+      {/* Arena Effects Background */}
+      {userArenaEffect && (
+        <div className="absolute inset-0 pointer-events-none z-0">
+          {userArenaEffect.type === 'grid' && (
+            <div 
+              className="absolute inset-0 opacity-20"
+              style={{ 
+                backgroundImage: `linear-gradient(${userArenaEffect.color}33 1px, transparent 1px), linear-gradient(90deg, ${userArenaEffect.color}33 1px, transparent 1px)`,
+                backgroundSize: '40px 40px',
+                transform: 'perspective(500px) rotateX(60deg) translateY(0%)',
+                animation: 'grid-move 2s linear infinite'
+              }}
+            />
+          )}
+          {userArenaEffect.type === 'binary' && (
+            <div className="absolute inset-0 opacity-10 font-mono text-[10px] flex justify-around select-none">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <div key={i} className="animate-fall" style={{ animationDelay: `${i * 0.5}s`, color: userArenaEffect.color }}>
+                  {Array.from({ length: 20 }).map((_, j) => (
+                    <div key={j}>{Math.round(Math.random())}</div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+      
+      <style>{`
+        @keyframes grid-move {
+          from { transform: perspective(500px) rotateX(60deg) translateY(0); }
+          to { transform: perspective(500px) rotateX(60deg) translateY(40px); }
+        }
+        @keyframes fall {
+          from { transform: translateY(-100%); }
+          to { transform: translateY(100%); }
+        }
+        .animate-fall {
+          animation: fall 10s linear infinite;
+        }
+      `}</style>
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex flex-col">

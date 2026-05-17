@@ -178,7 +178,22 @@ export const GameOver: React.FC = () => {
           >
             <Home size={18} /> INÍCIO
           </button>
-          <button className="py-4 bg-cyan-500 text-black rounded-2xl flex items-center justify-center gap-2 font-bold text-sm">
+          <button 
+            onClick={() => {
+              const text = `🧠 Acabei de fazer ${score} pontos no BRAINLAG! Duvido você bater meu recorde. Jogue agora: ${window.location.origin}`;
+              if (navigator.share) {
+                navigator.share({
+                  title: 'BRAINLAG - Neural Multi-Chaos',
+                  text: text,
+                  url: window.location.origin,
+                });
+              } else {
+                navigator.clipboard.writeText(text);
+                toast.success('Link de desafio copiado para o seu cérebro!');
+              }
+            }}
+            className="py-4 bg-cyan-500 text-black rounded-2xl flex items-center justify-center gap-2 font-bold text-sm"
+          >
             <Share2 size={18} /> DESAFIAR
           </button>
         </div>

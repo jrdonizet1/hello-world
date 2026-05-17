@@ -274,14 +274,25 @@ export const Lobby: React.FC = () => {
               exit={{ opacity: 0, x: 20 }}
               className="space-y-4"
             >
-              <div className="bg-zinc-900/50 border border-zinc-800 p-5 rounded-3xl backdrop-blur-xl">
+              <div className="bg-zinc-900/50 border border-zinc-800 p-5 rounded-3xl backdrop-blur-xl space-y-3">
                 {!session ? (
-                  <button 
-                    onClick={() => setView('MULTIPLAYER')}
-                    className="w-full py-4 bg-white/10 hover:bg-white/20 border border-white/10 rounded-2xl flex items-center justify-center gap-2 font-black text-xs transition-all"
-                  >
-                    <UserPlus size={16} className="text-cyan-400" /> JOGAR COMO VISITANTE
-                  </button>
+                  <>
+                    <button 
+                      onClick={() => setView('MULTIPLAYER')}
+                      className="w-full py-4 bg-white/10 hover:bg-white/20 border border-white/10 rounded-2xl flex items-center justify-center gap-2 font-black text-xs transition-all"
+                    >
+                      <UserPlus size={16} className="text-cyan-400" /> JOGAR COMO VISITANTE
+                    </button>
+                    <button 
+                      onClick={async () => {
+                        const { error } = await lovable.auth.signInWithOAuth('google');
+                        if (error) toast.error('Erro ao conectar com Google');
+                      }}
+                      className="w-full py-4 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 rounded-2xl flex items-center justify-center gap-2 font-black text-xs transition-all text-cyan-500"
+                    >
+                      <Zap size={16} /> ENTRAR COM GOOGLE
+                    </button>
+                  </>
                 ) : (
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">

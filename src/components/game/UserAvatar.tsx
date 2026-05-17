@@ -7,6 +7,7 @@ interface UserAvatarProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
   showLevel?: boolean;
+  frame?: any;
 }
 
 export const UserAvatar: React.FC<UserAvatarProps> = ({ 
@@ -14,7 +15,8 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
   level, 
   size = 'md', 
   className = '',
-  showLevel = true
+  showLevel = true,
+  frame
 }) => {
   const sizeClasses = {
     sm: 'w-8 h-8',
@@ -30,9 +32,19 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
     xl: 48
   };
 
+  const frameStyles = frame ? {
+    borderColor: frame.color || 'transparent',
+    borderStyle: frame.style || 'solid',
+    borderWidth: size === 'xl' ? '4px' : '2px',
+    boxShadow: frame.glow ? `0 0 15px ${frame.color || '#06b6d4'}` : 'none',
+  } : {};
+
   return (
     <div className={`relative ${className}`}>
-      <div className={`${sizeClasses[size]} rounded-full bg-cyan-500/20 flex items-center justify-center border-2 border-cyan-500/30 shadow-[0_0_20px_rgba(6,182,212,0.2)] overflow-hidden`}>
+      <div 
+        className={`${sizeClasses[size]} rounded-full bg-cyan-500/20 flex items-center justify-center border-2 border-cyan-500/30 shadow-[0_0_20px_rgba(6,182,212,0.2)] overflow-hidden transition-all`}
+        style={frameStyles}
+      >
         {url && url.trim() !== '' ? (
           <img 
             src={url} 
@@ -54,7 +66,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
         </div>
       </div>
       {showLevel && level !== undefined && (
-        <div className={`absolute -bottom-1 -right-1 bg-yellow-500 text-black font-black rounded-lg shadow-lg flex items-center justify-center
+        <div className={`absolute -bottom-1 -right-1 bg-yellow-500 text-black font-black rounded-lg shadow-lg flex items-center justify-center z-10
           ${size === 'xl' ? 'text-[10px] px-2 py-1' : 'text-[8px] px-1.5 py-0.5'}
         `}>
           LVL {level}

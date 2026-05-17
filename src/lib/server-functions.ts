@@ -477,7 +477,7 @@ export const updateEquippedItems = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async (args: any) => {
     const { data, context } = args;
-    const { skin, title, font, arenaEffect, icon, effect, avatarUrl } = data;
+    const { skin, title, font, arenaEffect, icon, effect, avatarUrl, frame } = data;
     const { userId } = context;
 
     const updateData: any = {};
@@ -488,6 +488,7 @@ export const updateEquippedItems = createServerFn({ method: "POST" })
     if (icon !== undefined) updateData.selected_icon = icon;
     if (effect !== undefined) updateData.selected_effect = effect;
     if (avatarUrl !== undefined) updateData.avatar_url = avatarUrl;
+    if (frame !== undefined) updateData.selected_frame = frame;
 
     const { error } = await supabaseAdmin
       .from("profiles")

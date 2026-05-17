@@ -165,7 +165,7 @@ export const GameOver: React.FC = () => {
       <div className="w-full max-w-sm grid grid-cols-1 gap-4 pb-8">
         <motion.button
           whileTap={{ scale: 0.95 }}
-          onClick={startGame}
+          onClick={() => startGame(gameMode)}
           className="w-full py-5 bg-white text-black font-black text-xl rounded-2xl flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.2)]"
         >
           <RefreshCw size={20} /> JOGAR NOVAMENTE

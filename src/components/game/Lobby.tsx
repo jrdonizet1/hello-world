@@ -250,7 +250,7 @@ export const Lobby: React.FC = () => {
     try {
       if (roomId) await (leaveRoom as any)();
       const room = await (createRoom as any)({ 
-        data: { name: roomName, maxPlayers, isPrivate, password } 
+        data: { name: roomName, maxPlayers, isPrivate, password, selectedThemes } 
       });
       setRoom(room.id, room.code, true);
       setView('WAITING');

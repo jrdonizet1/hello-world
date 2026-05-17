@@ -142,8 +142,11 @@ export const Lobby: React.FC = () => {
   };
 
   const fetchProfile = async (userId: string) => {
-    const { data } = await supabase.from('profiles').select('nickname').eq('id', userId).single();
-    if (data?.nickname) setNickname(data.nickname);
+    const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
+    if (data) {
+      setProfile(data);
+      if (data.nickname) setNickname(data.nickname);
+    }
   };
 
   const handleVisitorLogin = async () => {

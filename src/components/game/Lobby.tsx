@@ -841,12 +841,34 @@ export const Lobby: React.FC = () => {
                   <div className="absolute inset-0 bg-cyan-500/5 blur-xl transition-all duration-500 group-hover:bg-cyan-500/10"></div>
                   <div className="flex items-center justify-between text-4xl font-black text-white tracking-widest bg-zinc-900/80 py-4 px-6 rounded-2xl border border-zinc-800 relative shadow-inner">
                     {roomCode}
-                    <button 
-                      onClick={copyCode}
-                      className="text-zinc-500 hover:text-white hover:bg-zinc-800 p-2 rounded-xl transition-colors active:scale-95"
-                    >
-                      <Copy className="w-6 h-6" />
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button 
+                        onClick={copyCode}
+                        className="text-zinc-500 hover:text-white hover:bg-zinc-800 p-2 rounded-xl transition-colors active:scale-95"
+                        title="Copiar Código"
+                      >
+                        <Copy className="w-6 h-6" />
+                      </button>
+                      <button 
+                        onClick={() => {
+                          const text = `🧠 Entre na minha Arena do BRAINLAG! Código: ${roomCode}. Link: ${window.location.origin}?join=${roomCode}`;
+                          if (navigator.share) {
+                            navigator.share({
+                              title: 'BRAINLAG - Convite para Sala',
+                              text: text,
+                              url: window.location.origin
+                            });
+                          } else {
+                            const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+                            window.open(whatsappUrl, '_blank');
+                          }
+                        }}
+                        className="text-cyan-500 hover:text-cyan-400 hover:bg-cyan-500/10 p-2 rounded-xl transition-colors active:scale-95"
+                        title="Convidar via WhatsApp"
+                      >
+                        <Share2 className="w-6 h-6" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

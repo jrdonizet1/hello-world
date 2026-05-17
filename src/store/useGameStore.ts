@@ -32,6 +32,8 @@ interface BrainLagState {
   userTitle: string | null;
   userFont: any | null;
   userArenaEffect: any | null;
+  userIcon: string | null;
+  userEffect: any | null;
   selectedThemes: string[];
   baseTime: number;
   accelerationEnabled: boolean;

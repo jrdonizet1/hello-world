@@ -10,6 +10,7 @@ export interface Command {
   action: string;
   target: string;
   difficulty: number;
+  theme?: string;
 }
 
 interface BrainLagState {

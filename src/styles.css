@@ -2,6 +2,9 @@
 @source "../src";
 @import "tw-animate-css";
 
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@400;700;800&display=swap');
+
 @custom-variant dark (&:is(.dark *));
 
 /*

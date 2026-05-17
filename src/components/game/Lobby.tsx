@@ -1244,7 +1244,8 @@ export const Lobby: React.FC = () => {
                     </div>
                   ))}
                 </div>
-              </div>
+                        </div>
+                        <UserAvatar url={p.avatar_url} showLevel={false} size="sm" />
 
               <div className="w-full space-y-3 pt-2">
                 {!isHost && (

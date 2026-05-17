@@ -44,6 +44,8 @@ interface BrainLagState {
   powerSlowCount: number;
   powerShieldCount: number;
   hasShield: boolean;
+  powersUsedInSession: { slow: number, shield: number };
+  sessionUsedPower: boolean;
   
   setGameState: (state: GameState) => void;
   setGameMode: (mode: GameMode) => void;

@@ -13,7 +13,9 @@ export const GameArena: React.FC = () => {
     updateScore, 
     timeRemaining, 
     tick,
-    endGame 
+    endGame,
+    userSkin,
+    userTitle
   } = useGameStore();
 
   const [countDown, setCountDown] = useState(3);

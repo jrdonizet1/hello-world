@@ -263,11 +263,27 @@ export const GameArena: React.FC = () => {
               animate={{ width: `${Math.min(100, (duelOpponentProgress / 50) * 100)}%` }}
               transition={{ duration: 0.5 }}
             />
-            <div className="absolute top-2 left-2 text-[8px] font-black text-red-500 uppercase tracking-widest opacity-60">
-              Oponente: {duelOpponentProgress} pts
+            <div className="absolute top-2 left-2 text-[8px] font-black text-red-500 uppercase tracking-widest opacity-60 flex items-center gap-1">
+              <Swords size={10} /> Oponente: {duelOpponentProgress} pts
             </div>
           </div>
         )}
+
+        {/* Powers HUD */}
+        <div className="absolute top-2 right-2 flex gap-2 z-50">
+          <button
+            onClick={() => usePower('slow')}
+            disabled={activePowers.some(p => p.id === 'slow')}
+            className={`p-2 rounded-full border transition-all ${
+              activePowers.some(p => p.id === 'slow')
+                ? 'bg-blue-500/50 border-blue-400 animate-pulse'
+                : 'bg-zinc-900/80 border-white/10 hover:border-blue-500/50'
+            }`}
+            title="Tempo Lento (5s)"
+          >
+            <Timer size={16} className={activePowers.some(p => p.id === 'slow') ? 'text-white' : 'text-blue-400'} />
+          </button>
+        </div>
         <div className="flex flex-col">
           <span className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em]">Sincronia</span>
           <span className="text-4xl font-black italic tabular-nums">{score.toFixed(1)}</span>

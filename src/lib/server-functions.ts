@@ -417,17 +417,45 @@ export const buyShopItem = createServerFn({ method: "POST" })
     const { data: itemId, context } = args;
     const { userId } = context;
 
-    const { data, error } = await supabaseAdmin.rpc("purchase_item", {
-      p_user_id: userId,
-      p_item_id: itemId
-    });
+    const { data: item } = await supabaseAdmin
+      .from("shop_items")
+      .select("*")
+      .eq("id", itemId)
+      .single();
 
-    if (error) throw new Error(error.message);
+    if (!item) throw new Error("Item não encontrado");
+
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("coins")
+      .eq("id", userId)
+      .single();
+
+    if (!profile || (profile.coins || 0) < item.price) {
+      throw new Error("Moedas insuficientes");
+    }
+
+    // Process purchase based on category
+    if (item.category === 'power_up') {
+      const powerId = item.item_data.powerId;
+      const colName = powerId === 'slow' ? 'power_slow_count' : 'power_shield_count';
+      
+      await supabaseAdmin
+        .from("profiles")
+        .update({ 
+          coins: profile.coins - item.price,
+          [colName]: (profile as any)[colName] + 1
+        })
+        .eq("id", userId);
+    } else {
+      const { data, error } = await supabaseAdmin.rpc("purchase_item", {
+        p_user_id: userId,
+        p_item_id: itemId
+      });
+      if (error) throw new Error(error.message);
+    }
     
-    const result = data as any;
-    if (!result.success) throw new Error(result.message);
-    
-    return result;
+    return { success: true };
   });
 
 export const updateEquippedItems = createServerFn({ method: "POST" })

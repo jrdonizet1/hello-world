@@ -124,6 +124,7 @@ export const generateCommand = (difficulty: number, themes: string[] = ['COLOR',
       action: 'boolean',
       target: isCorrect ? 'true' : 'false',
       difficulty,
+      theme: 'COLOR',
     };
   } else if (selectedTheme === 'MATH') {
     const range = 5 + (difficulty * 2);
@@ -156,6 +157,7 @@ export const generateCommand = (difficulty: number, themes: string[] = ['COLOR',
       action: 'boolean',
       target: isCorrect ? 'true' : 'false',
       difficulty,
+      theme: 'MATH',
     };
   } else if (selectedTheme === 'GENERAL') {
     const pool = GENERAL_QUESTIONS;
@@ -170,6 +172,7 @@ export const generateCommand = (difficulty: number, themes: string[] = ['COLOR',
       action: 'boolean',
       target: isCorrect ? 'true' : 'false',
       difficulty,
+      theme: 'GENERAL',
     };
   } else if (selectedTheme === 'CURIOSITY') {
     const filteredPool = CURIOSITIES.filter(c => c.difficulty <= (difficulty / 2) + 1);
@@ -185,6 +188,7 @@ export const generateCommand = (difficulty: number, themes: string[] = ['COLOR',
       action: 'boolean',
       target: isCorrect ? 'true' : 'false',
       difficulty,
+      theme: 'CURIOSITY',
     };
   } else if (selectedTheme === 'SEQUENCE') {
     const types = ['CORES', 'NÚMEROS'];
@@ -207,6 +211,7 @@ export const generateCommand = (difficulty: number, themes: string[] = ['COLOR',
         action: 'boolean',
         target: isCorrect ? 'true' : 'false',
         difficulty,
+        theme: 'SEQUENCE',
       };
     } else {
       const start = Math.floor(Math.random() * 10);
@@ -225,6 +230,7 @@ export const generateCommand = (difficulty: number, themes: string[] = ['COLOR',
         action: 'boolean',
         target: isCorrect ? 'true' : 'false',
         difficulty,
+        theme: 'SEQUENCE',
       };
     }
   } else if (selectedTheme === 'CAPITAL') {
@@ -250,6 +256,7 @@ export const generateCommand = (difficulty: number, themes: string[] = ['COLOR',
       action: 'boolean',
       target: isCorrect ? 'true' : 'false',
       difficulty,
+      theme: 'CAPITAL',
     };
   } else {
     // SCALE
@@ -292,6 +299,7 @@ export const generateCommand = (difficulty: number, themes: string[] = ['COLOR',
       action: 'boolean',
       target: isCorrect ? 'true' : 'false',
       difficulty,
+      theme: 'SCALE',
     };
   }
 };

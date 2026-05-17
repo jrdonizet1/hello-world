@@ -17,7 +17,9 @@ export const GameArena: React.FC = () => {
     userSkin,
     userTitle,
     gameMode,
-    selectedThemes
+    selectedThemes,
+    baseTime,
+    accelerationEnabled
   } = useGameStore();
 
   const [countDown, setCountDown] = useState(3);
@@ -62,18 +64,28 @@ export const GameArena: React.FC = () => {
       setCommand(generateCommand(Math.floor(score / 5) + 1, selectedThemes));
       
       // Scalable difficulty logic based on GameMode
-      let nextTime = 2.0;
+      let nextTime = baseTime;
+      
+      // Complexity bonus (extra time for harder themes)
+      let complexityBonus = 0;
+      if (currentCommand.theme === 'MATH') complexityBonus = 0.4;
+      if (currentCommand.theme === 'CAPITAL') complexityBonus = 0.5;
+      if (currentCommand.theme === 'SEQUENCE') complexityBonus = 0.3;
+      if (currentCommand.theme === 'SCALE') complexityBonus = 0.3;
       
       if (gameMode === 'BLITZ') {
         // Blitz mode: Time always resets to a very tight window that shrinks
-        nextTime = Math.max(0.5, 1.2 - (score * 0.02));
+        const shrink = accelerationEnabled ? (score * 0.02) : 0;
+        nextTime = Math.max(0.5, 1.2 - shrink);
       } else if (gameMode === 'SURVIVAL') {
         // Survival mode: Each correct answer ADDS a small amount of time, capped at a max
-        const bonus = Math.max(0.3, 0.8 - (score * 0.01));
+        const shrink = accelerationEnabled ? (score * 0.01) : 0;
+        const bonus = Math.max(0.3, 0.8 - shrink) + complexityBonus;
         nextTime = Math.min(5, timeRemaining + bonus);
       } else {
-        // Normal mode: Standard shrinking window
-        nextTime = Math.max(0.6, 2.0 - (score * 0.035));
+        // Normal mode: Standard window
+        const shrink = accelerationEnabled ? (score * 0.035) : 0;
+        nextTime = Math.max(0.6, baseTime - shrink) + complexityBonus;
       }
       
       useGameStore.setState({ timeRemaining: nextTime });
@@ -138,7 +150,7 @@ export const GameArena: React.FC = () => {
             backgroundColor: timeRemaining < 0.8 ? '#ef4444' : (userSkin || '#06b6d4'),
             boxShadow: timeRemaining < 0.8 ? '0 0 15px rgba(239,68,68,0.5)' : `0 0 15px ${(userSkin || '#06b6d4')}80`
           }}
-          animate={{ width: `${Math.max(0, (timeRemaining / (gameMode === 'SURVIVAL' ? 5 : (gameMode === 'BLITZ' ? 1.2 : 2.2))) * 100)}%` }}
+          animate={{ width: `${Math.max(0, (timeRemaining / (gameMode === 'SURVIVAL' ? 5 : (gameMode === 'BLITZ' ? 1.2 : baseTime + 0.5))) * 100)}%` }}
           transition={{ duration: 0.05, ease: 'linear' }}
         />
       </div>

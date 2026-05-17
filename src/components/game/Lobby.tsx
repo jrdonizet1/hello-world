@@ -40,6 +40,8 @@ export const Lobby: React.FC = () => {
   const [rewardLoading, setRewardLoading] = useState(false);
   const [onlineCount, setOnlineCount] = useState(0);
   const [currentTime, setCurrentTime] = useState(new Date().getTime());
+  const [baseTime, setBaseTime] = useState(2.2);
+  const [accelerationEnabled, setAccelerationEnabled] = useState(true);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date().getTime()), 1000);
@@ -196,10 +198,17 @@ export const Lobby: React.FC = () => {
       }, (payload) => {
         if (payload.new.status === 'STARTING') {
           setCustomization(profile?.selected_skin, profile?.selected_title);
-          startGame();
+          startGame(
+            undefined, 
+            payload.new.selected_themes, 
+            payload.new.base_time ? Number(payload.new.base_time) : undefined, 
+            payload.new.acceleration_enabled
+          );
         }
-        if (payload.new.selected_themes && !isHost) {
-          setSelectedThemes(payload.new.selected_themes);
+        if (!isHost) {
+          if (payload.new.selected_themes) setSelectedThemes(payload.new.selected_themes);
+          if (payload.new.base_time) setBaseTime(Number(payload.new.base_time));
+          if (payload.new.acceleration_enabled !== undefined) setAccelerationEnabled(payload.new.acceleration_enabled);
         }
       })
       .subscribe();
@@ -241,6 +250,8 @@ export const Lobby: React.FC = () => {
       if (data.selected_themes) {
         setSelectedThemes(data.selected_themes);
       }
+      if (data.base_time) setBaseTime(Number(data.base_time));
+      if (data.acceleration_enabled !== null) setAccelerationEnabled(data.acceleration_enabled);
     }
   };
 
@@ -283,7 +294,7 @@ export const Lobby: React.FC = () => {
     try {
       if (roomId) await (leaveRoom as any)();
       const room = await (createRoom as any)({ 
-        data: { name: roomName, maxPlayers, isPrivate, password, selectedThemes } 
+        data: { name: roomName, maxPlayers, isPrivate, password, selectedThemes, baseTime, accelerationEnabled } 
       });
       setRoom(room.id, room.code, true);
       setView('WAITING');
@@ -342,6 +353,9 @@ export const Lobby: React.FC = () => {
     try {
       setCustomization(profile?.selected_skin, profile?.selected_title);
       await (startRoomGame as any)({ data: roomId });
+      // The room status will change to STARTING, and the subscription will call startGame()
+      // But we need to make sure startGame uses the room's baseTime and acceleration
+      startGame(undefined, selectedThemes, baseTime, accelerationEnabled);
     } catch (err: any) {
       toast.error(err.message);
     }
@@ -422,6 +436,60 @@ export const Lobby: React.FC = () => {
             )}
           </button>
         ))}
+      </div>
+    </div>
+  );
+  
+  const GameSettingsSelector = () => (
+    <div className="bg-zinc-900/40 border border-zinc-800/50 p-4 rounded-3xl backdrop-blur-xl mb-4 space-y-4">
+      <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] text-center">Configurações da Partida</h3>
+      
+      <div className="space-y-2">
+        <div className="flex justify-between items-center px-1">
+          <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Tempo Base: {baseTime.toFixed(1)}s</label>
+        </div>
+        <input 
+          type="range" 
+          min="1.0" 
+          max="5.0" 
+          step="0.2"
+          value={baseTime}
+          onChange={async (e) => {
+            const val = parseFloat(e.target.value);
+            setBaseTime(val);
+            if (roomId && isHost) {
+              try {
+                await (updateRoomSettings as any)({ data: { roomId, baseTime: val } });
+              } catch (err) {
+                toast.error('Erro ao atualizar tempo');
+              }
+            }
+          }}
+          className="w-full accent-cyan-500"
+        />
+      </div>
+
+      <div className="flex items-center justify-between p-3 bg-black/20 rounded-xl border border-white/5">
+        <div className="flex items-center gap-2">
+          <RefreshCw size={14} className={accelerationEnabled ? "text-cyan-400" : "text-zinc-600"} />
+          <span className="text-[9px] font-black uppercase tracking-widest text-zinc-300">Aceleração Neural</span>
+        </div>
+        <button 
+          onClick={async () => {
+            const val = !accelerationEnabled;
+            setAccelerationEnabled(val);
+            if (roomId && isHost) {
+              try {
+                await (updateRoomSettings as any)({ data: { roomId, accelerationEnabled: val } });
+              } catch (err) {
+                toast.error('Erro ao atualizar aceleração');
+              }
+            }
+          }}
+          className={`w-10 h-5 rounded-full transition-colors relative ${accelerationEnabled ? 'bg-cyan-500' : 'bg-zinc-800'}`}
+        >
+          <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${accelerationEnabled ? 'left-6' : 'left-1'}`}></div>
+        </button>
       </div>
     </div>
   );
@@ -608,6 +676,7 @@ export const Lobby: React.FC = () => {
               </div>
 
               <ThemeSelector />
+              <GameSettingsSelector />
 
               <div className="space-y-4 pt-2">
                 <div className="bg-zinc-900/40 border border-zinc-800/50 p-4 rounded-3xl backdrop-blur-xl">
@@ -616,7 +685,7 @@ export const Lobby: React.FC = () => {
                     <button 
                       onClick={() => {
                         setCustomization(profile?.selected_skin, profile?.selected_title);
-                        startGame('NORMAL');
+                        startGame('NORMAL', undefined, baseTime, accelerationEnabled);
                       }}
                       className="py-4 bg-white text-black font-black text-xs rounded-xl shadow-[0_0_15px_rgba(255,255,255,0.1)] active:scale-95 transition-all uppercase"
                     >
@@ -625,7 +694,7 @@ export const Lobby: React.FC = () => {
                     <button 
                       onClick={() => {
                         setCustomization(profile?.selected_skin, profile?.selected_title);
-                        startGame('BLITZ');
+                        startGame('BLITZ', undefined, baseTime, accelerationEnabled);
                       }}
                       className="py-4 bg-amber-500/10 border border-amber-500/30 text-amber-500 font-black text-xs rounded-xl active:scale-95 transition-all uppercase"
                     >
@@ -634,7 +703,7 @@ export const Lobby: React.FC = () => {
                     <button 
                       onClick={() => {
                         setCustomization(profile?.selected_skin, profile?.selected_title);
-                        startGame('SURVIVAL');
+                        startGame('SURVIVAL', undefined, baseTime, accelerationEnabled);
                       }}
                       className="col-span-2 py-4 bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 font-black text-xs rounded-xl active:scale-95 transition-all uppercase"
                     >
@@ -949,6 +1018,7 @@ export const Lobby: React.FC = () => {
               </div>
 
               <ThemeSelector />
+              <GameSettingsSelector />
 
               <button 
                 onClick={handleCreateRoom}
@@ -1045,7 +1115,12 @@ export const Lobby: React.FC = () => {
                 </div>
               </div>
 
-              {isHost && <ThemeSelector />}
+              {isHost && (
+                <>
+                  <ThemeSelector />
+                  <GameSettingsSelector />
+                </>
+              )}
 
               <div className="w-full bg-zinc-900/30 border border-zinc-800/50 rounded-3xl p-5 min-h-[220px] shadow-lg">
                 <div className="flex items-center justify-between mb-4">

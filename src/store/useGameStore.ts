@@ -10,6 +10,7 @@ export interface Command {
   action: string;
   target: string;
   difficulty: number;
+  theme?: string;
 }
 
 interface BrainLagState {
@@ -27,11 +28,14 @@ interface BrainLagState {
   userSkin: string | null;
   userTitle: string | null;
   selectedThemes: string[];
+  baseTime: number;
+  accelerationEnabled: boolean;
   
   setGameState: (state: GameState) => void;
   setGameMode: (mode: GameMode) => void;
   setSelectedThemes: (themes: string[]) => void;
-  startGame: (mode?: GameMode, themes?: string[]) => void;
+  setGameSettings: (baseTime: number, accelerationEnabled: boolean) => void;
+  startGame: (mode?: GameMode, themes?: string[], baseTime?: number, accelerationEnabled?: boolean) => void;
   endGame: (reason: string) => void;
   updateScore: (points: number) => void;
   setCommand: (command: Command | null) => void;
@@ -55,20 +59,29 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
   userSkin: '#06b6d4', // Padrão cyan-400
   userTitle: null,
   selectedThemes: ['COLOR', 'MATH'],
+  baseTime: 2.2,
+  accelerationEnabled: true,
 
   setCustomization: (skin, title) => set({ userSkin: skin, userTitle: title }),
   setGameMode: (mode) => set({ gameMode: mode }),
   setSelectedThemes: (themes) => set({ selectedThemes: themes }),
+  setGameSettings: (baseTime, accelerationEnabled) => set({ baseTime, accelerationEnabled }),
   setGameState: (state) => set({ gameState: state }),
   
-  startGame: (mode = 'NORMAL', themes) => {
-    const currentThemes = themes || get().selectedThemes;
+  startGame: (mode = 'NORMAL', themes, baseTime, accelerationEnabled) => {
+    const state = get();
+    const currentThemes = themes || state.selectedThemes;
+    const currentBaseTime = baseTime !== undefined ? baseTime : state.baseTime;
+    const currentAcceleration = accelerationEnabled !== undefined ? accelerationEnabled : state.accelerationEnabled;
+
     set({ 
       gameState: 'PREPARE', 
       gameMode: mode,
       selectedThemes: currentThemes,
+      baseTime: currentBaseTime,
+      accelerationEnabled: currentAcceleration,
       score: 0, 
-      timeRemaining: mode === 'BLITZ' ? 1.2 : (mode === 'SURVIVAL' ? 5 : 10),
+      timeRemaining: mode === 'BLITZ' ? 1.2 : (mode === 'SURVIVAL' ? 5 : currentBaseTime),
       lastError: null 
     });
   },

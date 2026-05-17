@@ -164,7 +164,7 @@ export const createRoom = createServerFn({ method: "POST" })
   .handler(async (args: any) => {
     const { data: roomSettings, context } = args;
     const { userId } = context;
-    const { name, maxPlayers, isPrivate, password, selectedThemes } = roomSettings;
+    const { name, maxPlayers, isPrivate, password, selectedThemes, baseTime, accelerationEnabled } = roomSettings;
 
     const code = Math.random().toString(36).substring(2, 6).toUpperCase();
 
@@ -178,7 +178,9 @@ export const createRoom = createServerFn({ method: "POST" })
         max_players: maxPlayers || 4,
         is_private: isPrivate || false,
         password: password || null,
-        selected_themes: selectedThemes || ['COLOR', 'MATH']
+        selected_themes: selectedThemes || ['COLOR', 'MATH'],
+        base_time: baseTime || 2.2,
+        acceleration_enabled: accelerationEnabled !== undefined ? accelerationEnabled : true
       })
       .select()
       .single();
@@ -401,7 +403,7 @@ export const updateRoomSettings = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async (args: any) => {
     const { data, context } = args;
-    const { roomId, selectedThemes } = data;
+    const { roomId, selectedThemes, baseTime, accelerationEnabled } = data;
     const { userId } = context;
 
     const { data: room } = await supabaseAdmin
@@ -412,9 +414,14 @@ export const updateRoomSettings = createServerFn({ method: "POST" })
 
     if (!room || room.host_id !== userId) throw new Error("Apenas o host pode alterar as configurações");
 
+    const updateData: any = {};
+    if (selectedThemes) updateData.selected_themes = selectedThemes;
+    if (baseTime !== undefined) updateData.base_time = baseTime;
+    if (accelerationEnabled !== undefined) updateData.acceleration_enabled = accelerationEnabled;
+
     const { error } = await supabaseAdmin
       .from("rooms")
-      .update({ selected_themes: selectedThemes })
+      .update(updateData)
       .eq("id", roomId);
 
     if (error) throw new Error(error.message);

@@ -215,6 +215,7 @@ export type Database = {
           selected_arena_effect: Json | null
           selected_effect: Json | null
           selected_font: Json | null
+          selected_frame: Json | null
           selected_icon: Json | null
           selected_skin: string | null
           selected_title: string | null
@@ -241,6 +242,7 @@ export type Database = {
           selected_arena_effect?: Json | null
           selected_effect?: Json | null
           selected_font?: Json | null
+          selected_frame?: Json | null
           selected_icon?: Json | null
           selected_skin?: string | null
           selected_title?: string | null
@@ -267,6 +269,7 @@ export type Database = {
           selected_arena_effect?: Json | null
           selected_effect?: Json | null
           selected_font?: Json | null
+          selected_frame?: Json | null
           selected_icon?: Json | null
           selected_skin?: string | null
           selected_title?: string | null

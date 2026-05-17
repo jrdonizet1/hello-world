@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, Coins, Check, Lock, Palette, Type, Monitor, Sparkles, Star, Zap, XCircle, ChevronRight, Shield, Crown, ShieldCheck, Infinity as InfinityIcon } from 'lucide-react';
+import { ShoppingBag, Coins, Check, Lock, Palette, Type, Monitor, Sparkles, Star, Zap, XCircle, ChevronRight, Shield, Crown, ShieldCheck, Infinity as InfinityIcon, Layout } from 'lucide-react';
 import { getShopItems, buyShopItem, getUserInventory, updateEquippedItems, getProfile } from '../../lib/server-functions';
 import { useGameStore } from '../../store/useGameStore';
 import { toast } from 'sonner';
 import { UserIdentity } from './UserIdentity';
 import { UserAvatar } from './UserAvatar';
 
-const NamePreview = ({ name, profile, skinColor, title, icon, effect, font, avatarUrl }: any) => {
+const NamePreview = ({ name, profile, skinColor, title, icon, effect, font, avatarUrl, frame }: any) => {
   return (
     <div className="flex flex-col items-center gap-4 p-6 bg-black/60 rounded-[32px] border border-white/10 mb-4 min-h-[160px] justify-center overflow-hidden">
       <p className="text-[8px] font-black uppercase tracking-widest text-zinc-600">Prévia de Identidade Neural</p>
       <div className="flex flex-col items-center gap-4">
-        <UserAvatar url={avatarUrl} level={profile?.level} size="lg" />
+        <UserAvatar url={avatarUrl} level={profile?.level} size="lg" frame={frame} />
         <UserIdentity 
           name={name}
           skin={skinColor}
@@ -32,7 +32,7 @@ interface ShopItem {
   name: string;
   description: string;
   price: number;
-  category: 'skin' | 'title' | 'avatar' | 'font' | 'arena_effect' | 'power_up' | 'icon';
+  category: 'skin' | 'title' | 'avatar' | 'font' | 'arena_effect' | 'power_up' | 'icon' | 'frame';
   rarity?: 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY';
   item_data: any;
 }
@@ -44,8 +44,8 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'COSMETICS' | 'POWERS' | 'MY_ITEMS'>('COSMETICS');
-  const [cosmeticCategory, setCosmeticCategory] = useState<'all' | 'skin' | 'title' | 'font' | 'arena_effect' | 'avatar'>('all');
-  const [inventoryCategory, setInventoryCategory] = useState<'all' | 'skin' | 'title' | 'font' | 'arena_effect' | 'avatar'>('all');
+  const [cosmeticCategory, setCosmeticCategory] = useState<'all' | 'skin' | 'title' | 'font' | 'arena_effect' | 'avatar' | 'frame'>('all');
+  const [inventoryCategory, setInventoryCategory] = useState<'all' | 'skin' | 'title' | 'font' | 'arena_effect' | 'avatar' | 'frame'>('all');
 
   const loadData = async () => {
     try {
@@ -106,6 +106,7 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         }
       }
       else if (item.category === 'avatar') updateData.avatarUrl = item.item_data.url;
+      else if (item.category === 'frame') updateData.frame = item.item_data;
 
       await (updateEquippedItems as any)({ data: updateData });
       toast.success('Equipado com sucesso!');
@@ -126,6 +127,7 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         updateData.arenaEffect = null;
       }
       else if (category === 'avatar') updateData.avatarUrl = null;
+      else if (category === 'frame') updateData.frame = null;
 
       await (updateEquippedItems as any)({ data: updateData });
       toast.success('Desequipado com sucesso!');
@@ -148,6 +150,7 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     }
     if (item.category === 'icon') return JSON.stringify(profile?.selected_icon) === JSON.stringify(item.item_data);
     if (item.category === 'avatar') return profile?.avatar_url === item.item_data.url;
+    if (item.category === 'frame') return JSON.stringify(profile?.selected_frame) === JSON.stringify(item.item_data);
     return false;
   };
 
@@ -227,7 +230,8 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               { id: 'title', label: 'Títulos' },
               { id: 'font', label: 'Fontes' },
               { id: 'arena_effect', label: 'Efeitos' },
-              { id: 'avatar', label: 'Avatares' }
+              { id: 'avatar', label: 'Avatares' },
+              { id: 'frame', label: 'Molduras' }
             ].map((cat) => {
               const isActive = activeTab === 'COSMETICS' ? cosmeticCategory === cat.id : inventoryCategory === cat.id;
               return (
@@ -272,6 +276,7 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           effect={profile.selected_effect}
           font={profile.selected_font}
           avatarUrl={profile.avatar_url}
+          frame={profile.selected_frame}
         />
       )}
       <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
@@ -325,6 +330,7 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                        item.category === 'arena_effect' ? <Sparkles size={14} /> :
                        item.category === 'icon' ? <Star size={14} /> :
                        item.category === 'avatar' ? <Monitor size={14} /> :
+                       item.category === 'frame' ? <Layout size={14} /> :
                        <Type size={14} />}
                     </div>
                   </div>
@@ -375,6 +381,16 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                           />
                         </div>
                       )}
+                      {item.category === 'frame' && (
+                        <div className="flex justify-center py-2 min-h-[80px] items-center">
+                          <UserAvatar 
+                            url={profile?.avatar_url} 
+                            showLevel={false}
+                            size="lg"
+                            frame={item.item_data}
+                          />
+                        </div>
+                      )}
                       {item.category === 'power_up' && (
                         <div className="flex items-center gap-2 text-zinc-400">
                           <div className={`p-2 rounded-lg bg-black/40 border border-white/5`}>
@@ -396,49 +412,71 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                           {item.price}
                         </span>
                       </div>
-                    ) : item.category === 'power_up' ? (
-                      <div className="flex items-center gap-1.5">
-                        <Coins size={12} className="text-yellow-500" />
-                        <span className={`text-sm font-black ${canAfford ? 'text-white' : 'text-red-500'}`}>
-                          {item.price}
-                        </span>
-                      </div>
                     ) : (
-                      <span className="text-[9px] font-black uppercase tracking-widest text-cyan-400">
-                        Adquirido
-                      </span>
-                    )}
-
-                    {owned ? (
-                      <div className="flex gap-2">
+                      <div className="flex items-center gap-2">
                         {equipped ? (
-                          <button
-                            onClick={() => handleUnequip(item.category)}
-                            className="px-4 py-2 rounded-xl text-[10px] font-black uppercase bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-all border border-red-500/20 active:scale-95"
-                          >
-                            Remover
-                          </button>
+                          <div className="flex items-center gap-1.5 text-cyan-400">
+                            <Check size={14} />
+                            <span className="text-[10px] font-black uppercase tracking-widest">Equipado</span>
+                          </div>
+                        ) : owned ? (
+                          <div className="flex items-center gap-1.5 text-zinc-500">
+                            <Lock size={12} className="opacity-50" />
+                            <span className="text-[10px] font-black uppercase tracking-widest">Adquirido</span>
+                          </div>
                         ) : (
-                          <button
-                            onClick={() => handleEquip(item)}
-                            className="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all bg-white/10 hover:bg-white/20 text-white active:scale-95"
-                          >
-                            Equipar
-                          </button>
+                          <div className="flex items-center gap-1.5">
+                            <Coins size={12} className="text-yellow-500" />
+                            <span className={`text-sm font-black ${canAfford ? 'text-white' : 'text-red-500'}`}>
+                              {item.price}
+                            </span>
+                          </div>
                         )}
                       </div>
-                    ) : (
+                    )}
+
+                    {!owned && item.category !== 'power_up' ? (
                       <button
                         onClick={() => handleBuy(item.id, item.price)}
                         disabled={buying === item.id || !canAfford}
-                        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                          canAfford
-                            ? 'bg-yellow-500 text-black hover:scale-105 active:scale-95 shadow-lg shadow-yellow-500/20'
-                            : 'bg-zinc-900 text-zinc-700 cursor-not-allowed border border-white/5'
+                        className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                          canAfford 
+                            ? 'bg-white text-black hover:scale-105 active:scale-95 shadow-lg' 
+                            : 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
                         }`}
                       >
-                        {buying === item.id ? '...' : item.category === 'power_up' ? 'Comprar Carga' : 'Comprar'}
+                        {buying === item.id ? '...' : 'Comprar'}
                       </button>
+                    ) : item.category === 'power_up' ? (
+                      <button
+                        onClick={() => handleBuy(item.id, item.price)}
+                        disabled={buying === item.id || !canAfford}
+                        className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                          canAfford 
+                            ? 'bg-cyan-500 text-white hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(6,182,212,0.4)]' 
+                            : 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
+                        }`}
+                      >
+                        {buying === item.id ? '...' : 'Comprar'}
+                      </button>
+                    ) : (
+                      <div className="flex gap-2">
+                        {!equipped ? (
+                          <button
+                            onClick={() => handleEquip(item)}
+                            className="px-6 py-2 bg-cyan-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-[0_0_15px_rgba(6,182,212,0.4)]"
+                          >
+                            Equipar
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleUnequip(item.category)}
+                            className="px-6 py-2 bg-red-500/20 text-red-500 border border-red-500/30 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-500/30 transition-all"
+                          >
+                            Remover
+                          </button>
+                        )}
+                      </div>
                     )}
                   </div>
                 </motion.div>

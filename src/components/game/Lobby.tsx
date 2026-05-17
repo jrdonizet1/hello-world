@@ -595,9 +595,13 @@ export const Lobby: React.FC = () => {
                       }}
                       className={`flex items-center gap-3 ${session?.user?.is_anonymous ? 'opacity-50 cursor-help' : 'cursor-pointer'} group`}
                     >
-                      <div className={`w-10 h-10 rounded-full ${session?.user?.is_anonymous ? 'bg-zinc-800' : 'bg-cyan-500/20'} flex items-center justify-center border ${session?.user?.is_anonymous ? 'border-zinc-700' : 'border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.2)]'} group-hover:scale-110 transition-transform`}>
-                        {session?.user?.is_anonymous ? <Lock size={16} className="text-zinc-500" /> : <User size={20} className="text-cyan-400" />}
-                      </div>
+                      <UserAvatar 
+                        url={profile?.avatar_url} 
+                        level={profile?.level} 
+                        size="md" 
+                        frame={profile?.selected_frame}
+                        className={session?.user?.is_anonymous ? 'grayscale' : ''}
+                      />
                       <div className="flex flex-col">
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-black truncate max-w-[120px] text-white group-hover:text-cyan-400 transition-colors">

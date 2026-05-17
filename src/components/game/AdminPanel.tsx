@@ -491,6 +491,115 @@ export const AdminPanel: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           </AnimatePresence>
         )}
       </div>
+            {activeTab === 'SYSTEM' && systemSettings && (
+              <motion.div 
+                key="system"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="grid grid-cols-1 md:grid-cols-2 gap-8"
+              >
+                {/* Maintenance Mode */}
+                <div className="bg-zinc-900/40 border border-zinc-800 p-8 rounded-[40px] space-y-6">
+                  <div className="flex items-center gap-4 mb-2">
+                    <div className="p-3 bg-red-500/10 rounded-2xl text-red-500">
+                      <AlertTriangle size={24} />
+                    </div>
+                    <div>
+                      <h4 className="text-xl font-black italic uppercase">Modo de Manutenção</h4>
+                      <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Travar entrada na arena</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-black/40 rounded-2xl border border-zinc-800">
+                    <span className="text-xs font-black uppercase tracking-widest">Status da Arena</span>
+                    <button 
+                      onClick={async () => {
+                        const newVal = !systemSettings.maintenance_mode.enabled;
+                        await (updateSystemSettings as any)({ data: { key: 'maintenance_mode', value: { ...systemSettings.maintenance_mode, enabled: newVal } } });
+                        loadSystem();
+                        toast.success(newVal ? 'Modo manutenção ativado' : 'Arena aberta novamente');
+                      }}
+                      className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                        systemSettings.maintenance_mode.enabled ? 'bg-red-500 text-white shadow-[0_0_20px_rgba(239,68,68,0.4)]' : 'bg-green-500 text-black'
+                      }`}
+                    >
+                      {systemSettings.maintenance_mode.enabled ? 'ATIVADO' : 'DESATIVADO'}
+                    </button>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-zinc-500 uppercase">Mensagem de Bloqueio</label>
+                    <textarea 
+                      className="w-full bg-black border border-zinc-800 rounded-2xl p-4 text-xs font-bold outline-none focus:border-red-500/30 min-h-[100px]"
+                      value={systemSettings.maintenance_mode.message}
+                      onChange={(e) => setSystemSettings({
+                        ...systemSettings, 
+                        maintenance_mode: { ...systemSettings.maintenance_mode, message: e.target.value }
+                      })}
+                    />
+                    <button 
+                      onClick={async () => {
+                        await (updateSystemSettings as any)({ data: { key: 'maintenance_mode', value: systemSettings.maintenance_mode } });
+                        toast.success('Mensagem atualizada');
+                      }}
+                      className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+                    >
+                      Salvar Mensagem
+                    </button>
+                  </div>
+                </div>
+
+                {/* Global Announcement */}
+                <div className="bg-zinc-900/40 border border-zinc-800 p-8 rounded-[40px] space-y-6">
+                  <div className="flex items-center gap-4 mb-2">
+                    <div className="p-3 bg-cyan-500/10 rounded-2xl text-cyan-500">
+                      <Bell size={24} />
+                    </div>
+                    <div>
+                      <h4 className="text-xl font-black italic uppercase">Comunicado Neural</h4>
+                      <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Mensagem global para todos</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-black/40 rounded-2xl border border-zinc-800">
+                    <span className="text-xs font-black uppercase tracking-widest">Exibir Comunicado</span>
+                    <button 
+                      onClick={async () => {
+                        const newVal = !systemSettings.global_announcement.active;
+                        await (updateSystemSettings as any)({ data: { key: 'global_announcement', value: { ...systemSettings.global_announcement, active: newVal } } });
+                        loadSystem();
+                      }}
+                      className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                        systemSettings.global_announcement.active ? 'bg-cyan-500 text-black shadow-[0_0_20px_rgba(6,182,212,0.4)]' : 'bg-zinc-800 text-zinc-500'
+                      }`}
+                    >
+                      {systemSettings.global_announcement.active ? 'ATIVO' : 'OCULTO'}
+                    </button>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-zinc-500 uppercase">Texto do Comunicado</label>
+                    <textarea 
+                      className="w-full bg-black border border-zinc-800 rounded-2xl p-4 text-xs font-bold outline-none focus:border-cyan-500/30 min-h-[100px]"
+                      value={systemSettings.global_announcement.text}
+                      onChange={(e) => setSystemSettings({
+                        ...systemSettings, 
+                        global_announcement: { ...systemSettings.global_announcement, text: e.target.value }
+                      })}
+                    />
+                    <button 
+                      onClick={async () => {
+                        await (updateSystemSettings as any)({ data: { key: 'global_announcement', value: systemSettings.global_announcement } });
+                        toast.success('Comunicado atualizado');
+                      }}
+                      className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+                    >
+                      <Save size={14} /> Atualizar Comunicado
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
 
       {/* Item Editor Modal (mesmo de antes mas com preview dinâmico) */}
       <AnimatePresence>

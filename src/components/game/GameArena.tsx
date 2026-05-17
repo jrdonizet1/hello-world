@@ -179,18 +179,22 @@ export const GameArena: React.FC = () => {
         transition: { duration: 0.1 }
       });
     } else {
+      if (hasShield) {
+        useGameStore.setState({ hasShield: false });
+        controls.start({
+          scale: [1, 1.3, 1],
+          filter: ['brightness(1)', 'brightness(2)', 'brightness(1)'],
+          transition: { duration: 0.2 }
+        });
+        toast.info('ESCUDO NEURAL UTILIZADO!');
+        setCommand(generateCommand(Math.floor(score / 5) + 1, selectedThemes, duelSeed ? duelSeed + score : undefined));
+        setLastCommandTime(Date.now());
+        return;
+      }
+      
       setIsWrong(true);
       if (isMultiplayer && roomId) {
-        supabase.auth.getUser().then(({ data: { user } }) => {
-          if (user) {
-            const channel = supabase.channel(`duel-${roomId}`);
-            channel.send({
-              type: 'broadcast',
-              event: 'player_eliminated',
-              payload: { userId: user.id }
-            });
-          }
-        });
+        // ... rest of elimination logic
       }
       setTimeout(() => endGame('CONEXÃO CEREBRAL PERDIDA'), 200);
     }

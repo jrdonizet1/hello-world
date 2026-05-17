@@ -127,39 +127,41 @@ export const GameArena: React.FC = () => {
             <h3 className="text-xl font-bold text-gray-400 mb-4 uppercase tracking-widest">
               {currentCommand?.text}
             </h3>
-            <h2 
-              className="text-7xl sm:text-8xl font-black tracking-tighter leading-none uppercase italic drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]"
-              style={{ color: (currentCommand as any)?.displayColor }}
-            >
-              {(currentCommand as any)?.displayWord}
-            </h2>
+            
+            {currentCommand?.type === 'COLOR' ? (
+              <h2 
+                className="text-7xl sm:text-8xl font-black tracking-tighter leading-none uppercase italic drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]"
+                style={{ color: (currentCommand as any)?.displayColor }}
+              >
+                {(currentCommand as any)?.displayWord}
+              </h2>
+            ) : (
+              <h2 className="text-7xl sm:text-8xl font-black tracking-tighter leading-none uppercase italic glitch-effect">
+                {(currentCommand as any)?.displayWord || currentCommand?.text}
+              </h2>
+            )}
           </motion.div>
         </AnimatePresence>
       </motion.div>
 
       {/* Interaction Area */}
-      <div className="grid grid-cols-2 gap-6 h-[25%] mb-8">
-        <InteractionButton 
-          color="bg-red-600 shadow-red-900/50" 
-          label="NÃO" 
-          onClick={() => handleAction(false)} 
-        />
-        <InteractionButton 
-          color="bg-green-600 shadow-green-900/50" 
-          label="SIM" 
-          onClick={() => handleAction(true)} 
-        />
+      <div className="flex gap-4 h-[25%] mb-8">
+        <button 
+          onClick={() => handleAction(false)}
+          className="flex-1 rounded-3xl bg-red-500/10 border-2 border-red-500/50 flex flex-col items-center justify-center gap-2 active:scale-95 active:bg-red-500/20 transition-all text-red-500"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x w-12 h-12" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+          <span className="font-bold tracking-widest text-sm">NÃO</span>
+        </button>
+
+        <button 
+          onClick={() => handleAction(true)}
+          className="flex-1 rounded-3xl bg-green-500/10 border-2 border-green-500/50 flex flex-col items-center justify-center gap-2 active:scale-95 active:bg-green-500/20 transition-all text-green-500"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check w-12 h-12" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>
+          <span className="font-bold tracking-widest text-sm">SIM</span>
+        </button>
       </div>
     </div>
   );
 };
-
-const InteractionButton: React.FC<{ color: string; label: string; onClick: () => void }> = ({ color, label, onClick }) => (
-  <motion.button
-    whileTap={{ scale: 0.94 }}
-    onClick={onClick}
-    className={`${color} rounded-3xl flex items-center justify-center font-black text-xl shadow-2xl border-b-[6px] border-black/30 active:border-b-0 active:translate-y-1 transition-all`}
-  >
-    <span className="drop-shadow-md">{label}</span>
-  </motion.button>
-);

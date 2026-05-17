@@ -193,7 +193,7 @@ export const GameArena: React.FC = () => {
         }
       `}</style>
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-6 z-10">
         <div className="flex flex-col">
           <span className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em]">Sincronia</span>
           <span className="text-4xl font-black italic tabular-nums">{score.toFixed(1)}</span>

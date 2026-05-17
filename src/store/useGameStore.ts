@@ -39,6 +39,8 @@ interface BrainLagState {
   duelOpponentProgress: number;
   duelOpponentId: string | null;
   duelSeed: number | null;
+  activePowers: { id: string, expiresAt: number }[];
+  coins: number;
   
   setGameState: (state: GameState) => void;
   setGameMode: (mode: GameMode) => void;

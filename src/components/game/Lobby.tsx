@@ -21,21 +21,17 @@ export const Lobby: React.FC = () => {
   const [view, setView] = useState<LobbyView>('MAIN');
   const [loading, setLoading] = useState(false);
   
-  // Create Room State
   const [roomName, setRoomName] = useState('Arena Neural');
   const [maxPlayers, setMaxPlayers] = useState(4);
   const [isPrivate, setIsPrivate] = useState(false);
   const [password, setPassword] = useState('');
   
-  // Join Room State
   const [joinCode, setJoinCode] = useState('');
   const [joinPassword, setJoinPassword] = useState('');
   const [needsPassword, setNeedsPassword] = useState(false);
 
-  // Room List State
   const [availableRooms, setAvailableRooms] = useState<any[]>([]);
 
-  // Room Lobby State
   const [players, setPlayers] = useState<any[]>([]);
   const [roomData, setRoomData] = useState<any>(null);
   const [isReady, setIsReady] = useState(false);
@@ -86,7 +82,6 @@ export const Lobby: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // Check for referral code in URL
     const params = new URLSearchParams(window.location.search);
     const ref = params.get('ref');
     if (ref) {
@@ -118,7 +113,6 @@ export const Lobby: React.FC = () => {
       }
     });
 
-    // Cleanup for room
     const handleUnload = () => {
       if (roomId) {
         leaveRoom();
@@ -143,7 +137,6 @@ export const Lobby: React.FC = () => {
           fetchProfile(userId);
         }
       } catch (err: any) {
-        // Only log if it's not the "already redeemed" error to avoid spamming
         if (!err.message.includes('já resgatou')) {
           console.error('Referral error:', err.message);
         }
@@ -161,7 +154,6 @@ export const Lobby: React.FC = () => {
   const fetchAvailableRooms = async () => {
     setLoading(true);
     try {
-      // Get rooms with their player counts
       const { data: rooms, error } = await supabase
         .from('rooms')
         .select(`
@@ -188,7 +180,6 @@ export const Lobby: React.FC = () => {
     }
   };
 
-  // Real-time subscriptions
   useEffect(() => {
     if (!roomId) return;
 
@@ -249,7 +240,7 @@ export const Lobby: React.FC = () => {
   const fetchPlayers = async () => {
     const { data } = await supabase
       .from('profiles')
-      .select('id, nickname, is_ready, selected_skin, selected_title, selected_icon, selected_effect, selected_font')
+      .select('id, nickname, is_ready, selected_skin, selected_title, selected_icon, selected_effect, selected_font, avatar_url, level')
       .eq('room_id', roomId as string);
     if (data) setPlayers(data);
   };
@@ -376,8 +367,6 @@ export const Lobby: React.FC = () => {
         profile?.selected_effect
       );
       await (startRoomGame as any)({ data: roomId });
-      // The room status will change to STARTING, and the subscription will call startGame()
-      // But we need to make sure startGame uses the room's baseTime and acceleration
       startGame(undefined, selectedThemes, baseTime, accelerationIntensity);
     } catch (err: any) {
       toast.error(err.message);
@@ -426,7 +415,6 @@ export const Lobby: React.FC = () => {
     
     setSelectedThemes(newThemes);
     
-    // Se estiver em uma sala e for o host, atualizar no banco
     if (roomId && isHost) {
       try {
         await (updateRoomSettings as any)({ data: { roomId, selectedThemes: newThemes } });
@@ -1172,7 +1160,6 @@ export const Lobby: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               className="space-y-4"
             >
-              {/* User requested structure */}
               <div className="w-full text-center space-y-3 mb-2">
                 <h2 className="text-[10px] font-black tracking-[0.3em] text-cyan-500/80 uppercase">
                   {roomData?.is_private ? 'Sala Privada' : roomData?.name || 'Arena Neural'}
@@ -1236,6 +1223,7 @@ export const Lobby: React.FC = () => {
                           <span className={`relative inline-flex rounded-full h-3 w-3 ${p.is_ready || p.id === roomData?.host_id ? 'bg-green-500' : 'bg-red-500'}`}></span>
                           {p.is_ready && <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping"></span>}
                         </div>
+                        <UserAvatar url={p.avatar_url} level={p.level} size="sm" />
                         <UserIdentity 
                           name={p.nickname || 'Anônimo'}
                           skin={p.selected_skin}

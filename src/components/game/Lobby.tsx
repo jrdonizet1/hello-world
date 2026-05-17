@@ -356,9 +356,14 @@ export const Lobby: React.FC = () => {
                             {nickname || 'Cérebro Anônimo'}
                           </span>
                           {!session?.user?.is_anonymous && (
-                            <span className="bg-cyan-500/20 text-cyan-400 text-[8px] font-black px-1.5 py-0.5 rounded border border-cyan-500/20">LVL {profile?.level || 1}</span>
+                             <span className="bg-cyan-500/20 text-cyan-400 text-[8px] font-black px-1.5 py-0.5 rounded border border-cyan-500/20">LVL {profile?.level || 1}</span>
                           )}
                         </div>
+                        {profile?.selected_title && (
+                          <span className="text-[10px] font-black text-cyan-400 uppercase tracking-widest italic animate-pulse">
+                            « {profile.selected_title} »
+                          </span>
+                        )}
                         <div className="flex items-center gap-2 mt-0.5">
                           {session?.user?.is_anonymous ? (
                             <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest">Visitante Temporário</span>

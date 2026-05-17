@@ -160,6 +160,27 @@ export const GameArena: React.FC = () => {
             </span>
           )}
         </div>
+        
+        {/* Combo Multiplier */}
+        <div className="flex-1 flex flex-col items-center">
+          <AnimatePresence>
+            {combo > 1 && (
+              <motion.div
+                initial={{ opacity: 0, y: 10, scale: 0.8 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.2 }}
+                className="flex flex-col items-center"
+              >
+                <span className="text-[10px] font-black text-cyan-500 uppercase tracking-[0.2em]">Combo x{combo}</span>
+                <div className="bg-cyan-500/20 px-3 py-1 rounded-full border border-cyan-500/30 flex items-center gap-1.5 shadow-[0_0_15px_rgba(6,182,212,0.2)]">
+                  <Zap size={12} className="text-cyan-400 fill-cyan-400" />
+                  <span className="text-lg font-black italic text-cyan-400 leading-none">x{multiplier.toFixed(1)}</span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
         <div className="flex flex-col items-end">
           <span className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em]">Estável</span>
           <span 

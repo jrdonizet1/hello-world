@@ -340,7 +340,8 @@ export const getUserInventory = createServerFn({ method: "GET" })
 
 export const buyShopItem = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ data: itemId, context }: { data: string; context: any }) => {
+  .handler(async (args: any) => {
+    const { data: itemId, context } = args;
     const { userId } = context;
 
     const { data, error } = await supabaseAdmin.rpc("purchase_item", {
@@ -358,7 +359,8 @@ export const buyShopItem = createServerFn({ method: "POST" })
 
 export const updateEquippedItems = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ data, context }: { data: { skin?: string; title?: string }; context: any }) => {
+  .handler(async (args: any) => {
+    const { data, context } = args;
     const { skin, title } = data;
     const { userId } = context;
 

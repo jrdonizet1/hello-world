@@ -240,7 +240,7 @@ export const Lobby: React.FC = () => {
   const fetchPlayers = async () => {
     const { data } = await supabase
       .from('profiles')
-      .select('id, nickname, is_ready')
+      .select('id, nickname, is_ready, selected_skin, selected_title')
       .eq('room_id', roomId as string);
     if (data) setPlayers(data);
   };
@@ -1196,7 +1196,22 @@ export const Lobby: React.FC = () => {
                           <span className={`relative inline-flex rounded-full h-3 w-3 ${p.is_ready || p.id === roomData?.host_id ? 'bg-green-500' : 'bg-red-500'}`}></span>
                           {p.is_ready && <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping"></span>}
                         </div>
-                        <span className="font-bold text-white tracking-wide text-xs">{p.nickname || 'Anônimo'}</span>
+                        <div className="flex flex-col">
+                          <span 
+                            className="font-black italic uppercase text-xs tracking-tight"
+                            style={{ color: p.selected_skin || 'white' }}
+                          >
+                            {p.nickname || 'Anônimo'}
+                          </span>
+                          {p.selected_title && (
+                            <span 
+                              className="text-[7px] font-black uppercase tracking-[0.2em] opacity-70"
+                              style={{ color: p.selected_skin || 'white' }}
+                            >
+                              « {p.selected_title} »
+                            </span>
+                          )}
+                        </div>
                         {p.id === session?.user?.id && (
                           <span className="text-[8px] uppercase tracking-widest text-cyan-500 font-bold bg-cyan-500/10 px-2 py-0.5 rounded-full border border-cyan-500/20">Você</span>
                         )}
@@ -1265,7 +1280,25 @@ export const Lobby: React.FC = () => {
                 </div>
 
                 <div className="text-center space-y-1">
-                  <h2 className="text-2xl font-black text-white italic tracking-tighter uppercase">{nickname || 'Cérebro Anônimo'}</h2>
+                  <div className="flex flex-col items-center gap-1">
+                    <h2 
+                      className="text-3xl font-black italic tracking-tighter uppercase"
+                      style={{ 
+                        color: profile?.selected_skin || 'white',
+                        textShadow: profile?.selected_title ? `0 0 15px ${profile?.selected_skin}40` : 'none'
+                      }}
+                    >
+                      {nickname || 'Cérebro Anônimo'}
+                    </h2>
+                    {profile?.selected_title && (
+                      <span 
+                        className="text-xs font-black uppercase tracking-[0.3em]"
+                        style={{ color: profile?.selected_skin || 'white' }}
+                      >
+                        « {profile?.selected_title} »
+                      </span>
+                    )}
+                  </div>
                   <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">{session?.user?.email}</p>
                 </div>
 
@@ -1512,12 +1545,22 @@ export const Lobby: React.FC = () => {
                           {i + 1}
                         </div>
                         <div className="flex flex-col">
-                          <span className={`text-sm font-black uppercase tracking-tight ${entry.user_id === session?.user?.id ? 'text-cyan-400' : 'text-white'}`}>
-                            {entry.profiles?.nickname || 'Anônimo'}
-                          </span>
-                          <span className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest">
-                            {rankingCategory ? 'Recorde Temático' : 'Recorde Geral'}
-                          </span>
+                          <div className="flex flex-col">
+                            <span 
+                              className="text-sm font-black italic uppercase tracking-tight"
+                              style={{ color: entry.profiles?.selected_skin || 'white' }}
+                            >
+                              {entry.profiles?.nickname || 'Anônimo'}
+                            </span>
+                            {entry.profiles?.selected_title && (
+                              <span 
+                                className="text-[7px] font-black uppercase tracking-[0.2em] opacity-70"
+                                style={{ color: entry.profiles?.selected_skin || 'white' }}
+                              >
+                                « {entry.profiles?.selected_title} »
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                       

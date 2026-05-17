@@ -236,7 +236,7 @@ export const GameArena: React.FC = () => {
       </div>
 
       {/* Timer Bar */}
-      <div className="w-full h-3 bg-white/5 rounded-full overflow-hidden mb-12 border border-white/10 p-[2px]">
+      <div className="w-full h-3 bg-white/5 rounded-full overflow-hidden mb-12 border border-white/10 p-[2px] z-10">
         <motion.div 
           className="h-full rounded-full"
           style={{ 

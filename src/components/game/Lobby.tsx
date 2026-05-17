@@ -371,7 +371,95 @@ export const Lobby: React.FC = () => {
                 >
                   {loading ? <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin"></div> : 'ENTRAR NA ARENA'}
                 </button>
+
+                <div className="flex items-center gap-4 py-2">
+                  <div className="h-px flex-1 bg-zinc-800"></div>
+                  <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest">ou</span>
+                  <div className="h-px flex-1 bg-zinc-800"></div>
+                </div>
+
+                <button 
+                  onClick={() => setView('ROOMS_LIST')}
+                  className="w-full py-4 bg-zinc-900 border border-zinc-800 text-white font-bold text-xs rounded-2xl flex items-center justify-center gap-2 hover:bg-zinc-800 transition-all"
+                >
+                  <RefreshCw size={14} className="text-cyan-500" /> VER SALAS DISPONÍVEIS
+                </button>
               </div>
+            </motion.div>
+          )}
+
+          {view === 'ROOMS_LIST' && (
+            <motion.div 
+              key="rooms-list"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="flex flex-col w-full max-w-sm h-full"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl font-black text-white uppercase">Salas</h2>
+                  <p className="text-zinc-500 text-xs mt-0.5">{availableRooms.length} sala(s) disponíveis</p>
+                </div>
+                <button 
+                  onClick={fetchAvailableRooms}
+                  disabled={loading}
+                  className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-xl transition-all active:scale-90"
+                >
+                  <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto space-y-3 pb-4 max-h-[400px] pr-2 custom-scrollbar">
+                {availableRooms.length === 0 && !loading ? (
+                  <div className="text-center py-10 space-y-2">
+                    <p className="text-zinc-600 text-xs font-bold uppercase tracking-widest">Nenhuma arena ativa</p>
+                    <button onClick={() => setView('CREATE_ROOM')} className="text-cyan-500 text-[10px] font-black underline">CRIAR A PRIMEIRA</button>
+                  </div>
+                ) : (
+                  availableRooms.map((room) => (
+                    <div key={room.id} className="w-full bg-zinc-900 border border-zinc-800 p-4 rounded-2xl hover:border-zinc-700 transition-colors">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            {room.is_private && <Lock className="w-3.5 h-3.5 text-yellow-500 flex-shrink-0" />}
+                            <span className="text-white font-black truncate">{room.name}</span>
+                          </div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-zinc-500 text-xs">{room.code}</span>
+                            <span className="text-zinc-700">·</span>
+                            <span className="text-zinc-400 text-xs font-bold">{room.playerCount}/{room.max_players} jogadores</span>
+                            {room.is_private && (
+                              <span className="text-yellow-600 text-[10px] font-bold uppercase tracking-widest bg-yellow-500/10 px-2 py-0.5 rounded-full">Privada</span>
+                            )}
+                          </div>
+                        </div>
+                        <button 
+                          onClick={() => {
+                            setJoinCode(room.code);
+                            if (room.is_private) {
+                              setNeedsPassword(true);
+                              setView('MULTIPLAYER');
+                              toast.info('Digite a senha para entrar');
+                            } else {
+                              handleJoinRoom(room.code);
+                            }
+                          }}
+                          className="flex-shrink-0 bg-blue-600 hover:bg-blue-500 text-white text-xs font-black px-4 py-2 rounded-xl active:scale-95 transition-all"
+                        >
+                          Entrar
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+              <button 
+                onClick={() => setView('MULTIPLAYER')}
+                className="text-zinc-500 hover:text-zinc-300 font-bold uppercase tracking-widest text-sm mt-4 text-center"
+              >
+                Voltar
+              </button>
             </motion.div>
           )}
 

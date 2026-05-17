@@ -170,7 +170,8 @@ export const getLeaderboard = createServerFn({ method: "GET" })
           selected_title,
           selected_icon,
           selected_effect,
-          selected_font
+          selected_font,
+          selected_frame
         )
       `)
       .order(colName, { ascending: false })

@@ -95,7 +95,7 @@ export const getLeaderboard = createServerFn({ method: "GET" })
       .limit(10);
 
     if (error) throw new Error(error.message);
-    return data;
+    return data.filter(entry => entry.profiles !== null);
   });
 
 export const updateProfile = createServerFn({ method: "POST" })

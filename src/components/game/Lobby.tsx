@@ -47,10 +47,18 @@ export const Lobby: React.FC = () => {
   };
 
   useEffect(() => {
+    // Check for referral code in URL
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (ref) {
+      localStorage.setItem('pending_referral', ref);
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session) {
         fetchProfile(session.user.id);
+        checkPendingReferral(session.user.id);
       }
     });
 
@@ -58,6 +66,7 @@ export const Lobby: React.FC = () => {
       setSession(session);
       if (session) {
         fetchProfile(session.user.id);
+        checkPendingReferral(session.user.id);
       } else {
         setProfile(null);
         setNickname('');
@@ -67,7 +76,6 @@ export const Lobby: React.FC = () => {
     // Cleanup for room
     const handleUnload = () => {
       if (roomId) {
-        // Simple call, we don't await because it's unloading
         leaveRoom();
       }
     };
@@ -78,6 +86,26 @@ export const Lobby: React.FC = () => {
       window.removeEventListener('beforeunload', handleUnload);
     };
   }, [roomId]);
+
+  const checkPendingReferral = async (userId: string) => {
+    const pendingRef = localStorage.getItem('pending_referral');
+    if (pendingRef && session && !session.user.is_anonymous) {
+      try {
+        const result = await (redeemReferralCode as any)({ data: pendingRef });
+        if (result.success) {
+          toast.success(result.message);
+          localStorage.removeItem('pending_referral');
+          fetchProfile(userId);
+        }
+      } catch (err: any) {
+        // Only log if it's not the "already redeemed" error to avoid spamming
+        if (!err.message.includes('já resgatou')) {
+          console.error('Referral error:', err.message);
+        }
+        localStorage.removeItem('pending_referral');
+      }
+    }
+  };
 
   useEffect(() => {
     if (view === 'ROOMS_LIST') {

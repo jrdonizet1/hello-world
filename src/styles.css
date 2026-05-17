@@ -159,3 +159,12 @@
 .glitch-effect {
   text-shadow: 2px 0 #ff0055, -2px 0 #00f2ff;
 }
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

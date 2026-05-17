@@ -113,7 +113,9 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
       multiplier: 1,
       maxCombo: 0,
       timeRemaining: mode === 'BLITZ' ? 1.2 : (mode === 'SURVIVAL' ? 5 : currentBaseTime),
-      lastError: null 
+      lastError: null,
+      duelSeed: mode === 'NORMAL' && state.isMultiplayer ? Math.floor(Math.random() * 1000000) : null,
+      duelOpponentProgress: 0
     });
   },
 

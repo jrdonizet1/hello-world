@@ -170,5 +170,9 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
   }),
 
   setDuelOpponent: (id, progress) => set({ duelOpponentId: id, duelOpponentProgress: progress }),
+  usePower: (powerId) => set((state) => {
+    const expiresAt = Date.now() + 5000; // 5 seconds
+    return { activePowers: [...state.activePowers, { id: powerId, expiresAt }] };
+  }),
   resetCombo: () => set({ combo: 0, multiplier: 1 }),
 }));

@@ -167,7 +167,9 @@ export const getLeaderboard = createServerFn({ method: "GET" })
           nickname,
           avatar_url,
           selected_skin,
-          selected_title
+          selected_title,
+          selected_icon,
+          selected_effect
         )
       `)
       .order(colName, { ascending: false })

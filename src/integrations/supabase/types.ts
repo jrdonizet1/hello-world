@@ -44,6 +44,7 @@ export type Database = {
           created_at: string
           id: string
           nickname: string | null
+          room_id: string | null
           updated_at: string
         }
         Insert: {
@@ -51,6 +52,7 @@ export type Database = {
           created_at?: string
           id: string
           nickname?: string | null
+          room_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -58,6 +60,48 @@ export type Database = {
           created_at?: string
           id?: string
           nickname?: string | null
+          room_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rooms: {
+        Row: {
+          code: string
+          created_at: string
+          host_id: string
+          id: string
+          max_players: number | null
+          player_count: number | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          host_id: string
+          id?: string
+          max_players?: number | null
+          player_count?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          host_id?: string
+          id?: string
+          max_players?: number | null
+          player_count?: number | null
+          status?: string
           updated_at?: string
         }
         Relationships: []

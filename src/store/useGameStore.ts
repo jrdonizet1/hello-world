@@ -19,6 +19,9 @@ interface BrainLagState {
   playersCount: number;
   lastError: string | null;
   isMultiplayer: boolean;
+  roomCode: string | null;
+  roomId: string | null;
+  isHost: boolean;
   
   setGameState: (state: GameState) => void;
   startGame: () => void;
@@ -26,6 +29,7 @@ interface BrainLagState {
   updateScore: (points: number) => void;
   setCommand: (command: Command | null) => void;
   tick: (delta: number) => void;
+  setRoom: (id: string | null, code: string | null, isHost: boolean) => void;
 }
 
 export const useGameStore = create<BrainLagState>((set, get) => ({
@@ -36,6 +40,9 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
   playersCount: 0,
   lastError: null,
   isMultiplayer: false,
+  roomCode: null,
+  roomId: null,
+  isHost: false,
 
   setGameState: (state) => set({ gameState: state }),
   
@@ -44,6 +51,13 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
     score: 0, 
     timeRemaining: 10,
     lastError: null 
+  }),
+
+  setRoom: (id, code, isHost) => set({ 
+    roomId: id, 
+    roomCode: code, 
+    isHost, 
+    isMultiplayer: !!id 
   }),
 
   endGame: (reason) => set({ 

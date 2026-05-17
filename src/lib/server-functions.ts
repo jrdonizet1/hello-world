@@ -679,3 +679,114 @@ export const claimMissionReward = createServerFn({ method: "POST" })
       totalCoins: newCoins
     };
   });
+
+export const getAdminStats = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async (args: any) => {
+    const { context } = args;
+    const { userId } = context;
+
+    // Check if user is admin
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("is_admin")
+      .eq("id", userId)
+      .single();
+
+    if (!profile?.is_admin) throw new Error("Acesso negado");
+
+    const [
+      { count: totalUsers },
+      { count: activeRooms },
+      { data: totalCoins },
+      { count: totalItems }
+    ] = await Promise.all([
+      supabaseAdmin.from("profiles").select("id", { count: "exact", head: true }),
+      supabaseAdmin.from("rooms").select("id", { count: "exact", head: true }),
+      supabaseAdmin.from("profiles").select("coins"),
+      supabaseAdmin.from("shop_items").select("id", { count: "exact", head: true })
+    ]);
+
+    const coinsSum = (totalCoins || []).reduce((acc, curr) => acc + (curr.coins || 0), 0);
+
+    return {
+      totalUsers: totalUsers || 0,
+      activeRooms: activeRooms || 0,
+      totalCoins: coinsSum,
+      totalItems: totalItems || 0
+    };
+  });
+
+export const getAllUsers = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async (args: any) => {
+    const { context } = args;
+    const { userId } = context;
+
+    const { data: profile } = await supabaseAdmin.from("profiles").select("is_admin").eq("id", userId).single();
+    if (!profile?.is_admin) throw new Error("Acesso negado");
+
+    const { data, error } = await supabaseAdmin
+      .from("profiles")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) throw new Error(error.message);
+    return data;
+  });
+
+export const updateUserCoins = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async (args: any) => {
+    const { data, context } = args;
+    const { targetUserId, coins } = data;
+    const { userId } = context;
+
+    const { data: profile } = await supabaseAdmin.from("profiles").select("is_admin").eq("id", userId).single();
+    if (!profile?.is_admin) throw new Error("Acesso negado");
+
+    const { error } = await supabaseAdmin
+      .from("profiles")
+      .update({ coins })
+      .eq("id", targetUserId);
+
+    if (error) throw new Error(error.message);
+    return { success: true };
+  });
+
+export const deleteShopItem = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async (args: any) => {
+    const { data: itemId, context } = args;
+    const { userId } = context;
+
+    const { data: profile } = await supabaseAdmin.from("profiles").select("is_admin").eq("id", userId).single();
+    if (!profile?.is_admin) throw new Error("Acesso negado");
+
+    const { error } = await supabaseAdmin.from("shop_items").delete().eq("id", itemId);
+    if (error) throw new Error(error.message);
+    return { success: true };
+  });
+
+export const upsertShopItem = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async (args: any) => {
+    const { data, context } = args;
+    const { id, name, description, price, category, rarity, item_data } = data;
+    const { userId } = context;
+
+    const { data: profile } = await supabaseAdmin.from("profiles").select("is_admin").eq("id", userId).single();
+    if (!profile?.is_admin) throw new Error("Acesso negado");
+
+    const itemPayload = { name, description, price, category, rarity, item_data };
+    
+    let result;
+    if (id) {
+      result = await supabaseAdmin.from("shop_items").update(itemPayload).eq("id", id);
+    } else {
+      result = await supabaseAdmin.from("shop_items").insert(itemPayload);
+    }
+
+    if (result.error) throw new Error(result.error.message);
+    return { success: true };
+  });

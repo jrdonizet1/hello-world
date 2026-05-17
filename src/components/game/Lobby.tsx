@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/useGameStore';
-import { Trophy, Users, Zap, LogIn, User, LogOut, Plus, LogIn as JoinIcon, ChevronLeft, ChevronRight, Copy, Check, Shield, ShieldOff, Lock, UserPlus, RefreshCw, ShoppingBag, Share2, Timer, Infinity, Monitor, Globe, History, XCircle, CheckCircle2, ZapOff, Target, Crown, ShieldCheck, Infinity as InfinityIcon } from 'lucide-react';
+import { Trophy, Users, Zap, LogIn, User, LogOut, Plus, LogIn as JoinIcon, ChevronLeft, ChevronRight, Copy, Check, Shield, ShieldOff, Lock, UserPlus, RefreshCw, ShoppingBag, Share2, Timer, Infinity, Monitor, Globe, History, XCircle, CheckCircle2, ZapOff, Target, Crown, ShieldCheck, Infinity as InfinityIcon, ShieldAlert } from 'lucide-react';
 import { lovable } from '@/integrations/lovable';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -10,8 +10,9 @@ import { Shop } from './Shop';
 import { Missions } from './Missions';
 import { UserIdentity } from './UserIdentity';
 import { UserAvatar } from './UserAvatar';
+import { AdminPanel } from './AdminPanel';
 
-type LobbyView = 'MAIN' | 'MULTIPLAYER' | 'CREATE_ROOM' | 'JOIN_ROOM' | 'WAITING' | 'VISITOR_NICK' | 'ROOMS_LIST' | 'PROFILE' | 'SHOP' | 'REFERRAL' | 'OFFLINE_SETTINGS' | 'HISTORY' | 'RANKING' | 'MISSIONS';
+type LobbyView = 'MAIN' | 'MULTIPLAYER' | 'CREATE_ROOM' | 'JOIN_ROOM' | 'WAITING' | 'VISITOR_NICK' | 'ROOMS_LIST' | 'PROFILE' | 'SHOP' | 'REFERRAL' | 'OFFLINE_SETTINGS' | 'HISTORY' | 'RANKING' | 'MISSIONS' | 'ADMIN';
 
 export const Lobby: React.FC = () => {
   const { startGame, setRoom, roomId, roomCode, isHost, setCustomization, selectedThemes, setSelectedThemes } = useGameStore();
@@ -632,7 +633,18 @@ export const Lobby: React.FC = () => {
                         </div>
                       </div>
                     </div>
-                    <button onClick={() => supabase.auth.signOut()} className="text-zinc-600 hover:text-red-500 transition-colors ml-4" title="Sair"><LogOut size={18} /></button>
+                    <div className="flex items-center gap-2">
+                      {profile?.is_admin && (
+                        <button 
+                          onClick={() => setView('ADMIN')}
+                          className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl transition-all border border-red-500/20"
+                          title="Painel Admin"
+                        >
+                          <ShieldAlert size={18} />
+                        </button>
+                      )}
+                      <button onClick={() => supabase.auth.signOut()} className="text-zinc-600 hover:text-red-500 transition-colors ml-2" title="Sair"><LogOut size={18} /></button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -1599,6 +1611,18 @@ export const Lobby: React.FC = () => {
                 onBack={() => setView('MAIN')} 
                 onUpdateProfile={() => session?.user?.id && fetchProfile(session.user.id)}
               />
+            </motion.div>
+          )}
+
+          {view === 'ADMIN' && profile?.is_admin && (
+            <motion.div
+              key="admin"
+              initial={{ opacity: 0, scale: 1.05 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed inset-0 z-[100] bg-black"
+            >
+              <AdminPanel onBack={() => setView('MAIN')} />
             </motion.div>
           )}
         </AnimatePresence>

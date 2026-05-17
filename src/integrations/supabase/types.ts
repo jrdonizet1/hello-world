@@ -202,6 +202,7 @@ export type Database = {
           duel_elo: number | null
           duel_wins: number | null
           id: string
+          is_admin: boolean | null
           is_ready: boolean | null
           last_daily_reward: string | null
           level: number
@@ -229,6 +230,7 @@ export type Database = {
           duel_elo?: number | null
           duel_wins?: number | null
           id: string
+          is_admin?: boolean | null
           is_ready?: boolean | null
           last_daily_reward?: string | null
           level?: number
@@ -256,6 +258,7 @@ export type Database = {
           duel_elo?: number | null
           duel_wins?: number | null
           id?: string
+          is_admin?: boolean | null
           is_ready?: boolean | null
           last_daily_reward?: string | null
           level?: number

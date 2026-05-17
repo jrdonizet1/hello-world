@@ -37,6 +37,13 @@ export const Lobby: React.FC = () => {
   const [isReady, setIsReady] = useState(false);
   const [pendingAction, setPendingAction] = useState<{ type: 'CREATE' | 'JOIN', code?: string } | null>(null);
   const [rewardLoading, setRewardLoading] = useState(false);
+  
+  const isRewardAvailable = () => {
+    if (!profile?.last_daily_reward) return true;
+    const lastReward = new Date(profile.last_daily_reward).getTime();
+    const now = new Date().getTime();
+    return (now - lastReward) >= 24 * 60 * 60 * 1000;
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {

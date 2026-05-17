@@ -43,6 +43,7 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           id: string
+          is_ready: boolean | null
           nickname: string | null
           room_id: string | null
           updated_at: string
@@ -51,6 +52,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           id: string
+          is_ready?: boolean | null
           nickname?: string | null
           room_id?: string | null
           updated_at?: string
@@ -59,6 +61,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           id?: string
+          is_ready?: boolean | null
           nickname?: string | null
           room_id?: string | null
           updated_at?: string
@@ -79,7 +82,10 @@ export type Database = {
           created_at: string
           host_id: string
           id: string
+          is_private: boolean | null
           max_players: number | null
+          name: string | null
+          password: string | null
           player_count: number | null
           status: string
           updated_at: string
@@ -89,7 +95,10 @@ export type Database = {
           created_at?: string
           host_id: string
           id?: string
+          is_private?: boolean | null
           max_players?: number | null
+          name?: string | null
+          password?: string | null
           player_count?: number | null
           status?: string
           updated_at?: string
@@ -99,7 +108,10 @@ export type Database = {
           created_at?: string
           host_id?: string
           id?: string
+          is_private?: boolean | null
           max_players?: number | null
+          name?: string | null
+          password?: string | null
           player_count?: number | null
           status?: string
           updated_at?: string

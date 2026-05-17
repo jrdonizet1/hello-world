@@ -153,7 +153,7 @@ export const GameArena: React.FC = () => {
       <div className="flex justify-between items-center mb-6">
         <div className="flex flex-col">
           <span className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em]">Sincronia</span>
-          <span className="text-4xl font-black italic tabular-nums">{score}</span>
+          <span className="text-4xl font-black italic tabular-nums">{score.toFixed(1)}</span>
           {userTitle && (
             <span className="text-[8px] font-black text-white/40 uppercase tracking-[0.3em] mt-1">
               {userTitle}

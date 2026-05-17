@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/useGameStore';
-import { Trophy, Users, Zap, LogIn, User, LogOut, Plus, LogIn as JoinIcon, ChevronLeft, ChevronRight, Copy, Check, Shield, ShieldOff, Lock, UserPlus, RefreshCw, ShoppingBag, Share2, Timer, Infinity, Monitor, Globe, History, XCircle, CheckCircle2, ZapOff } from 'lucide-react';
+import { Trophy, Users, Zap, LogIn, User, LogOut, Plus, LogIn as JoinIcon, ChevronLeft, ChevronRight, Copy, Check, Shield, ShieldOff, Lock, UserPlus, RefreshCw, ShoppingBag, Share2, Timer, Infinity, Monitor, Globe, History, XCircle, CheckCircle2, ZapOff, Target } from 'lucide-react';
 import { lovable } from '@/integrations/lovable';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { updateProfile, createRoom, joinRoom, startRoomGame, claimDailyReward, leaveRoom, getProfile, redeemReferralCode, updateRoomSettings, getGameHistory, getLeaderboard } from '@/lib/server-functions';
 import { Shop } from './Shop';
+import { Missions } from './Missions';
 
-type LobbyView = 'MAIN' | 'MULTIPLAYER' | 'CREATE_ROOM' | 'JOIN_ROOM' | 'WAITING' | 'VISITOR_NICK' | 'ROOMS_LIST' | 'PROFILE' | 'SHOP' | 'REFERRAL' | 'OFFLINE_SETTINGS' | 'HISTORY' | 'RANKING';
+type LobbyView = 'MAIN' | 'MULTIPLAYER' | 'CREATE_ROOM' | 'JOIN_ROOM' | 'WAITING' | 'VISITOR_NICK' | 'ROOMS_LIST' | 'PROFILE' | 'SHOP' | 'REFERRAL' | 'OFFLINE_SETTINGS' | 'HISTORY' | 'RANKING' | 'MISSIONS';
 
 export const Lobby: React.FC = () => {
   const { startGame, setRoom, roomId, roomCode, isHost, setCustomization, selectedThemes, setSelectedThemes } = useGameStore();
@@ -651,19 +652,25 @@ export const Lobby: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-1 gap-3">
-                <div className="flex gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   <button 
                     onClick={() => setView('SHOP')}
-                    className="flex-1 py-4 bg-zinc-900 border border-zinc-800 text-yellow-500 font-black text-xs rounded-2xl flex items-center justify-center gap-2 hover:bg-zinc-800 transition-all uppercase tracking-widest"
+                    className="py-4 bg-zinc-900 border border-zinc-800 text-yellow-500 font-black text-xs rounded-2xl flex items-center justify-center gap-2 hover:bg-zinc-800 transition-all uppercase tracking-widest"
                   >
                     <ShoppingBag size={18} /> Loja
+                  </button>
+                  <button 
+                    onClick={() => setView('MISSIONS')}
+                    className="py-4 bg-zinc-900 border border-zinc-800 text-emerald-400 font-black text-xs rounded-2xl flex items-center justify-center gap-2 hover:bg-zinc-800 transition-all uppercase tracking-widest"
+                  >
+                    <Target size={18} /> Missões
                   </button>
                   <button 
                     onClick={() => {
                       setView('RANKING');
                       fetchRankings();
                     }}
-                    className="flex-1 py-4 bg-zinc-900 border border-zinc-800 text-cyan-400 font-black text-xs rounded-2xl flex items-center justify-center gap-2 hover:bg-zinc-800 transition-all uppercase tracking-widest"
+                    className="py-4 bg-zinc-900 border border-zinc-800 text-cyan-400 font-black text-xs rounded-2xl flex items-center justify-center gap-2 hover:bg-zinc-800 transition-all uppercase tracking-widest"
                   >
                     <Trophy size={18} /> Ranking
                   </button>
@@ -683,7 +690,7 @@ export const Lobby: React.FC = () => {
                           setRewardLoading(false);
                         }
                       }}
-                      className="flex-1 py-4 bg-zinc-900 border border-zinc-800 text-emerald-500 font-black text-[10px] rounded-2xl flex items-center justify-center gap-2 hover:bg-zinc-800 transition-all uppercase tracking-widest disabled:opacity-50"
+                      className="py-4 bg-zinc-900 border border-zinc-800 text-emerald-500 font-black text-[10px] rounded-2xl flex items-center justify-center gap-2 hover:bg-zinc-800 transition-all uppercase tracking-widest disabled:opacity-50"
                     >
                       {rewardLoading ? (
                         <div className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
@@ -1526,6 +1533,20 @@ export const Lobby: React.FC = () => {
                   ))
                 )}
               </div>
+            </motion.div>
+          )}
+          {view === 'MISSIONS' && (
+            <motion.div
+              key="missions"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="w-full h-full"
+            >
+              <Missions 
+                onBack={() => setView('MAIN')} 
+                onUpdateProfile={() => session?.user?.id && fetchProfile(session.user.id)}
+              />
             </motion.div>
           )}
         </AnimatePresence>

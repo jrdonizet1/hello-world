@@ -52,6 +52,66 @@ export const saveScore = createServerFn({ method: "POST" })
       .from("leaderboard")
       .upsert(updateData, { onConflict: "user_id" });
 
+    // --- Atualização de Missões ---
+    try {
+      const { data: missions } = await supabaseAdmin
+        .from("missions")
+        .select("*");
+
+      if (missions) {
+        for (const mission of missions) {
+          let progressDelta = 0;
+          let isAbsolute = false;
+
+          if (mission.goal_type === 'SCORE' && score >= mission.goal_value) {
+            progressDelta = mission.goal_value;
+            isAbsolute = true;
+          } else if (mission.goal_type === 'COMBO' && (maxCombo || 0) >= mission.goal_value) {
+            progressDelta = mission.goal_value;
+            isAbsolute = true;
+          } else if (mission.goal_type === 'GAMES_PLAYED') {
+            progressDelta = 1;
+          } else if (mission.goal_type.startsWith('THEME_HITS_')) {
+            const themeId = mission.goal_type.replace('THEME_HITS_', '');
+            if (themeScores && themeScores[themeId]) {
+              progressDelta = themeScores[themeId];
+            }
+          }
+
+          if (progressDelta > 0) {
+            const { data: currentProg } = await supabaseAdmin
+              .from("user_missions")
+              .select("*")
+              .eq("user_id", userId)
+              .eq("mission_id", mission.id)
+              .maybeSingle();
+
+            if (!currentProg) {
+              await supabaseAdmin.from("user_missions").insert({
+                user_id: userId,
+                mission_id: mission.id,
+                progress: progressDelta,
+                completed: progressDelta >= mission.goal_value
+              });
+            } else if (!currentProg.completed) {
+              const newProgress = isAbsolute 
+                ? Math.max((currentProg.progress || 0), progressDelta)
+                : (currentProg.progress || 0) + progressDelta;
+                
+              await supabaseAdmin.from("user_missions").update({
+                progress: newProgress,
+                completed: newProgress >= mission.goal_value,
+                last_updated: new Date().toISOString()
+              }).eq("id", currentProg.id);
+            }
+          }
+        }
+      }
+    } catch (mErr) {
+      console.error("Erro ao atualizar missões:", mErr);
+    }
+    // ------------------------------
+
     return { 
       success: true, 
       xpGained, 
@@ -478,4 +538,88 @@ export const getGameHistory = createServerFn({ method: "GET" })
 
     if (error) throw new Error(error.message);
     return data;
+  });
+
+export const getMissions = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async (args: any) => {
+    const { context } = args;
+    const { userId } = context;
+
+    // Obter todas as missões ativas
+    const { data: missions, error: missionsError } = await supabaseAdmin
+      .from("missions")
+      .select("*");
+
+    if (missionsError) throw new Error(missionsError.message);
+
+    // Obter progresso do usuário
+    const { data: userMissions, error: userMissionsError } = await supabaseAdmin
+      .from("user_missions")
+      .select("*")
+      .eq("user_id", userId);
+
+    if (userMissionsError) throw new Error(userMissionsError.message);
+
+    return (missions || []).map(m => {
+      const prog = userMissions?.find(um => um.mission_id === m.id);
+      return {
+        ...m,
+        progress: prog?.progress || 0,
+        completed: prog?.completed || false,
+        claimed: prog?.claimed || false
+      };
+    });
+  });
+
+export const claimMissionReward = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async (args: any) => {
+    const { data: missionId, context } = args;
+    const { userId } = context;
+
+    const { data: userMission, error: umError } = await supabaseAdmin
+      .from("user_missions")
+      .select("*, missions(*)")
+      .eq("user_id", userId)
+      .eq("mission_id", missionId)
+      .single();
+
+    if (umError || !userMission) throw new Error("Missão não encontrada");
+    if (!userMission.completed) throw new Error("Missão ainda não foi concluída");
+    if (userMission.claimed) throw new Error("Recompensa já resgatada");
+
+    // Marcar como resgatado
+    const { error: claimError } = await supabaseAdmin
+      .from("user_missions")
+      .update({ claimed: true })
+      .eq("id", userMission.id);
+
+    if (claimError) throw new Error(claimError.message);
+
+    // Adicionar moedas e XP ao perfil
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("coins, xp")
+      .eq("id", userId)
+      .single();
+
+    const missionData = userMission.missions as any;
+    const newCoins = (profile?.coins || 0) + (missionData.reward_coins || 0);
+    const newXp = (profile?.xp || 0) + (missionData.reward_xp || 0);
+
+    await supabaseAdmin
+      .from("profiles")
+      .update({ 
+        coins: newCoins,
+        xp: newXp
+      })
+      .eq("id", userId);
+
+    return { 
+      success: true, 
+      reward_coins: missionData.reward_coins,
+      reward_xp: missionData.reward_xp,
+      totalCoins: newCoins
+    };
   });

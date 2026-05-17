@@ -252,7 +252,7 @@ export const Lobby: React.FC = () => {
         setSelectedThemes(data.selected_themes);
       }
       if (data.base_time) setBaseTime(Number(data.base_time));
-      if (data.acceleration_intensity) setAccelerationIntensity(data.acceleration_intensity);
+      if (data.acceleration_intensity) setAccelerationIntensity(data.acceleration_intensity as any);
       else if (data.acceleration_enabled !== null) setAccelerationIntensity(data.acceleration_enabled ? 'NORMAL' : 'OFF');
     }
   };
@@ -698,7 +698,7 @@ export const Lobby: React.FC = () => {
                     <button 
                       onClick={() => {
                         setCustomization(profile?.selected_skin, profile?.selected_title);
-                        startGame('NORMAL', undefined, baseTime, accelerationEnabled);
+                        startGame('NORMAL', undefined, baseTime, accelerationIntensity);
                       }}
                       className="py-4 bg-white text-black font-black text-xs rounded-xl shadow-[0_0_15px_rgba(255,255,255,0.1)] active:scale-95 transition-all uppercase"
                     >
@@ -707,7 +707,7 @@ export const Lobby: React.FC = () => {
                     <button 
                       onClick={() => {
                         setCustomization(profile?.selected_skin, profile?.selected_title);
-                        startGame('BLITZ', undefined, baseTime, accelerationEnabled);
+                        startGame('BLITZ', undefined, baseTime, accelerationIntensity);
                       }}
                       className="py-4 bg-amber-500/10 border border-amber-500/30 text-amber-500 font-black text-xs rounded-xl active:scale-95 transition-all uppercase"
                     >
@@ -716,7 +716,7 @@ export const Lobby: React.FC = () => {
                     <button 
                       onClick={() => {
                         setCustomization(profile?.selected_skin, profile?.selected_title);
-                        startGame('SURVIVAL', undefined, baseTime, accelerationEnabled);
+                        startGame('SURVIVAL', undefined, baseTime, accelerationIntensity);
                       }}
                       className="col-span-2 py-4 bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 font-black text-xs rounded-xl active:scale-95 transition-all uppercase"
                     >

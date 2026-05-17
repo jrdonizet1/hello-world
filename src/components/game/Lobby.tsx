@@ -423,20 +423,43 @@ export const Lobby: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-1 gap-3">
-                <button 
-                  onClick={() => {
-                    setCustomization(profile?.selected_skin, profile?.selected_title);
-                    startGame();
-                  }}
-                  className="w-full py-6 bg-white text-black font-black text-2xl rounded-2xl shadow-[0_0_30px_rgba(255,255,255,0.2)] active:scale-95 transition-transform"
-                >
-                  SOLO RUN
-                </button>
+                <div className="grid grid-cols-1 gap-2">
+                  <button 
+                    onClick={() => {
+                      setCustomization(profile?.selected_skin, profile?.selected_title);
+                      startGame('NORMAL');
+                    }}
+                    className="w-full py-5 bg-white text-black font-black text-xl rounded-2xl shadow-[0_0_20px_rgba(255,255,255,0.15)] active:scale-95 transition-transform"
+                  >
+                    SOLO RUN
+                  </button>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button 
+                      onClick={() => {
+                        setCustomization(profile?.selected_skin, profile?.selected_title);
+                        startGame('BLITZ');
+                      }}
+                      className="py-3 bg-amber-500/10 border border-amber-500/30 text-amber-500 font-black text-[10px] rounded-xl flex items-center justify-center gap-2 hover:bg-amber-500/20 active:scale-95 transition-all uppercase tracking-widest"
+                    >
+                      <Timer size={14} /> BLITZ
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setCustomization(profile?.selected_skin, profile?.selected_title);
+                        startGame('SURVIVAL');
+                      }}
+                      className="py-3 bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 font-black text-[10px] rounded-xl flex items-center justify-center gap-2 hover:bg-emerald-500/20 active:scale-95 transition-all uppercase tracking-widest"
+                    >
+                      <Infinity size={14} /> SURVIVAL
+                    </button>
+                  </div>
+                </div>
+
                 <button 
                   onClick={() => setView('MULTIPLAYER')}
-                  className="w-full py-5 bg-cyan-500/5 border-2 border-cyan-500/30 text-cyan-500 font-black text-lg rounded-2xl flex items-center justify-center gap-2 hover:bg-cyan-500/10 active:scale-95 transition-all"
+                  className="w-full py-4 bg-cyan-500/5 border-2 border-cyan-500/30 text-cyan-500 font-black text-sm rounded-2xl flex items-center justify-center gap-2 hover:bg-cyan-500/10 active:scale-95 transition-all"
                 >
-                  <Users size={20} /> ARENA MULTIPLAYER
+                  <Users size={18} /> ARENA MULTIPLAYER
                 </button>
                 
                 {session && !session.user.is_anonymous && (

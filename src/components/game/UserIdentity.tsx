@@ -35,52 +35,7 @@ export const UserIdentity: React.FC<UserIdentityProps> = ({
   } : {};
 
   const getIcon = () => {
-    if (!icon) return null;
-    
-    const iconSize = size === 'sm' ? 12 : 16;
-
-    // Handle legacy string icon or new object with .icon property
-    const iconName = typeof icon === 'string' ? icon : icon.icon;
-    const iconColor = typeof icon === 'object' ? icon.color : null;
-
-    if (iconName) {
-      // Mapping common names to Lucide icons
-      const iconMap: Record<string, string> = {
-        'Zap': 'Zap',
-        'Crown': 'Crown',
-        'ShieldCheck': 'ShieldCheck',
-        'Infinity': 'Infinity',
-        'Monitor': 'Monitor',
-        'Flame': 'Flame',
-        'Gem': 'Gem',
-        'Skull': 'Skull',
-        'Star': 'Star'
-      };
-
-      const lucideName = iconMap[iconName] || iconName;
-      const IconComponent = (LucideIcons as any)[lucideName];
-
-      if (IconComponent) {
-        return (
-          <IconComponent 
-            size={iconSize} 
-            style={{ color: iconColor || (iconName === 'Zap' ? '#06b6d4' : (iconName === 'Crown' ? '#eab308' : '#ffffff')) }} 
-          />
-        );
-      }
-    }
-
-    // Handle image/gif icons
-    if (icon.url) {
-      return (
-        <img 
-          src={icon.url} 
-          alt="icon" 
-          className={`${size === 'sm' ? 'w-4 h-4' : 'w-6 h-6'} rounded-md object-cover border border-white/10`} 
-        />
-      );
-    }
-
+    // User requested to remove icons in favor of avatars
     return null;
   };
 
@@ -100,9 +55,11 @@ export const UserIdentity: React.FC<UserIdentityProps> = ({
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      <div className="flex-shrink-0">
-        {getIcon()}
-      </div>
+      {getIcon() && (
+        <div className="flex-shrink-0">
+          {getIcon()}
+        </div>
+      )}
       <div className="flex flex-col">
         <motion.span 
           className={`font-black italic uppercase tracking-tight ${nameSizeClasses[size]}`}

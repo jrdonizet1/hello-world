@@ -30,6 +30,8 @@ interface BrainLagState {
   isHost: boolean;
   userSkin: string | null;
   userTitle: string | null;
+  userFont: any | null;
+  userArenaEffect: any | null;
   selectedThemes: string[];
   baseTime: number;
   accelerationEnabled: boolean;

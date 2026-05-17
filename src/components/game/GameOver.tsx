@@ -9,7 +9,7 @@ import { saveScore, getLeaderboard } from '@/lib/server-functions';
 import { toast } from 'sonner';
 
 export const GameOver: React.FC = () => {
-  const { score, lastError, startGame, setGameState, gameMode } = useGameStore();
+  const { score, lastError, startGame, setGameState, gameMode, selectedThemes } = useGameStore();
   const [session, setSession] = useState<any>(null);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -31,7 +31,7 @@ export const GameOver: React.FC = () => {
 
   const fetchLeaderboard = async () => {
     try {
-      const data = await getLeaderboard();
+      const data = await (getLeaderboard as any)();
       setLeaderboard(data);
     } catch (err) {
       console.error('Error fetching leaderboard:', err);
@@ -45,7 +45,12 @@ export const GameOver: React.FC = () => {
     }
     setLoading(true);
     try {
-      const result = await (saveScore as any)({ data: { score } });
+      const themeScores: any = {};
+      if (selectedThemes.length === 1) {
+        themeScores[selectedThemes[0]] = score;
+      }
+      
+      const result = await (saveScore as any)({ data: { score, themeScores } });
       if (result.success) {
         setRewards({
           xp: result.xpGained,

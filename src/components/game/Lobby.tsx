@@ -352,18 +352,28 @@ export const Lobby: React.FC = () => {
                 
                 {session && (
                   <button 
+                    disabled={rewardLoading}
                     onClick={async () => {
+                      setRewardLoading(true);
                       try {
                         const result = await (claimDailyReward as any)();
                         toast.success(`Você resgatou ${result.reward} Brain Coins!`);
                         fetchProfile(session.user.id);
                       } catch (err: any) {
                         toast.error(err.message);
+                      } finally {
+                        setRewardLoading(false);
                       }
                     }}
-                    className="w-full py-3 bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 font-black text-[10px] rounded-xl flex items-center justify-center gap-2 hover:bg-yellow-500/20 transition-all uppercase tracking-widest"
+                    className="w-full py-3 bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 font-black text-[10px] rounded-xl flex items-center justify-center gap-2 hover:bg-yellow-500/20 transition-all uppercase tracking-widest disabled:opacity-50"
                   >
-                    <Trophy size={14} /> Resgatar Recompensa Diária
+                    {rewardLoading ? (
+                      <div className="w-4 h-4 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <>
+                        <Trophy size={14} /> Resgatar Recompensa Diária
+                      </>
+                    )}
                   </button>
                 )}
               </div>

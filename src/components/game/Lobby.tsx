@@ -643,15 +643,6 @@ export const Lobby: React.FC = () => {
                   <div className="absolute top-2 right-2 flex items-center gap-1 bg-cyan-500/20 px-2 py-0.5 rounded-full">
                     <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></div>
                     <span className="text-[8px] tracking-widest">{onlineCount}</span>
-                    <button 
-                      onClick={() => {
-                        setView('RANKING');
-                        fetchRankings();
-                      }}
-                      className="flex-1 py-4 bg-zinc-900 border border-zinc-800 text-cyan-400 font-black text-xs rounded-2xl flex items-center justify-center gap-2 hover:bg-zinc-800 transition-all uppercase tracking-widest"
-                    >
-                      <Trophy size={18} /> Ranking
-                    </button>
                   </div>
                   <Globe size={32} className="mb-2 group-hover:scale-110 transition-transform" />
                   <span className="text-sm uppercase">Online</span>
@@ -665,6 +656,15 @@ export const Lobby: React.FC = () => {
                     className="flex-1 py-4 bg-zinc-900 border border-zinc-800 text-yellow-500 font-black text-xs rounded-2xl flex items-center justify-center gap-2 hover:bg-zinc-800 transition-all uppercase tracking-widest"
                   >
                     <ShoppingBag size={18} /> Loja
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setView('RANKING');
+                      fetchRankings();
+                    }}
+                    className="flex-1 py-4 bg-zinc-900 border border-zinc-800 text-cyan-400 font-black text-xs rounded-2xl flex items-center justify-center gap-2 hover:bg-zinc-800 transition-all uppercase tracking-widest"
+                  >
+                    <Trophy size={18} /> Ranking
                   </button>
                   
                   {session && !session.user.is_anonymous && (

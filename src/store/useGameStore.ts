@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type GameState = 'LOBBY' | 'PREPARE' | 'PLAYING' | 'ELIMINATED' | 'VICTORY';
+export type GameState = 'LOBBY' | 'PREPARE' | 'PLAYING' | 'ELIMINATED' | 'VICTORY' | 'DUEL';
 export type GameMode = 'NORMAL' | 'SURVIVAL' | 'BLITZ';
 
 export interface Command {
@@ -36,6 +36,11 @@ interface BrainLagState {
   baseTime: number;
   accelerationEnabled: boolean;
   accelerationIntensity: 'OFF' | 'SLOW' | 'NORMAL' | 'INSANE';
+  duelOpponentProgress: number;
+  duelOpponentId: string | null;
+  duelSeed: number | null;
+  activePowers: { id: string, expiresAt: number }[];
+  coins: number;
   
   setGameState: (state: GameState) => void;
   setGameMode: (mode: GameMode) => void;
@@ -49,6 +54,8 @@ interface BrainLagState {
   setRoom: (id: string | null, code: string | null, isHost: boolean) => void;
   setCustomization: (skin: string | null, title: string | null, font?: any, arenaEffect?: any) => void;
   increaseCombo: (reactionTime: number) => void;
+  setDuelOpponent: (id: string | null, progress: number) => void;
+  usePower: (powerId: string) => void;
   resetCombo: () => void;
 }
 
@@ -75,6 +82,11 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
   baseTime: 2.2,
   accelerationIntensity: 'NORMAL',
   accelerationEnabled: true,
+  duelOpponentProgress: 0,
+  duelOpponentId: null,
+  duelSeed: null,
+  activePowers: [],
+  coins: 0,
 
   setCustomization: (skin, title, font, arenaEffect) => set({ 
     userSkin: skin, 
@@ -106,7 +118,9 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
       multiplier: 1,
       maxCombo: 0,
       timeRemaining: mode === 'BLITZ' ? 1.2 : (mode === 'SURVIVAL' ? 5 : currentBaseTime),
-      lastError: null 
+      lastError: null,
+      duelSeed: mode === 'NORMAL' && state.isMultiplayer ? Math.floor(Math.random() * 1000000) : null,
+      duelOpponentProgress: 0
     });
   },
 
@@ -128,12 +142,22 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
 
   tick: (delta) => set((state) => {
     if (state.gameState !== 'PLAYING') return state;
-    const nextTime = state.timeRemaining - delta;
+    
+    // Check for "Slow Motion" power
+    const hasSlowMotion = state.activePowers.some(p => p.id === 'slow' && p.expiresAt > Date.now());
+    const actualDelta = hasSlowMotion ? delta * 0.4 : delta;
+    
+    const nextTime = state.timeRemaining - actualDelta;
     if (nextTime <= 0) {
       const errorMsg = state.gameMode === 'SURVIVAL' ? 'RECARGA NEURAL FALHOU!' : 'TEMPO ESGOTADO!';
       return { gameState: 'ELIMINATED', timeRemaining: 0, lastError: errorMsg };
     }
-    return { timeRemaining: nextTime };
+    
+    // Cleanup expired powers
+    const now = Date.now();
+    const activePowers = state.activePowers.filter(p => p.expiresAt > now);
+    
+    return { timeRemaining: nextTime, activePowers };
   }),
   increaseCombo: (reactionTime) => set((state) => {
     const newCombo = state.combo + 1;
@@ -155,5 +179,10 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
     };
   }),
 
+  setDuelOpponent: (id, progress) => set({ duelOpponentId: id, duelOpponentProgress: progress }),
+  usePower: (powerId) => set((state) => {
+    const expiresAt = Date.now() + 5000; // 5 seconds
+    return { activePowers: [...state.activePowers, { id: powerId, expiresAt }] };
+  }),
   resetCombo: () => set({ combo: 0, multiplier: 1 }),
 }));

@@ -95,7 +95,218 @@ const SCALES = [
   { item: 'CELULAR', size: 3 },
 ];
 
-export const generateCommand = (difficulty: number, themes: string[] = ['COLOR', 'MATH']): GameCommand => {
+export const generateCommand = (difficulty: number, themes: string[] = ['COLOR', 'MATH'], seed?: number): GameCommand => {
+  // Simple seeded random function
+  const random = () => {
+    if (seed === undefined) return Math.random();
+    const x = Math.sin(seed++) * 10000;
+    return x - Math.floor(x);
+  };
+
+  const selectedTheme = themes[Math.floor(random() * themes.length)] as GameTheme;
+  const isCorrect = random() > 0.5;
+
+  if (selectedTheme === 'COLOR') {
+    const wordIndex = Math.floor(random() * COLORS.length);
+    const word = COLORS[wordIndex];
+    
+    let colorValue: string;
+    if (isCorrect) {
+      colorValue = word.value;
+    } else {
+      let colorIndex;
+      do {
+        colorIndex = Math.floor(random() * COLORS.length);
+      } while (colorIndex === wordIndex);
+      colorValue = COLORS[colorIndex].value;
+    }
+
+    return {
+      id: (random() * 100000).toString(36),
+      text: 'A COR BATE COM A PALAVRA?',
+      displayWord: word.name,
+      displayColor: colorValue,
+      isCorrect,
+      type: 'COLOR',
+      action: 'boolean',
+      target: isCorrect ? 'true' : 'false',
+      difficulty,
+      theme: 'COLOR',
+    };
+  } else if (selectedTheme === 'MATH') {
+    const range = 5 + (difficulty * 2);
+    const operations = difficulty > 5 ? ['+', '-', '*'] : ['+', '-'];
+    const op = operations[Math.floor(random() * operations.length)];
+    
+    let a, b, result;
+    if (op === '+') {
+      a = Math.floor(random() * range);
+      b = Math.floor(random() * range);
+      result = a + b;
+    } else if (op === '-') {
+      a = Math.floor(random() * range) + 5;
+      b = Math.floor(random() * a);
+      result = a - b;
+    } else {
+      a = Math.floor(random() * 10);
+      b = Math.floor(random() * 5);
+      result = a * b;
+    }
+
+    const displayResult = isCorrect ? result : result + (random() > 0.5 ? 1 : -1);
+
+    return {
+      id: (random() * 100000).toString(36),
+      text: 'ESTA CONTA ESTÁ CORRETA?',
+      displayWord: `${a} ${op} ${b} = ${displayResult}`,
+      isCorrect,
+      type: 'MATH',
+      action: 'boolean',
+      target: isCorrect ? 'true' : 'false',
+      difficulty,
+      theme: 'MATH',
+    };
+  } else if (selectedTheme === 'GENERAL') {
+    const pool = GENERAL_QUESTIONS;
+    const item = pool[Math.floor(random() * pool.length)];
+    
+    return {
+      id: (random() * 100000).toString(36),
+      text: item.q,
+      displayWord: isCorrect ? (item.a ? 'SIM' : 'NÃO') : (item.a ? 'NÃO' : 'SIM'),
+      isCorrect,
+      type: 'TAP',
+      action: 'boolean',
+      target: isCorrect ? 'true' : 'false',
+      difficulty,
+      theme: 'GENERAL',
+    };
+  } else if (selectedTheme === 'CURIOSITY') {
+    const filteredPool = CURIOSITIES.filter(c => c.difficulty <= (difficulty / 2) + 1);
+    const pool = filteredPool.length > 0 ? filteredPool : CURIOSITIES;
+    const item = pool[Math.floor(random() * pool.length)];
+    
+    return {
+      id: (random() * 100000).toString(36),
+      text: item.q,
+      displayWord: isCorrect ? (item.a ? 'SIM' : 'NÃO') : (item.a ? 'NÃO' : 'SIM'),
+      isCorrect,
+      type: 'TAP',
+      action: 'boolean',
+      target: isCorrect ? 'true' : 'false',
+      difficulty,
+      theme: 'CURIOSITY',
+    };
+  } else if (selectedTheme === 'SEQUENCE') {
+    const types = ['CORES', 'NÚMEROS'];
+    const type = types[Math.floor(random() * types.length)];
+    
+    if (type === 'CORES') {
+      const c1 = COLORS[Math.floor(random() * COLORS.length)];
+      const c2 = COLORS[Math.floor(random() * COLORS.length)];
+      const pattern = [c1.name, c2.name, c1.name];
+      const nextCorrect = c2.name;
+      const nextWrong = c1.name;
+      const displayNext = isCorrect ? nextCorrect : nextWrong;
+      
+      return {
+        id: (random() * 100000).toString(36),
+        text: 'QUAL O PRÓXIMO?',
+        displayWord: `${pattern.join(', ')} → ${displayNext}?`,
+        isCorrect,
+        type: 'TAP',
+        action: 'boolean',
+        target: isCorrect ? 'true' : 'false',
+        difficulty,
+        theme: 'SEQUENCE',
+      };
+    } else {
+      const start = Math.floor(random() * 10);
+      const step = Math.floor(random() * 3) + 1;
+      const pattern = [start, start + step, start + (step * 2)];
+      const nextCorrect = start + (step * 3);
+      const nextWrong = nextCorrect + (random() > 0.5 ? 1 : -1);
+      const displayNext = isCorrect ? nextCorrect : nextWrong;
+      
+      return {
+        id: (random() * 100000).toString(36),
+        text: 'QUAL O PRÓXIMO?',
+        displayWord: `${pattern.join(', ')} → ${displayNext}?`,
+        isCorrect,
+        type: 'TAP',
+        action: 'boolean',
+        target: isCorrect ? 'true' : 'false',
+        difficulty,
+        theme: 'SEQUENCE',
+      };
+    }
+  } else if (selectedTheme === 'CAPITAL') {
+    const item = CAPITALS[Math.floor(random() * CAPITALS.length)];
+    let displayCapital: string;
+    
+    if (isCorrect) {
+      displayCapital = item.capital;
+    } else {
+      let otherItem;
+      do {
+        otherItem = CAPITALS[Math.floor(random() * CAPITALS.length)];
+      } while (otherItem.capital === item.capital);
+      displayCapital = otherItem.capital;
+    }
+    
+    return {
+      id: (random() * 100000).toString(36),
+      text: `CAPITAL DE: ${item.country}?`,
+      displayWord: `${displayCapital}?`,
+      isCorrect,
+      type: 'TAP',
+      action: 'boolean',
+      target: isCorrect ? 'true' : 'false',
+      difficulty,
+      theme: 'CAPITAL',
+    };
+  } else {
+    // SCALE
+    const item1 = SCALES[Math.floor(random() * SCALES.length)];
+    let item2;
+    do {
+      item2 = SCALES[Math.floor(random() * SCALES.length)];
+    } while (item1.item === item2.item);
+    
+    const actuallyGreater = item1.size > item2.size;
+    
+    const statementIsTrue = isCorrect; 
+    
+    let text: string;
+    if (statementIsTrue) {
+      if (actuallyGreater) {
+        text = `UM(A) ${item1.item} É MAIOR QUE UM(A) ${item2.item}?`;
+      } else {
+        text = `UM(A) ${item2.item} É MAIOR QUE UM(A) ${item1.item}?`;
+      }
+    } else {
+      if (actuallyGreater) {
+        text = `UM(A) ${item2.item} É MAIOR QUE UM(A) ${item1.item}?`;
+      } else {
+        text = `UM(A) ${item1.item} É MAIOR QUE UM(A) ${item2.item}?`;
+      }
+    }
+
+    return {
+      id: (random() * 100000).toString(36),
+      text: 'ISSO É VERDADE?',
+      displayWord: text,
+      isCorrect,
+      type: 'TAP',
+      action: 'boolean',
+      target: isCorrect ? 'true' : 'false',
+      difficulty,
+      theme: 'SCALE',
+    };
+  }
+};
+
+export const generateCommandOriginal = (difficulty: number, themes: string[] = ['COLOR', 'MATH']): GameCommand => {
   const selectedTheme = themes[Math.floor(Math.random() * themes.length)] as GameTheme;
   const isCorrect = Math.random() > 0.5;
 

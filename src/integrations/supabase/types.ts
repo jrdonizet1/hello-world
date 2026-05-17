@@ -14,6 +14,58 @@ export type Database = {
   }
   public: {
     Tables: {
+      duel_logs: {
+        Row: {
+          created_at: string | null
+          id: string
+          loser_id: string | null
+          loser_score: number | null
+          room_id: string | null
+          winner_id: string | null
+          winner_score: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          loser_id?: string | null
+          loser_score?: number | null
+          room_id?: string | null
+          winner_id?: string | null
+          winner_score?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          loser_id?: string | null
+          loser_score?: number | null
+          room_id?: string | null
+          winner_id?: string | null
+          winner_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "duel_logs_loser_id_fkey"
+            columns: ["loser_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "duel_logs_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "duel_logs_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       game_history: {
         Row: {
           command_text: string
@@ -141,6 +193,8 @@ export type Database = {
           avatar_url: string | null
           coins: number
           created_at: string
+          duel_elo: number | null
+          duel_wins: number | null
           id: string
           is_ready: boolean | null
           last_daily_reward: string | null
@@ -161,6 +215,8 @@ export type Database = {
           avatar_url?: string | null
           coins?: number
           created_at?: string
+          duel_elo?: number | null
+          duel_wins?: number | null
           id: string
           is_ready?: boolean | null
           last_daily_reward?: string | null
@@ -181,6 +237,8 @@ export type Database = {
           avatar_url?: string | null
           coins?: number
           created_at?: string
+          duel_elo?: number | null
+          duel_wins?: number | null
           id?: string
           is_ready?: boolean | null
           last_daily_reward?: string | null

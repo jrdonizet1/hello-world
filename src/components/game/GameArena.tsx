@@ -1,9 +1,10 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { motion, useAnimation, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/useGameStore';
-import { Zap } from 'lucide-react';
+import { Zap, Swords, Timer } from 'lucide-react';
 import { generateCommand } from '../../lib/gameLogic';
 import { saveGameHistory } from '@/lib/server-functions';
+import { supabase } from '@/integrations/supabase/client';
 
 export const GameArena: React.FC = () => {
   const { 
@@ -27,7 +28,13 @@ export const GameArena: React.FC = () => {
     increaseCombo,
     resetCombo,
     multiplier,
-    combo
+    combo,
+    isMultiplayer,
+    duelOpponentProgress,
+    duelSeed,
+    setDuelOpponent,
+    activePowers,
+    usePower
   } = useGameStore();
   
   const [lastCommandTime, setLastCommandTime] = useState(Date.now());
@@ -43,7 +50,7 @@ export const GameArena: React.FC = () => {
           if (prev <= 1) {
             clearInterval(timer);
             setGameState('PLAYING');
-            setCommand(generateCommand(1, selectedThemes));
+            setCommand(generateCommand(1, selectedThemes, duelSeed || undefined));
             setLastCommandTime(Date.now());
             return 0;
           }
@@ -63,6 +70,47 @@ export const GameArena: React.FC = () => {
       return () => clearInterval(interval);
     }
   }, [gameState, tick]);
+
+  // Real-time Duel Logic
+  const { roomId } = useGameStore();
+  const lastSentScore = useRef(0);
+
+  useEffect(() => {
+    if (!isMultiplayer || !roomId || gameState !== 'PLAYING') return;
+
+    const channel = supabase.channel(`duel-${roomId}`);
+    
+    channel
+      .on('broadcast', { event: 'score_update' }, async ({ payload }) => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user && payload.userId !== user.id) {
+          setDuelOpponent(payload.userId, payload.score);
+        }
+      })
+      .on('broadcast', { event: 'player_eliminated' }, ({ payload }) => {
+        // If opponent is eliminated, we could show a message or just continue
+        console.log('Opponent eliminated:', payload.userId);
+      })
+      .subscribe();
+
+    return () => { channel.unsubscribe(); };
+  }, [isMultiplayer, roomId, gameState]);
+
+  // Sync score with opponent
+  useEffect(() => {
+    if (isMultiplayer && roomId && score !== lastSentScore.current) {
+      lastSentScore.current = score;
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (!user) return;
+        const channel = supabase.channel(`duel-${roomId}`);
+        channel.send({
+          type: 'broadcast',
+          event: 'score_update',
+          payload: { score, userId: user.id }
+        });
+      });
+    }
+  }, [score, isMultiplayer, roomId]);
 
   const handleAction = useCallback((response: boolean) => {
     if (gameState !== 'PLAYING' || !currentCommand) return;
@@ -84,7 +132,8 @@ export const GameArena: React.FC = () => {
     if (isCorrect) {
       increaseCombo(reactionTime);
       updateScore(1);
-      setCommand(generateCommand(Math.floor(score / 5) + 1, selectedThemes));
+      const nextScore = score + 1;
+      setCommand(generateCommand(Math.floor(nextScore / 5) + 1, selectedThemes, duelSeed ? duelSeed + nextScore : undefined));
       setLastCommandTime(Date.now());
       
       // Scalable difficulty logic based on GameMode and Acceleration Intensity
@@ -128,6 +177,18 @@ export const GameArena: React.FC = () => {
       });
     } else {
       setIsWrong(true);
+      if (isMultiplayer && roomId) {
+        supabase.auth.getUser().then(({ data: { user } }) => {
+          if (user) {
+            const channel = supabase.channel(`duel-${roomId}`);
+            channel.send({
+              type: 'broadcast',
+              event: 'player_eliminated',
+              payload: { userId: user.id }
+            });
+          }
+        });
+      }
       setTimeout(() => endGame('CONEXÃO CEREBRAL PERDIDA'), 200);
     }
   }, [gameState, currentCommand, score, updateScore, setCommand, endGame, controls, gameMode, timeRemaining, lastCommandTime, increaseCombo]);
@@ -194,6 +255,35 @@ export const GameArena: React.FC = () => {
       `}</style>
       {/* Header */}
       <div className="flex justify-between items-center mb-6 z-10">
+        {/* Opponent Progress (Multiplayer Duel) */}
+        {isMultiplayer && (
+          <div className="absolute top-0 left-0 w-full h-1 bg-white/5 overflow-hidden">
+            <motion.div 
+              className="h-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]"
+              animate={{ width: `${Math.min(100, (duelOpponentProgress / 50) * 100)}%` }}
+              transition={{ duration: 0.5 }}
+            />
+            <div className="absolute top-2 left-2 text-[8px] font-black text-red-500 uppercase tracking-widest opacity-60 flex items-center gap-1">
+              <Swords size={10} /> Oponente: {duelOpponentProgress} pts
+            </div>
+          </div>
+        )}
+
+        {/* Powers HUD */}
+        <div className="absolute top-2 right-2 flex gap-2 z-50">
+          <button
+            onClick={() => usePower('slow')}
+            disabled={activePowers.some(p => p.id === 'slow')}
+            className={`p-2 rounded-full border transition-all ${
+              activePowers.some(p => p.id === 'slow')
+                ? 'bg-blue-500/50 border-blue-400 animate-pulse'
+                : 'bg-zinc-900/80 border-white/10 hover:border-blue-500/50'
+            }`}
+            title="Tempo Lento (5s)"
+          >
+            <Timer size={16} className={activePowers.some(p => p.id === 'slow') ? 'text-white' : 'text-blue-400'} />
+          </button>
+        </div>
         <div className="flex flex-col">
           <span className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em]">Sincronia</span>
           <span className="text-4xl font-black italic tabular-nums">{score.toFixed(1)}</span>
@@ -240,9 +330,13 @@ export const GameArena: React.FC = () => {
         <motion.div 
           className="h-full rounded-full"
           style={{ 
-            backgroundColor: timeRemaining < 0.8 ? '#ef4444' : (userSkin || '#06b6d4'),
-            boxShadow: timeRemaining < 0.8 ? '0 0 15px rgba(239,68,68,0.5)' : `0 0 15px ${(userSkin || '#06b6d4')}80`
-          }}
+          backgroundColor: activePowers.some(p => p.id === 'slow') 
+            ? '#3b82f6' 
+            : (timeRemaining < 0.8 ? '#ef4444' : (userSkin || '#06b6d4')),
+          boxShadow: activePowers.some(p => p.id === 'slow')
+            ? '0 0 15px rgba(59,130,246,0.5)'
+            : (timeRemaining < 0.8 ? '0 0 15px rgba(239,68,68,0.5)' : `0 0 15px ${(userSkin || '#06b6d4')}80`)
+        }}
           animate={{ width: `${Math.max(0, (timeRemaining / (gameMode === 'SURVIVAL' ? 5 : (gameMode === 'BLITZ' ? 1.2 : baseTime + 0.5))) * 100)}%` }}
           transition={{ duration: 0.05, ease: 'linear' }}
         />

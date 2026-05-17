@@ -358,7 +358,7 @@ export const Lobby: React.FC = () => {
       return;
     }
     try {
-      setCustomization(profile?.selected_skin, profile?.selected_title);
+      setCustomization(profile?.selected_skin, profile?.selected_title, profile?.selected_font, profile?.selected_arena_effect);
       await (startRoomGame as any)({ data: roomId });
       // The room status will change to STARTING, and the subscription will call startGame()
       // But we need to make sure startGame uses the room's baseTime and acceleration

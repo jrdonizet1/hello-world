@@ -134,7 +134,10 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             >
               {/* Category Icon */}
               <div className="absolute top-4 right-4 opacity-20">
-                {item.category === 'skin' ? <Palette className="w-8 h-8" /> : <Type className="w-8 h-8" />}
+                {item.category === 'skin' ? <Palette className="w-8 h-8" /> : 
+                 item.category === 'font' ? <Type className="w-8 h-8" /> :
+                 item.category === 'arena_effect' ? <Sparkles className="w-8 h-8" /> :
+                 <Type className="w-8 h-8" />}
               </div>
 
               <div className="flex flex-col h-full justify-between gap-4">

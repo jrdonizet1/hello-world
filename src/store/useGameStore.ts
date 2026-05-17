@@ -76,7 +76,12 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
   accelerationIntensity: 'NORMAL',
   accelerationEnabled: true,
 
-  setCustomization: (skin, title) => set({ userSkin: skin, userTitle: title }),
+  setCustomization: (skin, title, font, arenaEffect) => set({ 
+    userSkin: skin, 
+    userTitle: title,
+    userFont: font || null,
+    userArenaEffect: arenaEffect || null
+  }),
   setGameMode: (mode) => set({ gameMode: mode }),
   setSelectedThemes: (themes) => set({ selectedThemes: themes }),
   setGameSettings: (baseTime, accelerationIntensity) => set({ baseTime, accelerationIntensity, accelerationEnabled: accelerationIntensity !== 'OFF' }),

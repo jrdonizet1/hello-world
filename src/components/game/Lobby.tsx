@@ -1527,12 +1527,22 @@ export const Lobby: React.FC = () => {
                           {i + 1}
                         </div>
                         <div className="flex flex-col">
-                          <span className={`text-sm font-black uppercase tracking-tight ${entry.user_id === session?.user?.id ? 'text-cyan-400' : 'text-white'}`}>
-                            {entry.profiles?.nickname || 'Anônimo'}
-                          </span>
-                          <span className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest">
-                            {rankingCategory ? 'Recorde Temático' : 'Recorde Geral'}
-                          </span>
+                          <div className="flex flex-col">
+                            <span 
+                              className="text-sm font-black italic uppercase tracking-tight"
+                              style={{ color: entry.profiles?.selected_skin || 'white' }}
+                            >
+                              {entry.profiles?.nickname || 'Anônimo'}
+                            </span>
+                            {entry.profiles?.selected_title && (
+                              <span 
+                                className="text-[7px] font-black uppercase tracking-[0.2em] opacity-70"
+                                style={{ color: entry.profiles?.selected_skin || 'white' }}
+                              >
+                                « {entry.profiles?.selected_title} »
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                       

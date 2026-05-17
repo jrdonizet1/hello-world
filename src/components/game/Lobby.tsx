@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { updateProfile, createRoom, joinRoom, startRoomGame } from '@/lib/server-functions';
 
-type LobbyView = 'MAIN' | 'MULTIPLAYER' | 'CREATE_ROOM' | 'JOIN_ROOM' | 'WAITING' | 'VISITOR_NICK';
+type LobbyView = 'MAIN' | 'MULTIPLAYER' | 'CREATE_ROOM' | 'JOIN_ROOM' | 'WAITING' | 'VISITOR_NICK' | 'ROOMS_LIST';
 
 export const Lobby: React.FC = () => {
   const { startGame, setRoom, roomId, roomCode, isHost } = useGameStore();
@@ -26,6 +26,9 @@ export const Lobby: React.FC = () => {
   const [joinCode, setJoinCode] = useState('');
   const [joinPassword, setJoinPassword] = useState('');
   const [needsPassword, setNeedsPassword] = useState(false);
+
+  // Room List State
+  const [availableRooms, setAvailableRooms] = useState<any[]>([]);
 
   // Room Lobby State
   const [players, setPlayers] = useState<any[]>([]);
@@ -46,6 +49,40 @@ export const Lobby: React.FC = () => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (view === 'ROOMS_LIST') {
+      fetchAvailableRooms();
+    }
+  }, [view]);
+
+  const fetchAvailableRooms = async () => {
+    setLoading(true);
+    try {
+      // Get rooms with their player counts
+      const { data: rooms, error } = await supabase
+        .from('rooms')
+        .select(`
+          *,
+          profiles:profiles(count)
+        `)
+        .eq('status', 'LOBBY')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      
+      const formattedRooms = rooms.map(room => ({
+        ...room,
+        playerCount: room.profiles[0]?.count || 0
+      }));
+
+      setAvailableRooms(formattedRooms);
+    } catch (err: any) {
+      toast.error('Erro ao carregar salas');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Real-time subscriptions
   useEffect(() => {

@@ -45,6 +45,7 @@ export type Database = {
           created_at: string
           id: string
           is_ready: boolean | null
+          last_daily_reward: string | null
           level: number
           nickname: string | null
           room_id: string | null
@@ -57,6 +58,7 @@ export type Database = {
           created_at?: string
           id: string
           is_ready?: boolean | null
+          last_daily_reward?: string | null
           level?: number
           nickname?: string | null
           room_id?: string | null
@@ -69,6 +71,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_ready?: boolean | null
+          last_daily_reward?: string | null
           level?: number
           nickname?: string | null
           room_id?: string | null

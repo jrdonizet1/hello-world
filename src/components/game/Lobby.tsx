@@ -198,10 +198,17 @@ export const Lobby: React.FC = () => {
       }, (payload) => {
         if (payload.new.status === 'STARTING') {
           setCustomization(profile?.selected_skin, profile?.selected_title);
-          startGame();
+          startGame(
+            undefined, 
+            payload.new.selected_themes, 
+            payload.new.base_time ? Number(payload.new.base_time) : undefined, 
+            payload.new.acceleration_enabled
+          );
         }
-        if (payload.new.selected_themes && !isHost) {
-          setSelectedThemes(payload.new.selected_themes);
+        if (!isHost) {
+          if (payload.new.selected_themes) setSelectedThemes(payload.new.selected_themes);
+          if (payload.new.base_time) setBaseTime(Number(payload.new.base_time));
+          if (payload.new.acceleration_enabled !== undefined) setAccelerationEnabled(payload.new.acceleration_enabled);
         }
       })
       .subscribe();

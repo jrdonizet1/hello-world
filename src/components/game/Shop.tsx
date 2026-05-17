@@ -28,9 +28,13 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         getUserInventory(),
         getProfile()
       ]);
+      const profileData = userProfile as any;
       setItems(shopItems as ShopItem[]);
       setInventory(userInv);
-      setProfile(userProfile);
+      setProfile(profileData);
+      
+      const { setPowerCounts } = useGameStore.getState();
+      setPowerCounts(profileData.power_slow_count || 0, profileData.power_shield_count || 0);
     } catch (err: any) {
       console.error(err);
       toast.error('Erro ao carregar loja');

@@ -177,7 +177,8 @@ export const createRoom = createServerFn({ method: "POST" })
         name: name || 'Arena Neural',
         max_players: maxPlayers || 4,
         is_private: isPrivate || false,
-        password: password || null
+        password: password || null,
+        selected_themes: selectedThemes || ['COLOR', 'MATH']
       })
       .select()
       .single();

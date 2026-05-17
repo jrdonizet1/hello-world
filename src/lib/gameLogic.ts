@@ -61,7 +61,7 @@ const CURIOSITIES = [
   { q: 'CÃES SÓ ENXERGAM EM PRETO E BRANCO?', a: false, difficulty: 2 },
 ];
 
-  { country: 'BRASIL', capital: 'BRASÍLIA' },
+  const CAPITALS = [
   { country: 'FRANÇA', capital: 'PARIS' },
   { country: 'ITÁLIA', capital: 'ROMA' },
   { country: 'JAPÃO', capital: 'TÓQUIO' },

@@ -255,12 +255,12 @@ export const Lobby: React.FC = () => {
     setLoading(true);
     try {
       await (leaveRoom as any)();
+    } catch (err: any) {
+      console.error('Erro ao sair da sala:', err);
+    } finally {
       setRoom(null, null, false);
       setIsReady(false);
       setView('MULTIPLAYER');
-    } catch (err: any) {
-      toast.error('Erro ao sair da sala');
-    } finally {
       setLoading(false);
     }
   };

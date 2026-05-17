@@ -432,6 +432,60 @@ export const Lobby: React.FC = () => {
       </div>
     </div>
   );
+  
+  const GameSettingsSelector = () => (
+    <div className="bg-zinc-900/40 border border-zinc-800/50 p-4 rounded-3xl backdrop-blur-xl mb-4 space-y-4">
+      <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] text-center">Configurações da Partida</h3>
+      
+      <div className="space-y-2">
+        <div className="flex justify-between items-center px-1">
+          <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Tempo Base: {baseTime.toFixed(1)}s</label>
+        </div>
+        <input 
+          type="range" 
+          min="1.0" 
+          max="5.0" 
+          step="0.2"
+          value={baseTime}
+          onChange={async (e) => {
+            const val = parseFloat(e.target.value);
+            setBaseTime(val);
+            if (roomId && isHost) {
+              try {
+                await (updateRoomSettings as any)({ data: { roomId, baseTime: val } });
+              } catch (err) {
+                toast.error('Erro ao atualizar tempo');
+              }
+            }
+          }}
+          className="w-full accent-cyan-500"
+        />
+      </div>
+
+      <div className="flex items-center justify-between p-3 bg-black/20 rounded-xl border border-white/5">
+        <div className="flex items-center gap-2">
+          <RefreshCw size={14} className={accelerationEnabled ? "text-cyan-400" : "text-zinc-600"} />
+          <span className="text-[9px] font-black uppercase tracking-widest text-zinc-300">Aceleração Neural</span>
+        </div>
+        <button 
+          onClick={async () => {
+            const val = !accelerationEnabled;
+            setAccelerationEnabled(val);
+            if (roomId && isHost) {
+              try {
+                await (updateRoomSettings as any)({ data: { roomId, accelerationEnabled: val } });
+              } catch (err) {
+                toast.error('Erro ao atualizar aceleração');
+              }
+            }
+          }}
+          className={`w-10 h-5 rounded-full transition-colors relative ${accelerationEnabled ? 'bg-cyan-500' : 'bg-zinc-800'}`}
+        >
+          <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${accelerationEnabled ? 'left-6' : 'left-1'}`}></div>
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="flex flex-col items-center justify-between h-full p-8 pb-12 overflow-y-auto">

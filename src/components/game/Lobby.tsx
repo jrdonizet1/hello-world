@@ -38,13 +38,43 @@ export const Lobby: React.FC = () => {
   const [isReady, setIsReady] = useState(false);
   const [pendingAction, setPendingAction] = useState<{ type: 'CREATE' | 'JOIN', code?: string } | null>(null);
   const [rewardLoading, setRewardLoading] = useState(false);
-  
-  const isRewardAvailable = () => {
-    if (!profile?.last_daily_reward) return true;
+  const [onlineCount, setOnlineCount] = useState(0);
+  const [currentTime, setCurrentTime] = useState(new Date().getTime());
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date().getTime()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const rewardTimeRemaining = useMemo(() => {
+    if (!profile?.last_daily_reward) return 0;
     const lastReward = new Date(profile.last_daily_reward).getTime();
-    const now = new Date().getTime();
-    return (now - lastReward) >= 24 * 60 * 60 * 1000;
+    const waitTime = 24 * 60 * 60 * 1000;
+    const remaining = lastReward + waitTime - currentTime;
+    return Math.max(0, remaining);
+  }, [profile?.last_daily_reward, currentTime]);
+
+  const formatTime = (ms: number) => {
+    const hours = Math.floor(ms / (1000 * 60 * 60));
+    const mins = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+    const secs = Math.floor((ms % (1000 * 60)) / 1000);
+    return `${hours}h ${mins}m ${secs}s`;
   };
+  
+  const isRewardAvailable = () => rewardTimeRemaining === 0;
+
+  useEffect(() => {
+    const fetchOnlineCount = async () => {
+      const { count } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .not('room_id', 'is', null);
+      setOnlineCount(count || 0);
+    };
+    fetchOnlineCount();
+    const interval = setInterval(fetchOnlineCount, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     // Check for referral code in URL

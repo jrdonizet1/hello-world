@@ -165,7 +165,9 @@ export const getLeaderboard = createServerFn({ method: "GET" })
         user_id,
         profiles (
           nickname,
-          avatar_url
+          avatar_url,
+          selected_skin,
+          selected_title
         )
       `)
       .order(colName, { ascending: false })

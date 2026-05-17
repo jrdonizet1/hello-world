@@ -274,6 +274,7 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-12">
           {items
             .filter(item => {
+              if (item.category === 'icon') return false; // Desabilitado a pedido do usuário
               if (activeTab === 'POWERS') return item.category === 'power_up';
               if (activeTab === 'MY_ITEMS') return inventory.includes(item.id) && item.category !== 'power_up';
               if (activeTab === 'COSMETICS') {

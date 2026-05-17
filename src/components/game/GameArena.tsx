@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { motion, useAnimation, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/useGameStore';
-import { Zap, Swords } from 'lucide-react';
+import { Zap, Swords, Timer } from 'lucide-react';
 import { generateCommand } from '../../lib/gameLogic';
 import { saveGameHistory } from '@/lib/server-functions';
 import { supabase } from '@/integrations/supabase/client';

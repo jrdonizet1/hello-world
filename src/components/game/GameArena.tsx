@@ -380,7 +380,7 @@ export const GameArena: React.FC = () => {
 
         <div className="flex flex-col items-end">
           <span className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em]">Estável</span>
-          <span 
+          <motion.span 
             className="text-2xl font-black tabular-nums"
             animate={userSkin === 'rainbow' ? {
               color: ['#06b6d4', '#ec4899', '#eab308', '#22c55e', '#06b6d4'],

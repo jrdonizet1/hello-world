@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { motion, useAnimation, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/useGameStore';
+import { Zap } from 'lucide-react';
 import { generateCommand } from '../../lib/gameLogic';
 import { saveGameHistory } from '@/lib/server-functions';
 
@@ -20,9 +21,14 @@ export const GameArena: React.FC = () => {
     gameMode,
     selectedThemes,
     baseTime,
-    accelerationIntensity
+    accelerationIntensity,
+    increaseCombo,
+    resetCombo,
+    multiplier,
+    combo
   } = useGameStore();
-
+  
+  const [lastCommandTime, setLastCommandTime] = useState(Date.now());
   const [countDown, setCountDown] = useState(3);
   const [isWrong, setIsWrong] = useState(false);
   const controls = useAnimation();
@@ -36,6 +42,7 @@ export const GameArena: React.FC = () => {
             clearInterval(timer);
             setGameState('PLAYING');
             setCommand(generateCommand(1, selectedThemes));
+            setLastCommandTime(Date.now());
             return 0;
           }
           return prev - 1;
@@ -59,6 +66,7 @@ export const GameArena: React.FC = () => {
     if (gameState !== 'PLAYING' || !currentCommand) return;
 
     const isCorrect = (currentCommand as any).isCorrect === response;
+    const reactionTime = (Date.now() - lastCommandTime) / 1000;
     
     // Save history
     saveGameHistory({
@@ -72,8 +80,10 @@ export const GameArena: React.FC = () => {
     } as any).catch(err => console.error('Error saving history:', err));
 
     if (isCorrect) {
+      increaseCombo(reactionTime);
       updateScore(1);
       setCommand(generateCommand(Math.floor(score / 5) + 1, selectedThemes));
+      setLastCommandTime(Date.now());
       
       // Scalable difficulty logic based on GameMode and Acceleration Intensity
       let nextTime = baseTime;
@@ -118,7 +128,7 @@ export const GameArena: React.FC = () => {
       setIsWrong(true);
       setTimeout(() => endGame('CONEXÃO CEREBRAL PERDIDA'), 200);
     }
-  }, [gameState, currentCommand, score, updateScore, setCommand, endGame, controls, gameMode, timeRemaining]);
+  }, [gameState, currentCommand, score, updateScore, setCommand, endGame, controls, gameMode, timeRemaining, lastCommandTime, increaseCombo]);
 
   if (gameState === 'PREPARE') {
     return (

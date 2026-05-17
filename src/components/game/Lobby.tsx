@@ -41,8 +41,9 @@ export const Lobby: React.FC = () => {
           INICIAR CAOS
         </motion.button>
         
-        <p className="text-center text-gray-500 text-xs font-medium">
-          PREPARE SEU CÉREBRO PARA O LAG
+        <p className="text-center text-gray-500 text-[10px] font-bold uppercase tracking-widest leading-relaxed">
+          A COR BATE COM A PALAVRA? <br />
+          DECIDA RÁPIDO: SIM OU NÃO.
         </p>
       </div>
 

@@ -200,8 +200,8 @@ export const generateCommand = (difficulty: number, themes: string[] = ['COLOR',
       
       return {
         id: Math.random().toString(36).substring(7),
-        text: `PADRÃO: ${pattern.join(', ')}. O PRÓXIMO É ${displayNext}?`,
-        displayWord: isCorrect ? 'SIM' : 'NÃO',
+        text: 'QUAL O PRÓXIMO?',
+        displayWord: `${pattern.join(', ')} → ${displayNext}?`,
         isCorrect,
         type: 'TAP',
         action: 'boolean',
@@ -218,8 +218,8 @@ export const generateCommand = (difficulty: number, themes: string[] = ['COLOR',
       
       return {
         id: Math.random().toString(36).substring(7),
-        text: `PADRÃO: ${pattern.join(', ')}. O PRÓXIMO É ${displayNext}?`,
-        displayWord: isCorrect ? 'SIM' : 'NÃO',
+        text: 'QUAL O PRÓXIMO?',
+        displayWord: `${pattern.join(', ')} → ${displayNext}?`,
         isCorrect,
         type: 'TAP',
         action: 'boolean',
@@ -243,8 +243,8 @@ export const generateCommand = (difficulty: number, themes: string[] = ['COLOR',
     
     return {
       id: Math.random().toString(36).substring(7),
-      text: `${displayCapital} É A CAPITAL DE ${item.country}?`,
-      displayWord: isCorrect ? 'SIM' : 'NÃO',
+      text: `CAPITAL DE: ${item.country}?`,
+      displayWord: `${displayCapital}?`,
       isCorrect,
       type: 'TAP',
       action: 'boolean',
@@ -260,24 +260,34 @@ export const generateCommand = (difficulty: number, themes: string[] = ['COLOR',
     } while (item1.item === item2.item);
     
     const actuallyGreater = item1.size > item2.size;
-    // We want the statement: "item1 is greater than item2"
-    // If isCorrect is true, we want the statement to be true.
-    // So if actuallyGreater is true, we say "item1 is greater".
-    // If actuallyGreater is false, we say "item2 is greater".
     
-    const statementIsTrue = Math.random() > 0.5;
-    const text = statementIsTrue 
-      ? `UM(A) ${item1.item} É MAIOR QUE UM(A) ${item2.item}?`
-      : `UM(A) ${item2.item} É MAIOR QUE UM(A) ${item1.item}?`;
+    // We want to ask "Is item1 bigger than item2?"
+    // isCorrect means we want the user to press SIM if the statement we show is actually correct.
     
-    const correctResponse = statementIsTrue ? actuallyGreater : !actuallyGreater;
-    const finalIsCorrect = isCorrect === correctResponse;
+    const statementIsTrue = isCorrect; 
+    // If isCorrect is true, we want a true statement.
+    // If isCorrect is false, we want a false statement.
+    
+    let text: string;
+    if (statementIsTrue) {
+      if (actuallyGreater) {
+        text = `UM(A) ${item1.item} É MAIOR QUE UM(A) ${item2.item}?`;
+      } else {
+        text = `UM(A) ${item2.item} É MAIOR QUE UM(A) ${item1.item}?`;
+      }
+    } else {
+      if (actuallyGreater) {
+        text = `UM(A) ${item2.item} É MAIOR QUE UM(A) ${item1.item}?`;
+      } else {
+        text = `UM(A) ${item1.item} É MAIOR QUE UM(A) ${item2.item}?`;
+      }
+    }
 
     return {
       id: Math.random().toString(36).substring(7),
-      text: text,
-      displayWord: isCorrect ? 'SIM' : 'NÃO',
-      isCorrect: isCorrect,
+      text: 'ISSO É VERDADE?',
+      displayWord: text,
+      isCorrect,
       type: 'TAP',
       action: 'boolean',
       target: isCorrect ? 'true' : 'false',

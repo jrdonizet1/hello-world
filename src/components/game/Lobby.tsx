@@ -168,6 +168,9 @@ export const Lobby: React.FC = () => {
           setCustomization(profile?.selected_skin, profile?.selected_title);
           startGame();
         }
+        if (payload.new.selected_themes && !isHost) {
+          setSelectedThemes(payload.new.selected_themes);
+        }
       })
       .subscribe();
 

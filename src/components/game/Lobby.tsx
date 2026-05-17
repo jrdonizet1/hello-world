@@ -13,6 +13,7 @@ export const Lobby: React.FC = () => {
   const { startGame, setRoom, roomId, roomCode, isHost } = useGameStore();
   const [session, setSession] = useState<any>(null);
   const [nickname, setNickname] = useState('');
+  const [profile, setProfile] = useState<any>(null);
   const [view, setView] = useState<LobbyView>('MAIN');
   const [loading, setLoading] = useState(false);
   

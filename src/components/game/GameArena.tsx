@@ -5,6 +5,7 @@ import { Zap, Swords, Timer, Shield } from 'lucide-react';
 import { generateCommand } from '../../lib/gameLogic';
 import { saveGameHistory } from '@/lib/server-functions';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export const GameArena: React.FC = () => {
   const { 

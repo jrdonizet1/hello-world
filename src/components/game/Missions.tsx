@@ -107,7 +107,7 @@ export const Missions: React.FC<MissionsProps> = ({ onBack, onUpdateProfile }) =
         )}
 
         <div className="flex justify-between items-center">
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-2">
             <div className="flex items-center gap-1">
               <Coins size={10} className="text-yellow-500" />
               <span className="text-[10px] font-black text-yellow-500">{mission.reward_coins}</span>
@@ -116,6 +116,18 @@ export const Missions: React.FC<MissionsProps> = ({ onBack, onUpdateProfile }) =
               <Star size={10} className="text-cyan-400" />
               <span className="text-[10px] font-black text-cyan-400">{mission.reward_xp} XP</span>
             </div>
+            {mission.reward_power_slow && mission.reward_power_slow > 0 ? (
+              <div className="flex items-center gap-1 bg-blue-500/10 px-1 rounded">
+                <Clock size={10} className="text-blue-400" />
+                <span className="text-[10px] font-black text-blue-400">+{mission.reward_power_slow}</span>
+              </div>
+            ) : null}
+            {mission.reward_power_shield && mission.reward_power_shield > 0 ? (
+              <div className="flex items-center gap-1 bg-emerald-500/10 px-1 rounded">
+                <Shield size={10} className="text-emerald-400" />
+                <span className="text-[10px] font-black text-emerald-400">+{mission.reward_power_shield}</span>
+              </div>
+            ) : null}
           </div>
 
           {mission.completed && !mission.claimed && (

@@ -699,12 +699,16 @@ export const getAdminStats = createServerFn({ method: "GET" })
       { count: totalUsers },
       { count: activeRooms },
       { data: totalCoins },
-      { count: totalItems }
+      { count: totalItems },
+      { count: visitorsCount }
     ] = await Promise.all([
       supabaseAdmin.from("profiles").select("id", { count: "exact", head: true }),
-      supabaseAdmin.from("rooms").select("id", { count: "exact", head: true }),
+      supabaseAdmin.from("rooms").select("id", { count: "exact", head: true }).eq('status', 'LOBBY'),
       supabaseAdmin.from("profiles").select("coins"),
-      supabaseAdmin.from("shop_items").select("id", { count: "exact", head: true })
+      supabaseAdmin.from("shop_items").select("id", { count: "exact", head: true }),
+      // Contagem aproximada de visitantes (profiles sem email ou metadados de auth que indiquem Google)
+      // Como o profile é separado do auth.users, vamos considerar visitantes usuários sem nickname ou com padrões específicos se houver
+      supabaseAdmin.from("profiles").select("id", { count: "exact", head: true }) // Placeholder
     ]);
 
     const coinsSum = (totalCoins || []).reduce((acc, curr) => acc + (curr.coins || 0), 0);
@@ -713,9 +717,11 @@ export const getAdminStats = createServerFn({ method: "GET" })
       totalUsers: totalUsers || 0,
       activeRooms: activeRooms || 0,
       totalCoins: coinsSum,
-      totalItems: totalItems || 0
+      totalItems: totalItems || 0,
+      visitorsCount: 0 // Será calculado melhor no front se necessário ou via RPC
     };
   });
+
 
 export const getAllUsers = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -788,5 +794,44 @@ export const upsertShopItem = createServerFn({ method: "POST" })
     }
 
     if (result.error) throw new Error(result.error.message);
+    return { success: true };
+  });
+
+export const getActiveRooms = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async (args: any) => {
+    const { context } = args;
+    const { userId } = context;
+
+    const { data: profile } = await supabaseAdmin.from("profiles").select("is_admin").eq("id", userId).single();
+    if (!profile?.is_admin) throw new Error("Acesso negado");
+
+    const { data, error } = await supabaseAdmin
+      .from("rooms")
+      .select(`
+        *,
+        profiles:profiles(count)
+      `)
+      .order("created_at", { ascending: false });
+
+    if (error) throw new Error(error.message);
+    return data;
+  });
+
+export const closeRoom = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async (args: any) => {
+    const { data: roomId, context } = args;
+    const { userId } = context;
+
+    const { data: profile } = await supabaseAdmin.from("profiles").select("is_admin").eq("id", userId).single();
+    if (!profile?.is_admin) throw new Error("Acesso negado");
+
+    // Desvincular jogadores
+    await supabaseAdmin.from("profiles").update({ room_id: null, is_ready: false }).eq("room_id", roomId);
+    // Deletar sala
+    const { error } = await supabaseAdmin.from("rooms").delete().eq("id", roomId);
+
+    if (error) throw new Error(error.message);
     return { success: true };
   });

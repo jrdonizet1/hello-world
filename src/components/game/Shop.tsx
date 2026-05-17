@@ -88,6 +88,8 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const isEquipped = (item: ShopItem) => {
     if (item.category === 'skin') return profile?.selected_skin === item.item_data.color;
     if (item.category === 'title') return profile?.selected_title === item.item_data.text;
+    if (item.category === 'font') return JSON.stringify(profile?.selected_font) === JSON.stringify(item.item_data);
+    if (item.category === 'arena_effect') return JSON.stringify(profile?.selected_arena_effect) === JSON.stringify(item.item_data);
     return false;
   };
 

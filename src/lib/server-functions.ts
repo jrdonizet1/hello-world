@@ -52,6 +52,66 @@ export const saveScore = createServerFn({ method: "POST" })
       .from("leaderboard")
       .upsert(updateData, { onConflict: "user_id" });
 
+    // --- Atualização de Missões ---
+    try {
+      const { data: missions } = await supabaseAdmin
+        .from("missions")
+        .select("*");
+
+      if (missions) {
+        for (const mission of missions) {
+          let progressDelta = 0;
+          let isAbsolute = false;
+
+          if (mission.goal_type === 'SCORE' && score >= mission.goal_value) {
+            progressDelta = mission.goal_value;
+            isAbsolute = true;
+          } else if (mission.goal_type === 'COMBO' && (maxCombo || 0) >= mission.goal_value) {
+            progressDelta = mission.goal_value;
+            isAbsolute = true;
+          } else if (mission.goal_type === 'GAMES_PLAYED') {
+            progressDelta = 1;
+          } else if (mission.goal_type.startsWith('THEME_HITS_')) {
+            const themeId = mission.goal_type.replace('THEME_HITS_', '');
+            if (themeScores && themeScores[themeId]) {
+              progressDelta = themeScores[themeId];
+            }
+          }
+
+          if (progressDelta > 0) {
+            const { data: currentProg } = await supabaseAdmin
+              .from("user_missions")
+              .select("*")
+              .eq("user_id", userId)
+              .eq("mission_id", mission.id)
+              .maybeSingle();
+
+            if (!currentProg) {
+              await supabaseAdmin.from("user_missions").insert({
+                user_id: userId,
+                mission_id: mission.id,
+                progress: progressDelta,
+                completed: progressDelta >= mission.goal_value
+              });
+            } else if (!currentProg.completed) {
+              const newProgress = isAbsolute 
+                ? Math.max(currentProg.progress, progressDelta)
+                : currentProg.progress + progressDelta;
+                
+              await supabaseAdmin.from("user_missions").update({
+                progress: newProgress,
+                completed: newProgress >= mission.goal_value,
+                last_updated: new Date().toISOString()
+              }).eq("id", currentProg.id);
+            }
+          }
+        }
+      }
+    } catch (mErr) {
+      console.error("Erro ao atualizar missões:", mErr);
+    }
+    // ------------------------------
+
     return { 
       success: true, 
       xpGained, 

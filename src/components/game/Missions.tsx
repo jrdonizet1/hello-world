@@ -50,7 +50,11 @@ export const Missions: React.FC<MissionsProps> = ({ onBack, onUpdateProfile }) =
     setClaimingId(missionId);
     try {
       const result = await (claimMissionReward as any)({ data: missionId });
-      toast.success(`Resgatado: ${result.reward_coins} Brain Coins e ${result.reward_xp} XP!`);
+      let message = `Resgatado: ${result.reward_coins} Brain Coins e ${result.reward_xp} XP!`;
+      if (result.reward_power_slow > 0) message += ` +${result.reward_power_slow} Tempo Lento`;
+      if (result.reward_power_shield > 0) message += ` +${result.reward_power_shield} Escudo`;
+      
+      toast.success(message);
       onUpdateProfile();
       await fetchMissions();
     } catch (err: any) {

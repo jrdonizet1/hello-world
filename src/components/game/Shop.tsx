@@ -64,9 +64,9 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const handleEquip = async (item: ShopItem) => {
     try {
       if (item.category === 'skin') {
-        await updateEquippedItems({ skin: item.item_data.color });
+        await (updateEquippedItems as any)({ data: { skin: item.item_data.color } });
       } else if (item.category === 'title') {
-        await updateEquippedItems({ title: item.item_data.text });
+        await (updateEquippedItems as any)({ data: { title: item.item_data.text } });
       }
       toast.success('Equipado com sucesso!');
       await loadData();

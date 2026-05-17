@@ -32,7 +32,7 @@ export const GameArena: React.FC = () => {
           if (prev <= 1) {
             clearInterval(timer);
             setGameState('PLAYING');
-            setCommand(generateCommand(1));
+            setCommand(generateCommand(1, selectedThemes));
             return 0;
           }
           return prev - 1;

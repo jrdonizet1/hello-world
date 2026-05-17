@@ -330,9 +330,13 @@ export const GameArena: React.FC = () => {
         <motion.div 
           className="h-full rounded-full"
           style={{ 
-            backgroundColor: timeRemaining < 0.8 ? '#ef4444' : (userSkin || '#06b6d4'),
-            boxShadow: timeRemaining < 0.8 ? '0 0 15px rgba(239,68,68,0.5)' : `0 0 15px ${(userSkin || '#06b6d4')}80`
-          }}
+          backgroundColor: activePowers.some(p => p.id === 'slow') 
+            ? '#3b82f6' 
+            : (timeRemaining < 0.8 ? '#ef4444' : (userSkin || '#06b6d4')),
+          boxShadow: activePowers.some(p => p.id === 'slow')
+            ? '0 0 15px rgba(59,130,246,0.5)'
+            : (timeRemaining < 0.8 ? '0 0 15px rgba(239,68,68,0.5)' : `0 0 15px ${(userSkin || '#06b6d4')}80`)
+        }}
           animate={{ width: `${Math.max(0, (timeRemaining / (gameMode === 'SURVIVAL' ? 5 : (gameMode === 'BLITZ' ? 1.2 : baseTime + 0.5))) * 100)}%` }}
           transition={{ duration: 0.05, ease: 'linear' }}
         />

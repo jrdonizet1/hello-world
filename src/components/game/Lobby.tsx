@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/useGameStore';
-import { Trophy, Users, Zap, LogIn, User, LogOut, Plus, LogIn as JoinIcon, ChevronLeft, Copy, Check, Shield, ShieldOff, Lock, UserPlus, RefreshCw, ShoppingBag, Share2, Timer, Infinity } from 'lucide-react';
+import { Trophy, Users, Zap, LogIn, User, LogOut, Plus, LogIn as JoinIcon, ChevronLeft, Copy, Check, Shield, ShieldOff, Lock, UserPlus, RefreshCw, ShoppingBag, Share2, Timer, Infinity, Monitor, Globe } from 'lucide-react';
 import { lovable } from '@/integrations/lovable';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -38,13 +38,43 @@ export const Lobby: React.FC = () => {
   const [isReady, setIsReady] = useState(false);
   const [pendingAction, setPendingAction] = useState<{ type: 'CREATE' | 'JOIN', code?: string } | null>(null);
   const [rewardLoading, setRewardLoading] = useState(false);
-  
-  const isRewardAvailable = () => {
-    if (!profile?.last_daily_reward) return true;
+  const [onlineCount, setOnlineCount] = useState(0);
+  const [currentTime, setCurrentTime] = useState(new Date().getTime());
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date().getTime()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const rewardTimeRemaining = useMemo(() => {
+    if (!profile?.last_daily_reward) return 0;
     const lastReward = new Date(profile.last_daily_reward).getTime();
-    const now = new Date().getTime();
-    return (now - lastReward) >= 24 * 60 * 60 * 1000;
+    const waitTime = 24 * 60 * 60 * 1000;
+    const remaining = lastReward + waitTime - currentTime;
+    return Math.max(0, remaining);
+  }, [profile?.last_daily_reward, currentTime]);
+
+  const formatTime = (ms: number) => {
+    const hours = Math.floor(ms / (1000 * 60 * 60));
+    const mins = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+    const secs = Math.floor((ms % (1000 * 60)) / 1000);
+    return `${hours}h ${mins}m ${secs}s`;
   };
+  
+  const isRewardAvailable = () => rewardTimeRemaining === 0;
+
+  useEffect(() => {
+    const fetchOnlineCount = async () => {
+      const { count } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .not('room_id', 'is', null);
+      setOnlineCount(count || 0);
+    };
+    fetchOnlineCount();
+    const interval = setInterval(fetchOnlineCount, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     // Check for referral code in URL
@@ -485,91 +515,77 @@ export const Lobby: React.FC = () => {
                 )}
               </div>
 
-              <ThemeSelector />
-
-              <div className="grid grid-cols-1 gap-3">
-                <div className="grid grid-cols-1 gap-2">
-                  <button 
-                    onClick={() => {
-                      setCustomization(profile?.selected_skin, profile?.selected_title);
-                      startGame('NORMAL');
-                    }}
-                    className="w-full py-5 bg-white text-black font-black text-xl rounded-2xl shadow-[0_0_20px_rgba(255,255,255,0.15)] active:scale-95 transition-transform"
-                  >
-                    SOLO RUN
-                  </button>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button 
-                      onClick={() => {
-                        setCustomization(profile?.selected_skin, profile?.selected_title);
-                        startGame('BLITZ');
-                      }}
-                      className="py-3 bg-amber-500/10 border border-amber-500/30 text-amber-500 font-black text-[10px] rounded-xl flex items-center justify-center gap-2 hover:bg-amber-500/20 active:scale-95 transition-all uppercase tracking-widest"
-                    >
-                      <Timer size={14} /> BLITZ
-                    </button>
-                    <button 
-                      onClick={() => {
-                        setCustomization(profile?.selected_skin, profile?.selected_title);
-                        startGame('SURVIVAL');
-                      }}
-                      className="py-3 bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 font-black text-[10px] rounded-xl flex items-center justify-center gap-2 hover:bg-emerald-500/20 active:scale-95 transition-all uppercase tracking-widest"
-                    >
-                      <Infinity size={14} /> SURVIVAL
-                    </button>
-                  </div>
-                </div>
+              <div className="grid grid-cols-2 gap-3">
+                <button 
+                  onClick={() => {
+                    setCustomization(profile?.selected_skin, profile?.selected_title);
+                    startGame('NORMAL');
+                  }}
+                  className="flex flex-col items-center justify-center p-6 bg-white text-black font-black rounded-3xl shadow-[0_0_20px_rgba(255,255,255,0.1)] active:scale-95 transition-all group"
+                >
+                  <Monitor size={32} className="mb-2 group-hover:scale-110 transition-transform" />
+                  <span className="text-sm">OFFLINE</span>
+                </button>
 
                 <button 
                   onClick={() => setView('MULTIPLAYER')}
-                  className="w-full py-4 bg-cyan-500/5 border-2 border-cyan-500/30 text-cyan-500 font-black text-sm rounded-2xl flex items-center justify-center gap-2 hover:bg-cyan-500/10 active:scale-95 transition-all"
+                  className="flex flex-col items-center justify-center p-6 bg-cyan-500/10 border-2 border-cyan-500/30 text-cyan-500 font-black rounded-3xl active:scale-95 transition-all group relative overflow-hidden"
                 >
-                  <Users size={18} /> ARENA MULTIPLAYER
+                  <div className="absolute top-2 right-2 flex items-center gap-1 bg-cyan-500/20 px-2 py-0.5 rounded-full">
+                    <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></div>
+                    <span className="text-[8px] tracking-widest">{onlineCount}</span>
+                  </div>
+                  <Globe size={32} className="mb-2 group-hover:scale-110 transition-transform" />
+                  <span className="text-sm uppercase">Online</span>
                 </button>
-                
-                {session && !session.user.is_anonymous && (
-                  <button 
-                    disabled={rewardLoading || !isRewardAvailable()}
-                    onClick={async () => {
-                      setRewardLoading(true);
-                      try {
-                        const result = await (claimDailyReward as any)();
-                        toast.success(`Você resgatou ${result.reward} Brain Coins!`);
-                        await fetchProfile(session.user.id);
-                      } catch (err: any) {
-                        toast.error(err.message);
-                      } finally {
-                        setRewardLoading(false);
-                      }
-                    }}
-                    className="w-full py-3 bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 font-black text-[10px] rounded-xl flex items-center justify-center gap-2 hover:bg-yellow-500/20 transition-all uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    {rewardLoading ? (
-                      <div className="w-4 h-4 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
-                    ) : (
-                      <>
-                        <Trophy size={14} /> 
-                        {!isRewardAvailable()
-                          ? 'Recompensa Resgatada' 
-                          : 'Resgatar Recompensa Diária'}
-                      </>
-                    )}
-                  </button>
-                )}
+              </div>
 
-                <button 
-                  onClick={() => setView('SHOP')}
-                  className="w-full py-4 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 text-yellow-500 font-black text-xs rounded-2xl flex items-center justify-center gap-2 hover:from-yellow-500/30 hover:to-orange-500/30 transition-all uppercase tracking-[0.2em] shadow-[0_0_20px_rgba(234,179,8,0.1)]"
-                >
-                  <ShoppingBag size={18} /> LOJA DE ITENS
-                </button>
+              <ThemeSelector />
+
+              <div className="grid grid-cols-1 gap-3">
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => setView('SHOP')}
+                    className="flex-1 py-4 bg-zinc-900 border border-zinc-800 text-yellow-500 font-black text-xs rounded-2xl flex items-center justify-center gap-2 hover:bg-zinc-800 transition-all uppercase tracking-widest"
+                  >
+                    <ShoppingBag size={18} /> Loja
+                  </button>
+                  
+                  {session && !session.user.is_anonymous && (
+                    <button 
+                      disabled={rewardLoading || !isRewardAvailable()}
+                      onClick={async () => {
+                        setRewardLoading(true);
+                        try {
+                          const result = await (claimDailyReward as any)();
+                          toast.success(`Você resgatou ${result.reward} Brain Coins!`);
+                          await fetchProfile(session.user.id);
+                        } catch (err: any) {
+                          toast.error(err.message);
+                        } finally {
+                          setRewardLoading(false);
+                        }
+                      }}
+                      className="flex-1 py-4 bg-zinc-900 border border-zinc-800 text-emerald-500 font-black text-[10px] rounded-2xl flex items-center justify-center gap-2 hover:bg-zinc-800 transition-all uppercase tracking-widest disabled:opacity-50"
+                    >
+                      {rewardLoading ? (
+                        <div className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+                      ) : (
+                        <>
+                          <Zap size={16} /> 
+                          {isRewardAvailable() ? 'Recompensa' : formatTime(rewardTimeRemaining)}
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
 
                 {session && !session.user.is_anonymous && (
                   <button 
                     onClick={() => setView('REFERRAL')}
-                    className="w-full py-3 bg-cyan-500/10 border border-cyan-500/20 text-cyan-500 font-black text-[10px] rounded-xl flex items-center justify-center gap-2 hover:bg-cyan-500/20 transition-all uppercase tracking-widest shadow-[0_0_15px_rgba(6,182,212,0.1)]"
+                    className="w-full py-4 bg-cyan-500/5 border border-cyan-500/20 text-cyan-500/60 font-black text-[10px] rounded-2xl flex items-center justify-center gap-2 hover:bg-cyan-500/10 transition-all uppercase tracking-widest"
                   >
-                    <UserPlus size={14} /> Convide Amigos & Ganhe Moedas
+                    <UserPlus size={14} /> Sistema de Indicação
                   </button>
                 )}
               </div>

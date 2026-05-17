@@ -126,7 +126,8 @@ export const joinRoom = createServerFn({ method: "POST" })
       .select("id", { count: "exact", head: true })
       .eq("room_id", room.id);
 
-    if (count && count >= room.max_players) {
+    const maxPlayers = room.max_players ?? 4;
+    if (count !== null && count >= maxPlayers) {
       throw new Error("Sala cheia");
     }
 

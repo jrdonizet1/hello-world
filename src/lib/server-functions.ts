@@ -1,11 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { z } from "zod";
 
 export const saveScore = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .validator((score: number) => score)
+  .middleware([requireSupabaseAuth])
   .handler(async ({ data: score, context }) => {
     const { userId } = context;
 
@@ -48,8 +47,8 @@ export const getLeaderboard = createServerFn({ method: "GET" })
   });
 
 export const updateProfile = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .validator((nickname: string) => nickname)
+  .middleware([requireSupabaseAuth])
   .handler(async ({ data: nickname, context }) => {
     const { userId } = context;
 

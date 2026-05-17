@@ -830,7 +830,7 @@ export const closeRoom = createServerFn({ method: "POST" })
     // Desvincular jogadores
     await supabaseAdmin.from("profiles").update({ room_id: null, is_ready: false }).eq("room_id", roomId);
     // Deletar sala
-
+    const { error } = await supabaseAdmin.from("rooms").delete().eq("id", roomId);
     if (error) throw new Error(error.message);
     return { success: true };
   });

@@ -506,6 +506,8 @@ export const Lobby: React.FC = () => {
         </div>
       </div>
     </div>
+  );
+
   const fetchHistory = async () => {
     setLoading(true);
     try {

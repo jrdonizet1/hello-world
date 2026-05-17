@@ -9,7 +9,7 @@ import { saveScore, getLeaderboard } from '@/lib/server-functions';
 import { toast } from 'sonner';
 
 export const GameOver: React.FC = () => {
-  const { score, lastError, startGame, setGameState, gameMode, selectedThemes, maxCombo } = useGameStore();
+  const { score, lastError, startGame, setGameState, gameMode, selectedThemes, maxCombo, powersUsedInSession, sessionUsedPower } = useGameStore();
   const [session, setSession] = useState<any>(null);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -50,7 +50,7 @@ export const GameOver: React.FC = () => {
         themeScores[selectedThemes[0]] = score;
       }
       
-      const result = await (saveScore as any)({ data: { score, themeScores, maxCombo } });
+      const result = await (saveScore as any)({ data: { score, themeScores, maxCombo, powersUsedInSession, sessionUsedPower } });
       if (result.success) {
         setRewards({
           xp: result.xpGained,

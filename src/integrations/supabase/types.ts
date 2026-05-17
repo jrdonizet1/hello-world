@@ -161,6 +161,8 @@ export type Database = {
           id: string
           is_daily: boolean | null
           reward_coins: number | null
+          reward_power_shield: number | null
+          reward_power_slow: number | null
           reward_xp: number | null
           title: string
         }
@@ -172,6 +174,8 @@ export type Database = {
           id?: string
           is_daily?: boolean | null
           reward_coins?: number | null
+          reward_power_shield?: number | null
+          reward_power_slow?: number | null
           reward_xp?: number | null
           title: string
         }
@@ -183,6 +187,8 @@ export type Database = {
           id?: string
           is_daily?: boolean | null
           reward_coins?: number | null
+          reward_power_shield?: number | null
+          reward_power_slow?: number | null
           reward_xp?: number | null
           title?: string
         }

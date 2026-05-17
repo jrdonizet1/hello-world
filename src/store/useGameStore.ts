@@ -44,6 +44,8 @@ interface BrainLagState {
   powerSlowCount: number;
   powerShieldCount: number;
   hasShield: boolean;
+  powersUsedInSession: { slow: number, shield: number };
+  sessionUsedPower: boolean;
   
   setGameState: (state: GameState) => void;
   setGameMode: (mode: GameMode) => void;
@@ -94,6 +96,8 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
   powerSlowCount: 0,
   powerShieldCount: 0,
   hasShield: false,
+  powersUsedInSession: { slow: 0, shield: 0 },
+  sessionUsedPower: false,
 
   setCustomization: (skin, title, font, arenaEffect) => set({ 
     userSkin: skin, 
@@ -128,7 +132,9 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
       timeRemaining: mode === 'BLITZ' ? 1.2 : (mode === 'SURVIVAL' ? 5 : currentBaseTime),
       lastError: null,
       duelSeed: mode === 'NORMAL' && state.isMultiplayer ? Math.floor(Math.random() * 1000000) : null,
-      duelOpponentProgress: 0
+      duelOpponentProgress: 0,
+      powersUsedInSession: { slow: 0, shield: 0 },
+      sessionUsedPower: false
     });
   },
 
@@ -194,14 +200,18 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
       const expiresAt = Date.now() + 5000;
       return { 
         activePowers: [...state.activePowers, { id: powerId, expiresAt }],
-        powerSlowCount: state.powerSlowCount - 1
+        powerSlowCount: state.powerSlowCount - 1,
+        powersUsedInSession: { ...state.powersUsedInSession, slow: state.powersUsedInSession.slow + 1 },
+        sessionUsedPower: true
       };
     }
     if (powerId === 'shield') {
       if (state.powerShieldCount <= 0 || state.hasShield) return state;
       return { 
         hasShield: true,
-        powerShieldCount: state.powerShieldCount - 1
+        powerShieldCount: state.powerShieldCount - 1,
+        powersUsedInSession: { ...state.powersUsedInSession, shield: state.powersUsedInSession.shield + 1 },
+        sessionUsedPower: true
       };
     }
     return state;

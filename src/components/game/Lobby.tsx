@@ -240,7 +240,7 @@ export const Lobby: React.FC = () => {
   const fetchPlayers = async () => {
     const { data } = await supabase
       .from('profiles')
-      .select('id, nickname, is_ready')
+      .select('id, nickname, is_ready, selected_skin, selected_title')
       .eq('room_id', roomId as string);
     if (data) setPlayers(data);
   };

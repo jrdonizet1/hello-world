@@ -15,7 +15,8 @@ export const GameArena: React.FC = () => {
     tick,
     endGame,
     userSkin,
-    userTitle
+    userTitle,
+    gameMode
   } = useGameStore();
 
   const [countDown, setCountDown] = useState(3);
@@ -59,9 +60,22 @@ export const GameArena: React.FC = () => {
       updateScore(1);
       setCommand(generateCommand(Math.floor(score / 5) + 1));
       
-      // Scalable difficulty: time starts at 2s and drops towards 0.6s
-      const baseTime = Math.max(0.6, 2.0 - (score * 0.035));
-      useGameStore.setState({ timeRemaining: baseTime });
+      // Scalable difficulty logic based on GameMode
+      let nextTime = 2.0;
+      
+      if (gameMode === 'BLITZ') {
+        // Blitz mode: Time always resets to a very tight window that shrinks
+        nextTime = Math.max(0.5, 1.2 - (score * 0.02));
+      } else if (gameMode === 'SURVIVAL') {
+        // Survival mode: Each correct answer ADDS a small amount of time, capped at a max
+        const bonus = Math.max(0.3, 0.8 - (score * 0.01));
+        nextTime = Math.min(5, timeRemaining + bonus);
+      } else {
+        // Normal mode: Standard shrinking window
+        nextTime = Math.max(0.6, 2.0 - (score * 0.035));
+      }
+      
+      useGameStore.setState({ timeRemaining: nextTime });
       
       controls.start({
         scale: [1, 1.1, 1],
@@ -72,7 +86,7 @@ export const GameArena: React.FC = () => {
       setIsWrong(true);
       setTimeout(() => endGame('CONEXÃO CEREBRAL PERDIDA'), 200);
     }
-  }, [gameState, currentCommand, score, updateScore, setCommand, endGame, controls]);
+  }, [gameState, currentCommand, score, updateScore, setCommand, endGame, controls, gameMode, timeRemaining]);
 
   if (gameState === 'PREPARE') {
     return (
@@ -123,7 +137,7 @@ export const GameArena: React.FC = () => {
             backgroundColor: timeRemaining < 0.8 ? '#ef4444' : (userSkin || '#06b6d4'),
             boxShadow: timeRemaining < 0.8 ? '0 0 15px rgba(239,68,68,0.5)' : `0 0 15px ${(userSkin || '#06b6d4')}80`
           }}
-          animate={{ width: `${Math.max(0, (timeRemaining / 2.2) * 100)}%` }}
+          animate={{ width: `${Math.max(0, (timeRemaining / (gameMode === 'SURVIVAL' ? 5 : (gameMode === 'BLITZ' ? 1.2 : 2.2))) * 100)}%` }}
           transition={{ duration: 0.05, ease: 'linear' }}
         />
       </div>

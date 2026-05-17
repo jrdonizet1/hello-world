@@ -9,7 +9,7 @@ import { saveScore, getLeaderboard } from '@/lib/server-functions';
 import { toast } from 'sonner';
 
 export const GameOver: React.FC = () => {
-  const { score, lastError, startGame, setGameState } = useGameStore();
+  const { score, lastError, startGame, setGameState, gameMode } = useGameStore();
   const [session, setSession] = useState<any>(null);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -98,8 +98,10 @@ export const GameOver: React.FC = () => {
       <div className="w-full max-w-sm bg-white/5 border border-white/10 rounded-3xl p-6 mb-6 backdrop-blur-xl">
         <div className="flex justify-between items-end mb-6">
           <div>
-            <p className="text-gray-500 text-[10px] font-bold uppercase">Pontuação Final</p>
-            <p className="text-5xl font-black italic">{score}</p>
+            <p className="text-gray-500 text-[10px] font-bold uppercase">
+              {gameMode === 'BLITZ' ? 'Modo Blitz' : gameMode === 'SURVIVAL' ? 'Modo Survival' : 'Pontuação Final'}
+            </p>
+            <p className={`text-5xl font-black italic ${gameMode === 'BLITZ' ? 'text-amber-500' : gameMode === 'SURVIVAL' ? 'text-emerald-500' : 'text-white'}`}>{score}</p>
           </div>
           <div className="text-right">
             {!session ? (
@@ -165,7 +167,7 @@ export const GameOver: React.FC = () => {
       <div className="w-full max-w-sm grid grid-cols-1 gap-4 pb-8">
         <motion.button
           whileTap={{ scale: 0.95 }}
-          onClick={startGame}
+          onClick={() => startGame(gameMode)}
           className="w-full py-5 bg-white text-black font-black text-xl rounded-2xl flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.2)]"
         >
           <RefreshCw size={20} /> JOGAR NOVAMENTE

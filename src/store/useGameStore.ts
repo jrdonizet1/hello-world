@@ -46,6 +46,10 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
   roomCode: null,
   roomId: null,
   isHost: false,
+  userSkin: '#06b6d4', // Padrão cyan-400
+  userTitle: null,
+
+  setCustomization: (skin, title) => set({ userSkin: skin, userTitle: title }),
 
   setGameState: (state) => set({ gameState: state }),
   

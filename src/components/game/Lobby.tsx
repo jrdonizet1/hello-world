@@ -266,6 +266,7 @@ export const Lobby: React.FC = () => {
       return;
     }
     try {
+      setCustomization(profile?.selected_skin, profile?.selected_title);
       await (startRoomGame as any)({ data: roomId });
     } catch (err: any) {
       toast.error(err.message);

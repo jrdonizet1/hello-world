@@ -242,10 +242,17 @@ export const Lobby: React.FC = () => {
   };
 
   const handleLeaveRoom = async () => {
-    await (updateProfile as any)({ data: { roomId: null, isReady: false } });
-    setRoom(null, null, false);
-    setIsReady(false);
-    setView('MULTIPLAYER');
+    setLoading(true);
+    try {
+      await (leaveRoom as any)();
+      setRoom(null, null, false);
+      setIsReady(false);
+      setView('MULTIPLAYER');
+    } catch (err: any) {
+      toast.error('Erro ao sair da sala');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const copyCode = () => {

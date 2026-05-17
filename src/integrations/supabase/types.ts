@@ -100,6 +100,42 @@ export type Database = {
           },
         ]
       }
+      missions: {
+        Row: {
+          created_at: string | null
+          description: string
+          goal_type: string
+          goal_value: number
+          id: string
+          is_daily: boolean | null
+          reward_coins: number | null
+          reward_xp: number | null
+          title: string
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          goal_type: string
+          goal_value: number
+          id?: string
+          is_daily?: boolean | null
+          reward_coins?: number | null
+          reward_xp?: number | null
+          title: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          goal_type?: string
+          goal_value?: number
+          id?: string
+          is_daily?: boolean | null
+          reward_coins?: number | null
+          reward_xp?: number | null
+          title?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -281,6 +317,44 @@ export type Database = {
             columns: ["item_id"]
             isOneToOne: false
             referencedRelation: "shop_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_missions: {
+        Row: {
+          claimed: boolean | null
+          completed: boolean | null
+          id: string
+          last_updated: string | null
+          mission_id: string
+          progress: number | null
+          user_id: string
+        }
+        Insert: {
+          claimed?: boolean | null
+          completed?: boolean | null
+          id?: string
+          last_updated?: string | null
+          mission_id: string
+          progress?: number | null
+          user_id?: string
+        }
+        Update: {
+          claimed?: boolean | null
+          completed?: boolean | null
+          id?: string
+          last_updated?: string | null
+          mission_id?: string
+          progress?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_missions_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
             referencedColumns: ["id"]
           },
         ]

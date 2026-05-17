@@ -69,6 +69,43 @@ export const GameArena: React.FC = () => {
     }
   }, [gameState, tick]);
 
+  // Real-time Duel Logic
+  const { roomId } = useGameStore();
+  const lastSentScore = useRef(0);
+
+  useEffect(() => {
+    if (!isMultiplayer || !roomId || gameState !== 'PLAYING') return;
+
+    const channel = supabase.channel(`duel-${roomId}`);
+    
+    channel
+      .on('broadcast', { event: 'score_update' }, ({ payload }) => {
+        if (payload.userId !== supabase.auth.getUser()) { // Basic check
+          setDuelOpponent(payload.userId, payload.score);
+        }
+      })
+      .on('broadcast', { event: 'player_eliminated' }, ({ payload }) => {
+        // If opponent is eliminated, we could show a message or just continue
+        console.log('Opponent eliminated:', payload.userId);
+      })
+      .subscribe();
+
+    return () => { channel.unsubscribe(); };
+  }, [isMultiplayer, roomId, gameState]);
+
+  // Sync score with opponent
+  useEffect(() => {
+    if (isMultiplayer && roomId && score !== lastSentScore.current) {
+      lastSentScore.current = score;
+      const channel = supabase.channel(`duel-${roomId}`);
+      channel.send({
+        type: 'broadcast',
+        event: 'score_update',
+        payload: { score, userId: profile?.id } // Note: need profile.id or similar
+      });
+    }
+  }, [score, isMultiplayer, roomId]);
+
   const handleAction = useCallback((response: boolean) => {
     if (gameState !== 'PLAYING' || !currentCommand) return;
 

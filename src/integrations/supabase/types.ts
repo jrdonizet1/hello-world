@@ -56,6 +56,9 @@ export type Database = {
           last_daily_reward: string | null
           level: number
           nickname: string | null
+          referral_code: string | null
+          referral_count: number | null
+          referred_by_id: string | null
           room_id: string | null
           selected_skin: string | null
           selected_title: string | null
@@ -71,6 +74,9 @@ export type Database = {
           last_daily_reward?: string | null
           level?: number
           nickname?: string | null
+          referral_code?: string | null
+          referral_count?: number | null
+          referred_by_id?: string | null
           room_id?: string | null
           selected_skin?: string | null
           selected_title?: string | null
@@ -86,6 +92,9 @@ export type Database = {
           last_daily_reward?: string | null
           level?: number
           nickname?: string | null
+          referral_code?: string | null
+          referral_count?: number | null
+          referred_by_id?: string | null
           room_id?: string | null
           selected_skin?: string | null
           selected_title?: string | null
@@ -93,6 +102,13 @@ export type Database = {
           xp?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "profiles_referred_by_id_fkey"
+            columns: ["referred_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "profiles_room_id_fkey"
             columns: ["room_id"]
@@ -208,8 +224,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_referral_code: { Args: never; Returns: string }
       purchase_item: {
         Args: { p_item_id: string; p_user_id: string }
+        Returns: Json
+      }
+      redeem_referral: {
+        Args: { p_code: string; p_user_id: string }
         Returns: Json
       }
     }

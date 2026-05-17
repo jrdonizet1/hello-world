@@ -340,6 +340,7 @@ export const getUserInventory = createServerFn({ method: "GET" })
 
 export const buyShopItem = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
+  .validator((d: string) => d)
   .handler(async (args: any) => {
     const { data: itemId, context } = args;
     const { userId } = context;
@@ -359,6 +360,7 @@ export const buyShopItem = createServerFn({ method: "POST" })
 
 export const updateEquippedItems = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
+  .validator((d: { skin?: string; title?: string }) => d)
   .handler(async (args: any) => {
     const { data, context } = args;
     const { skin, title } = data;

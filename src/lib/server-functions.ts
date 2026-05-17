@@ -431,3 +431,42 @@ export const updateRoomSettings = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { success: true };
   });
+
+export const saveGameHistory = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async (args: any) => {
+    const { data, context } = args;
+    const { commandText, displayWord, isCorrect, userAnswer, theme } = data;
+    const { userId } = context;
+
+    const { error } = await supabaseAdmin
+      .from("game_history")
+      .insert({
+        user_id: userId,
+        command_text: commandText,
+        display_word: displayWord,
+        is_correct: isCorrect,
+        user_answer: userAnswer,
+        theme: theme
+      });
+
+    if (error) throw new Error(error.message);
+    return { success: true };
+  });
+
+export const getGameHistory = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async (args: any) => {
+    const { context } = args;
+    const { userId } = context;
+
+    const { data, error } = await supabaseAdmin
+      .from("game_history")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(10);
+
+    if (error) throw new Error(error.message);
+    return data;
+  });

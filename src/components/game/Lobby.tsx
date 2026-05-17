@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/useGameStore';
-import { Trophy, Users, Zap, LogIn, User, LogOut, Plus, LogIn as JoinIcon, ChevronLeft, Copy, Check, Shield, ShieldOff, Lock, UserPlus, RefreshCw, ShoppingBag, Share2, Timer, Infinity, Monitor, Globe } from 'lucide-react';
+import { Trophy, Users, Zap, LogIn, User, LogOut, Plus, LogIn as JoinIcon, ChevronLeft, Copy, Check, Shield, ShieldOff, Lock, UserPlus, RefreshCw, ShoppingBag, Share2, Timer, Infinity, Monitor, Globe, History, XCircle, CheckCircle2 } from 'lucide-react';
 import { lovable } from '@/integrations/lovable';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { updateProfile, createRoom, joinRoom, startRoomGame, claimDailyReward, leaveRoom, getProfile, redeemReferralCode, updateRoomSettings } from '@/lib/server-functions';
+import { updateProfile, createRoom, joinRoom, startRoomGame, claimDailyReward, leaveRoom, getProfile, redeemReferralCode, updateRoomSettings, getGameHistory } from '@/lib/server-functions';
 import { Shop } from './Shop';
 
-type LobbyView = 'MAIN' | 'MULTIPLAYER' | 'CREATE_ROOM' | 'JOIN_ROOM' | 'WAITING' | 'VISITOR_NICK' | 'ROOMS_LIST' | 'PROFILE' | 'SHOP' | 'REFERRAL' | 'OFFLINE_SETTINGS';
+type LobbyView = 'MAIN' | 'MULTIPLAYER' | 'CREATE_ROOM' | 'JOIN_ROOM' | 'WAITING' | 'VISITOR_NICK' | 'ROOMS_LIST' | 'PROFILE' | 'SHOP' | 'REFERRAL' | 'OFFLINE_SETTINGS' | 'HISTORY';
 
 export const Lobby: React.FC = () => {
   const { startGame, setRoom, roomId, roomCode, isHost, setCustomization, selectedThemes, setSelectedThemes } = useGameStore();
@@ -42,6 +42,7 @@ export const Lobby: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(new Date().getTime());
   const [baseTime, setBaseTime] = useState(2.2);
   const [accelerationIntensity, setAccelerationIntensity] = useState<'OFF' | 'SLOW' | 'NORMAL' | 'INSANE'>('NORMAL');
+  const [history, setHistory] = useState<any[]>([]);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date().getTime()), 1000);
@@ -505,7 +506,17 @@ export const Lobby: React.FC = () => {
         </div>
       </div>
     </div>
-  );
+  const fetchHistory = async () => {
+    setLoading(true);
+    try {
+      const data = await (getGameHistory as any)();
+      setHistory(data || []);
+    } catch (err) {
+      toast.error('Erro ao carregar histórico');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="flex flex-col items-center justify-between h-full p-8 pb-12 overflow-y-auto">
@@ -1254,6 +1265,16 @@ export const Lobby: React.FC = () => {
                     {((profile?.xp || 0) % 1000)} / 1000 XP para o próximo nível
                   </p>
                 </div>
+
+                <button 
+                  onClick={() => {
+                    setView('HISTORY');
+                    fetchHistory();
+                  }}
+                  className="w-full py-4 bg-zinc-900 border border-zinc-800 text-cyan-400 font-black text-xs rounded-2xl flex items-center justify-center gap-2 hover:bg-zinc-800 transition-all uppercase tracking-widest"
+                >
+                  <History size={18} /> Histórico de Respostas
+                </button>
               </div>
 
               <div className="space-y-3">
@@ -1289,6 +1310,83 @@ export const Lobby: React.FC = () => {
                 >
                   <LogOut size={14} /> Encerrar Protocolo (Sair)
                 </button>
+              </div>
+            </motion.div>
+          )}
+
+          {view === 'HISTORY' && (
+            <motion.div 
+              key="history"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-6"
+            >
+              <button onClick={() => setView('PROFILE')} className="flex items-center gap-1 text-zinc-500 font-bold text-[10px] uppercase tracking-[0.2em] mb-2 hover:text-white transition-colors">
+                <ChevronLeft size={14} /> Voltar ao Perfil
+              </button>
+
+              <div className="text-center space-y-1">
+                <h3 className="text-xl font-black italic uppercase tracking-widest text-white">Análise Neural</h3>
+                <p className="text-zinc-500 text-[10px] uppercase font-bold tracking-widest">Últimas 10 respostas registradas</p>
+              </div>
+
+              <div className="space-y-3 max-h-[450px] overflow-y-auto custom-scrollbar pr-1">
+                {loading ? (
+                  <div className="flex flex-col items-center justify-center py-20 gap-4">
+                    <div className="w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Sincronizando Dados...</span>
+                  </div>
+                ) : history.length === 0 ? (
+                  <div className="text-center py-20 bg-zinc-900/30 border border-zinc-800/50 rounded-3xl">
+                    <p className="text-zinc-600 text-[10px] font-black uppercase tracking-widest">Nenhuma atividade registrada ainda</p>
+                  </div>
+                ) : (
+                  history.map((item, i) => (
+                    <div 
+                      key={item.id} 
+                      className={`p-4 rounded-2xl border backdrop-blur-sm flex items-center justify-between gap-4 ${
+                        item.user_answer === item.is_correct 
+                          ? 'bg-emerald-500/5 border-emerald-500/20' 
+                          : 'bg-red-500/5 border-red-500/20'
+                      }`}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500 uppercase tracking-widest">
+                            {item.theme || 'GERAL'}
+                          </span>
+                          <span className="text-[8px] font-bold text-zinc-600">
+                            {new Date(item.created_at).toLocaleTimeString([], { hour: '2d', minute: '2d' })}
+                          </span>
+                        </div>
+                        <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-tight mb-1 truncate">
+                          {item.command_text}
+                        </p>
+                        <h4 className="text-sm font-black text-white italic truncate uppercase">
+                          {item.display_word || item.command_text}
+                        </h4>
+                      </div>
+                      
+                      <div className="flex flex-col items-end gap-1">
+                        {item.user_answer === item.is_correct ? (
+                          <div className="flex items-center gap-1.5 text-emerald-500">
+                            <span className="text-[10px] font-black uppercase tracking-widest">ACERTO</span>
+                            <CheckCircle2 size={16} />
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1.5 text-red-500">
+                            <span className="text-[10px] font-black uppercase tracking-widest">ERRO</span>
+                            <XCircle size={16} />
+                          </div>
+                        )}
+                        <span className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest">
+                          Sua: {item.user_answer ? 'SIM' : 'NÃO'} • Correta: {item.is_correct ? 'SIM' : 'NÃO'}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </motion.div>
           )}

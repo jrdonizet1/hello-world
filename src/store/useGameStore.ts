@@ -101,6 +101,7 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
     userFont: font || null,
     userArenaEffect: arenaEffect || null
   }),
+  setPowerCounts: (slow, shield) => set({ powerSlowCount: slow, powerShieldCount: shield }),
   setGameMode: (mode) => set({ gameMode: mode }),
   setSelectedThemes: (themes) => set({ selectedThemes: themes }),
   setGameSettings: (baseTime, accelerationIntensity) => set({ baseTime, accelerationIntensity, accelerationEnabled: accelerationIntensity !== 'OFF' }),

@@ -338,6 +338,23 @@ export const Lobby: React.FC = () => {
                 >
                   <Users size={20} /> ARENA MULTIPLAYER
                 </button>
+                
+                {session && (
+                  <button 
+                    onClick={async () => {
+                      try {
+                        const result = await (claimDailyReward as any)();
+                        toast.success(`Você resgatou ${result.reward} Brain Coins!`);
+                        fetchProfile(session.user.id);
+                      } catch (err: any) {
+                        toast.error(err.message);
+                      }
+                    }}
+                    className="w-full py-3 bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 font-black text-[10px] rounded-xl flex items-center justify-center gap-2 hover:bg-yellow-500/20 transition-all uppercase tracking-widest"
+                  >
+                    <Trophy size={14} /> Resgatar Recompensa Diária
+                  </button>
+                )}
               </div>
             </motion.div>
           )}

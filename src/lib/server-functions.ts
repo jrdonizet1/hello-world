@@ -396,3 +396,27 @@ export const redeemReferralCode = createServerFn({ method: "POST" })
     
     return result;
   });
+
+export const updateRoomSettings = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async (args: any) => {
+    const { data, context } = args;
+    const { roomId, selectedThemes } = data;
+    const { userId } = context;
+
+    const { data: room } = await supabaseAdmin
+      .from("rooms")
+      .select("host_id")
+      .eq("id", roomId)
+      .single();
+
+    if (!room || room.host_id !== userId) throw new Error("Apenas o host pode alterar as configurações");
+
+    const { error } = await supabaseAdmin
+      .from("rooms")
+      .update({ selected_themes: selectedThemes })
+      .eq("id", roomId);
+
+    if (error) throw new Error(error.message);
+    return { success: true };
+  });

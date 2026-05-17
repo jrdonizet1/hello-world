@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Target, Zap, Trophy, ChevronLeft, CheckCircle2, Circle, Coins, Star } from 'lucide-react';
+import { Target, Zap, Trophy, ChevronLeft, CheckCircle2, Circle, Coins, Star, Clock, Shield } from 'lucide-react';
 import { getMissions, claimMissionReward } from '@/lib/server-functions';
 import { toast } from 'sonner';
 

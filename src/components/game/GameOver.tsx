@@ -45,8 +45,16 @@ export const GameOver: React.FC = () => {
     }
     setLoading(true);
     try {
-      await (saveScore as any)({ data: { score } });
-      toast.success('Score salvo no ranking global!');
+      const result = await (saveScore as any)({ data: { score } });
+      if (result.success) {
+        setRewards({
+          xp: result.xpGained,
+          coins: result.coinsGained,
+          leveledUp: result.leveledUp,
+          newLevel: result.newLevel
+        });
+        toast.success('Ganhos processados!');
+      }
       fetchLeaderboard();
     } catch (err: any) {
       toast.error('Erro ao salvar score: ' + err.message);

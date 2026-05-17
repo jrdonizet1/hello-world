@@ -57,6 +57,8 @@ export type Database = {
           level: number
           nickname: string | null
           room_id: string | null
+          selected_skin: string | null
+          selected_title: string | null
           updated_at: string
           xp: number
         }
@@ -70,6 +72,8 @@ export type Database = {
           level?: number
           nickname?: string | null
           room_id?: string | null
+          selected_skin?: string | null
+          selected_title?: string | null
           updated_at?: string
           xp?: number
         }
@@ -83,6 +87,8 @@ export type Database = {
           level?: number
           nickname?: string | null
           room_id?: string | null
+          selected_skin?: string | null
+          selected_title?: string | null
           updated_at?: string
           xp?: number
         }
@@ -138,12 +144,74 @@ export type Database = {
         }
         Relationships: []
       }
+      shop_items: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string | null
+          id: string
+          item_data: Json
+          name: string
+          price: number
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          item_data?: Json
+          name: string
+          price?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          item_data?: Json
+          name?: string
+          price?: number
+        }
+        Relationships: []
+      }
+      user_inventory: {
+        Row: {
+          id: string
+          item_id: string
+          purchased_at: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          item_id: string
+          purchased_at?: string | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          item_id?: string
+          purchased_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_inventory_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "shop_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      purchase_item: {
+        Args: { p_item_id: string; p_user_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never

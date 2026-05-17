@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/useGameStore';
-import { Trophy, Users, Zap, LogIn, User, LogOut, Plus, LogIn as JoinIcon, ChevronLeft, Copy, Check, Shield, ShieldOff, Lock, UserPlus, RefreshCw } from 'lucide-react';
+import { Trophy, Users, Zap, LogIn, User, LogOut, Plus, LogIn as JoinIcon, ChevronLeft, Copy, Check, Shield, ShieldOff, Lock, UserPlus, RefreshCw, ShoppingBag } from 'lucide-react';
 import { lovable } from '@/integrations/lovable';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { updateProfile, createRoom, joinRoom, startRoomGame, claimDailyReward, leaveRoom } from '@/lib/server-functions';
+import { updateProfile, createRoom, joinRoom, startRoomGame, claimDailyReward, leaveRoom, getProfile } from '@/lib/server-functions';
+import { Shop } from './Shop';
 
-type LobbyView = 'MAIN' | 'MULTIPLAYER' | 'CREATE_ROOM' | 'JOIN_ROOM' | 'WAITING' | 'VISITOR_NICK' | 'ROOMS_LIST' | 'PROFILE';
+type LobbyView = 'MAIN' | 'MULTIPLAYER' | 'CREATE_ROOM' | 'JOIN_ROOM' | 'WAITING' | 'VISITOR_NICK' | 'ROOMS_LIST' | 'PROFILE' | 'SHOP';
 
 export const Lobby: React.FC = () => {
-  const { startGame, setRoom, roomId, roomCode, isHost } = useGameStore();
+  const { startGame, setRoom, roomId, roomCode, isHost, setCustomization } = useGameStore();
   const [session, setSession] = useState<any>(null);
   const [nickname, setNickname] = useState('');
   const [profile, setProfile] = useState<any>(null);
@@ -130,6 +131,7 @@ export const Lobby: React.FC = () => {
         filter: `id=eq.${roomId}` 
       }, (payload) => {
         if (payload.new.status === 'STARTING') {
+          setCustomization(profile?.selected_skin, profile?.selected_title);
           startGame();
         }
       })
@@ -264,6 +266,7 @@ export const Lobby: React.FC = () => {
       return;
     }
     try {
+      setCustomization(profile?.selected_skin, profile?.selected_title);
       await (startRoomGame as any)({ data: roomId });
     } catch (err: any) {
       toast.error(err.message);
@@ -354,9 +357,14 @@ export const Lobby: React.FC = () => {
                             {nickname || 'Cérebro Anônimo'}
                           </span>
                           {!session?.user?.is_anonymous && (
-                            <span className="bg-cyan-500/20 text-cyan-400 text-[8px] font-black px-1.5 py-0.5 rounded border border-cyan-500/20">LVL {profile?.level || 1}</span>
+                             <span className="bg-cyan-500/20 text-cyan-400 text-[8px] font-black px-1.5 py-0.5 rounded border border-cyan-500/20">LVL {profile?.level || 1}</span>
                           )}
                         </div>
+                        {profile?.selected_title && (
+                          <span className="text-[10px] font-black text-cyan-400 uppercase tracking-widest italic animate-pulse">
+                            « {profile.selected_title} »
+                          </span>
+                        )}
                         <div className="flex items-center gap-2 mt-0.5">
                           {session?.user?.is_anonymous ? (
                             <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest">Visitante Temporário</span>
@@ -380,7 +388,10 @@ export const Lobby: React.FC = () => {
 
               <div className="grid grid-cols-1 gap-3">
                 <button 
-                  onClick={startGame}
+                  onClick={() => {
+                    setCustomization(profile?.selected_skin, profile?.selected_title);
+                    startGame();
+                  }}
                   className="w-full py-6 bg-white text-black font-black text-2xl rounded-2xl shadow-[0_0_30px_rgba(255,255,255,0.2)] active:scale-95 transition-transform"
                 >
                   SOLO RUN
@@ -421,7 +432,26 @@ export const Lobby: React.FC = () => {
                     )}
                   </button>
                 )}
+
+                <button 
+                  onClick={() => setView('SHOP')}
+                  className="w-full py-4 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 text-yellow-500 font-black text-xs rounded-2xl flex items-center justify-center gap-2 hover:from-yellow-500/30 hover:to-orange-500/30 transition-all uppercase tracking-[0.2em] shadow-[0_0_20px_rgba(234,179,8,0.1)]"
+                >
+                  <ShoppingBag size={18} /> LOJA DE ITENS
+                </button>
               </div>
+            </motion.div>
+          )}
+
+          {view === 'SHOP' && (
+            <motion.div 
+              key="shop"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="w-full"
+            >
+              <Shop onClose={() => setView('MAIN')} />
             </motion.div>
           )}
 

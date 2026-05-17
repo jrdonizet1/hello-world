@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { z } from "zod";
 
 export const saveScore = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -308,5 +309,70 @@ export const leaveRoom = createServerFn({ method: "POST" })
       }
     }
 
+    return { success: true };
+  });
+
+export const getShopItems = createServerFn({ method: "GET" })
+  .handler(async () => {
+    const { data, error } = await supabaseAdmin
+      .from("shop_items")
+      .select("*")
+      .order("price", { ascending: true });
+
+    if (error) throw new Error(error.message);
+    return data;
+  });
+
+export const getUserInventory = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async (args: any) => {
+    const { context } = args;
+    const { userId } = context;
+
+    const { data, error } = await supabaseAdmin
+      .from("user_inventory")
+      .select("item_id")
+      .eq("user_id", userId);
+
+    if (error) throw new Error(error.message);
+    return data.map((item: any) => item.item_id);
+  });
+
+export const buyShopItem = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async (args: any) => {
+    const { data: itemId, context } = args;
+    const { userId } = context;
+
+    const { data, error } = await supabaseAdmin.rpc("purchase_item", {
+      p_user_id: userId,
+      p_item_id: itemId
+    });
+
+    if (error) throw new Error(error.message);
+    
+    const result = data as any;
+    if (!result.success) throw new Error(result.message);
+    
+    return result;
+  });
+
+export const updateEquippedItems = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async (args: any) => {
+    const { data, context } = args;
+    const { skin, title } = data;
+    const { userId } = context;
+
+    const updateData: any = {};
+    if (skin !== undefined) updateData.selected_skin = skin;
+    if (title !== undefined) updateData.selected_title = title;
+
+    const { error } = await supabaseAdmin
+      .from("profiles")
+      .update(updateData)
+      .eq("id", userId);
+
+    if (error) throw new Error(error.message);
     return { success: true };
   });

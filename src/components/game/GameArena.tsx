@@ -297,7 +297,7 @@ export const GameArena: React.FC = () => {
       </motion.div>
 
       {/* Interaction Area */}
-      <div className="flex gap-4 h-[25%] mb-8">
+      <div className="flex gap-4 h-[25%] mb-8 z-10">
         <button 
           onClick={() => handleAction(false)}
           className="flex-1 rounded-3xl bg-red-500/10 border-2 border-red-500/50 flex flex-col items-center justify-center gap-2 active:scale-95 active:bg-red-500/20 transition-all text-red-500"

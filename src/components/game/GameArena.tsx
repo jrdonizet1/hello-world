@@ -175,6 +175,18 @@ export const GameArena: React.FC = () => {
       });
     } else {
       setIsWrong(true);
+      if (isMultiplayer && roomId) {
+        supabase.auth.getUser().then(({ data: { user } }) => {
+          if (user) {
+            const channel = supabase.channel(`duel-${roomId}`);
+            channel.send({
+              type: 'broadcast',
+              event: 'player_eliminated',
+              payload: { userId: user.id }
+            });
+          }
+        });
+      }
       setTimeout(() => endGame('CONEXÃO CEREBRAL PERDIDA'), 200);
     }
   }, [gameState, currentCommand, score, updateScore, setCommand, endGame, controls, gameMode, timeRemaining, lastCommandTime, increaseCombo]);

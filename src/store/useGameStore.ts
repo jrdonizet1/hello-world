@@ -200,14 +200,18 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
       const expiresAt = Date.now() + 5000;
       return { 
         activePowers: [...state.activePowers, { id: powerId, expiresAt }],
-        powerSlowCount: state.powerSlowCount - 1
+        powerSlowCount: state.powerSlowCount - 1,
+        powersUsedInSession: { ...state.powersUsedInSession, slow: state.powersUsedInSession.slow + 1 },
+        sessionUsedPower: true
       };
     }
     if (powerId === 'shield') {
       if (state.powerShieldCount <= 0 || state.hasShield) return state;
       return { 
         hasShield: true,
-        powerShieldCount: state.powerShieldCount - 1
+        powerShieldCount: state.powerShieldCount - 1,
+        powersUsedInSession: { ...state.powersUsedInSession, shield: state.powersUsedInSession.shield + 1 },
+        sessionUsedPower: true
       };
     }
     return state;

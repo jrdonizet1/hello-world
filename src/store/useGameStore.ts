@@ -162,5 +162,6 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
     };
   }),
 
+  setDuelOpponent: (id, progress) => set({ duelOpponentId: id, duelOpponentProgress: progress }),
   resetCombo: () => set({ combo: 0, multiplier: 1 }),
 }));

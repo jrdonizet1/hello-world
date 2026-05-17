@@ -438,17 +438,31 @@ export const AdminPanel: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                       <div className="grid grid-cols-2 gap-3 pt-4 border-t border-zinc-800">
                         <div className="text-center p-2 bg-black/40 rounded-xl">
                           <p className="text-[8px] font-black text-zinc-600 uppercase mb-1">Jogadores</p>
-                          <p className="text-sm font-black">{room.profiles?.[0]?.count || 0} / {room.max_players}</p>
+                          <p className="text-sm font-black">{room.players?.length || 0} / {room.max_players}</p>
                         </div>
                         <div className="text-center p-2 bg-black/40 rounded-xl">
-                          <p className="text-[8px] font-black text-zinc-600 uppercase mb-1">Tempo Base</p>
-                          <p className="text-sm font-black italic">{room.base_time}s</p>
+                          <p className="text-[8px] font-black text-zinc-600 uppercase mb-1">Privacidade</p>
+                          <p className="text-[10px] font-black uppercase text-zinc-400">{room.is_private ? 'Privada' : 'Pública'}</p>
                         </div>
                       </div>
 
-                      <div className="flex flex-wrap gap-1">
+                      {room.players && room.players.length > 0 && (
+                        <div className="pt-4 space-y-2">
+                          <p className="text-[8px] font-black text-zinc-600 uppercase">Em Campo:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {room.players.map((p: any) => (
+                              <div key={p.id} className="flex items-center gap-1.5 bg-zinc-800/50 px-2 py-1 rounded-lg">
+                                <UserAvatar url={p.avatar_url} size="sm" showLevel={false} className="scale-75 -ml-1" />
+                                <span className="text-[9px] font-bold text-zinc-300 truncate max-w-[80px]">{p.nickname || 'Anônimo'}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex flex-wrap gap-1 pt-2">
                         {room.selected_themes?.map((t: string) => (
-                          <span key={t} className="text-[7px] font-black px-2 py-0.5 bg-zinc-800 rounded-full text-zinc-500 uppercase tracking-widest">{t}</span>
+                          <span key={t} className="text-[7px] font-black px-2 py-0.5 bg-cyan-500/10 rounded-full text-cyan-500/50 uppercase tracking-widest">{t}</span>
                         ))}
                       </div>
                     </div>

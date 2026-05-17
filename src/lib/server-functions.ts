@@ -703,7 +703,7 @@ export const getAdminStats = createServerFn({ method: "GET" })
       { count: visitorsCount }
     ] = await Promise.all([
       supabaseAdmin.from("profiles").select("id", { count: "exact", head: true }),
-      supabaseAdmin.from("rooms").select("id", { count: "exact", head: true }).eq('status', 'LOBBY'),
+      supabaseAdmin.from("rooms").select("id").eq('status', 'LOBBY').not('host_id', 'is', null),
       supabaseAdmin.from("profiles").select("coins"),
       supabaseAdmin.from("shop_items").select("id", { count: "exact", head: true }),
       // Contagem aproximada de visitantes (profiles sem email ou metadados de auth que indiquem Google)
@@ -715,7 +715,7 @@ export const getAdminStats = createServerFn({ method: "GET" })
 
     return {
       totalUsers: totalUsers || 0,
-      activeRooms: activeRooms || 0,
+      activeRooms: (activeRooms as any)?.length || 0,
       totalCoins: coinsSum,
       totalItems: totalItems || 0,
       visitorsCount: 0 // Será calculado melhor no front se necessário ou via RPC
@@ -810,7 +810,7 @@ export const getActiveRooms = createServerFn({ method: "GET" })
       .from("rooms")
       .select(`
         *,
-        profiles:profiles(count)
+        players:profiles(id, nickname, avatar_url)
       `)
       .order("created_at", { ascending: false });
 

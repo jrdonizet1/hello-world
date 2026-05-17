@@ -13,6 +13,7 @@ export const GameOver: React.FC = () => {
   const [session, setSession] = useState<any>(null);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [rewards, setRewards] = useState<{ xp: number; coins: number; leveledUp: boolean; newLevel: number } | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {

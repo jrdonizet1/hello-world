@@ -1291,15 +1291,25 @@ export const Lobby: React.FC = () => {
 
                 <div className="text-center space-y-1">
                   <div className="flex flex-col items-center gap-1">
-                    <h2 
-                      className="text-3xl font-black italic tracking-tighter uppercase"
-                      style={{ 
-                        color: profile?.selected_skin || 'white',
-                        textShadow: profile?.selected_title ? `0 0 15px ${profile?.selected_skin}40` : 'none'
-                      }}
-                    >
-                      {nickname || 'Cérebro Anônimo'}
-                    </h2>
+                    <div className="flex items-center gap-2">
+                      {profile?.selected_icon && (
+                        <div>
+                          {profile.selected_icon === 'Zap' && <Zap size={24} className="text-cyan-400" />}
+                          {profile.selected_icon === 'Crown' && <Crown size={24} className="text-yellow-500" />}
+                          {profile.selected_icon === 'ShieldCheck' && <ShieldCheck size={24} className="text-emerald-500" />}
+                          {profile.selected_icon === 'Infinity' && <InfinityIcon size={24} className="text-purple-500" />}
+                        </div>
+                      )}
+                      <h2 
+                        className="text-3xl font-black italic tracking-tighter uppercase"
+                        style={{ 
+                          color: profile?.selected_skin || 'white',
+                          textShadow: profile?.selected_title ? `0 0 15px ${profile?.selected_skin}40` : 'none'
+                        }}
+                      >
+                        {nickname || 'Cérebro Anônimo'}
+                      </h2>
+                    </div>
                     {profile?.selected_title && (
                       <span 
                         className="text-xs font-black uppercase tracking-[0.3em]"

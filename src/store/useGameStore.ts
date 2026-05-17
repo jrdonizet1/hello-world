@@ -22,6 +22,8 @@ interface BrainLagState {
   roomCode: string | null;
   roomId: string | null;
   isHost: boolean;
+  userSkin: string | null;
+  userTitle: string | null;
   
   setGameState: (state: GameState) => void;
   startGame: () => void;
@@ -30,6 +32,7 @@ interface BrainLagState {
   setCommand: (command: Command | null) => void;
   tick: (delta: number) => void;
   setRoom: (id: string | null, code: string | null, isHost: boolean) => void;
+  setCustomization: (skin: string | null, title: string | null) => void;
 }
 
 export const useGameStore = create<BrainLagState>((set, get) => ({

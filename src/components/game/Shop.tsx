@@ -243,6 +243,7 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                       {item.category === 'skin' ? <Palette size={14} /> : 
                        item.category === 'power_up' ? <Zap size={14} /> :
                        item.category === 'arena_effect' ? <Sparkles size={14} /> :
+                       item.category === 'avatar' ? <Star size={14} /> :
                        <Type size={14} />}
                     </div>
                   </div>

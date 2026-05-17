@@ -437,15 +437,18 @@ export const buyShopItem = createServerFn({ method: "POST" })
 
     // Process purchase based on category
     if (item.category === 'power_up') {
-      const powerId = item.item_data.powerId;
+      const itemData = item.item_data as any;
+      const powerId = itemData.powerId;
       const colName = powerId === 'slow' ? 'power_slow_count' : 'power_shield_count';
       
+      const updateData: any = { 
+        coins: profile.coins - item.price
+      };
+      updateData[colName] = (profile as any)[colName] + 1;
+
       await supabaseAdmin
         .from("profiles")
-        .update({ 
-          coins: profile.coins - item.price,
-          [colName]: (profile as any)[colName] + 1
-        })
+        .update(updateData as any)
         .eq("id", userId);
     } else {
       const { data, error } = await supabaseAdmin.rpc("purchase_item", {

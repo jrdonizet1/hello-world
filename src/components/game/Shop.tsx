@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, Coins, Check, Lock, Palette, Type } from 'lucide-react';
+import { ShoppingBag, Coins, Check, Lock, Palette, Type, Monitor, Sparkles } from 'lucide-react';
 import { getShopItems, buyShopItem, getUserInventory, updateEquippedItems, getProfile } from '../../lib/server-functions';
 import { toast } from 'sonner';
 

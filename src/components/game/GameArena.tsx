@@ -59,7 +59,7 @@ export const GameArena: React.FC = () => {
     
     if (isCorrect) {
       updateScore(1);
-      setCommand(generateCommand(Math.floor(score / 5) + 1));
+      setCommand(generateCommand(Math.floor(score / 5) + 1, selectedThemes));
       
       // Scalable difficulty logic based on GameMode
       let nextTime = 2.0;

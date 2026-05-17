@@ -1359,7 +1359,7 @@ export const Lobby: React.FC = () => {
                             {item.theme || 'GERAL'}
                           </span>
                           <span className="text-[8px] font-bold text-zinc-600">
-                            {new Date(item.created_at).toLocaleTimeString([], { hour: '2d', minute: '2d' })}
+                            {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         </div>
                         <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-tight mb-1 truncate">

@@ -69,7 +69,7 @@ export const GameArena: React.FC = () => {
         userAnswer: response,
         theme: currentCommand.theme || 'GENERAL'
       }
-    }).catch(err => console.error('Error saving history:', err));
+    } as any).catch(err => console.error('Error saving history:', err));
 
     if (isCorrect) {
       updateScore(1);

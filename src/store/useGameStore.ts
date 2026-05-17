@@ -96,6 +96,8 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
   powerSlowCount: 0,
   powerShieldCount: 0,
   hasShield: false,
+  powersUsedInSession: { slow: 0, shield: 0 },
+  sessionUsedPower: false,
 
   setCustomization: (skin, title, font, arenaEffect) => set({ 
     userSkin: skin, 

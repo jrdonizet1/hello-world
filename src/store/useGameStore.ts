@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type GameState = 'LOBBY' | 'PREPARE' | 'PLAYING' | 'ELIMINATED' | 'VICTORY';
+export type GameState = 'LOBBY' | 'PREPARE' | 'PLAYING' | 'ELIMINATED' | 'VICTORY' | 'DUEL';
 export type GameMode = 'NORMAL' | 'SURVIVAL' | 'BLITZ';
 
 export interface Command {

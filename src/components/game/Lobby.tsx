@@ -9,6 +9,7 @@ import { updateProfile, createRoom, joinRoom, startRoomGame, claimDailyReward, l
 import { Shop } from './Shop';
 import { Missions } from './Missions';
 import { UserIdentity } from './UserIdentity';
+import { UserAvatar } from './UserAvatar';
 
 type LobbyView = 'MAIN' | 'MULTIPLAYER' | 'CREATE_ROOM' | 'JOIN_ROOM' | 'WAITING' | 'VISITOR_NICK' | 'ROOMS_LIST' | 'PROFILE' | 'SHOP' | 'REFERRAL' | 'OFFLINE_SETTINGS' | 'HISTORY' | 'RANKING' | 'MISSIONS';
 
@@ -1302,14 +1303,11 @@ export const Lobby: React.FC = () => {
               </button>
 
               <div className="bg-zinc-900/50 border border-zinc-800 p-8 rounded-[40px] backdrop-blur-xl flex flex-col items-center gap-6">
-                <div className="relative">
-                  <div className="w-24 h-24 rounded-full bg-cyan-500/20 flex items-center justify-center border-2 border-cyan-500/30 shadow-[0_0_30px_rgba(6,182,212,0.3)]">
-                    <User size={48} className="text-cyan-400" />
-                  </div>
-                  <div className="absolute -bottom-2 -right-2 bg-yellow-500 text-black text-[10px] font-black px-2 py-1 rounded-lg shadow-lg">
-                    LVL {profile?.level || 1}
-                  </div>
-                </div>
+                <UserAvatar 
+                  url={profile?.avatar_url} 
+                  level={profile?.level} 
+                  size="xl" 
+                />
 
                 <div className="text-center space-y-1">
                   <div className="flex flex-col items-center gap-1">

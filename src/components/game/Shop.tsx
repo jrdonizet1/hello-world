@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, Coins, Check, Lock, Palette, Type, Monitor, Sparkles, Star, Zap } from 'lucide-react';
-import { useGameStore } from '../../store/useGameStore';
+import { ShoppingBag, Coins, Check, Lock, Palette, Type, Monitor, Sparkles, Star, Zap, XCircle, ChevronRight } from 'lucide-react';
 import { getShopItems, buyShopItem, getUserInventory, updateEquippedItems, getProfile } from '../../lib/server-functions';
+import { useGameStore } from '../../store/useGameStore';
 import { toast } from 'sonner';
 
 interface ShopItem {
@@ -60,7 +60,7 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     setBuying(itemId);
     try {
       await (buyShopItem as any)({ data: itemId });
-      toast.success('Item adquirido com sucesso!');
+      toast.success('Adquirido com sucesso!');
       await loadData();
     } catch (err: any) {
       toast.error(err.message || 'Erro na compra');
@@ -85,16 +85,8 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
-      </div>
-    );
-  }
-
   const isEquipped = (item: ShopItem) => {
-    if (item.category === 'power_up') return false; // Power ups are consumables
+    if (item.category === 'power_up') return false;
     if (item.category === 'skin') return profile?.selected_skin === item.item_data.color;
     if (item.category === 'title') return profile?.selected_title === item.item_data.text;
     if (item.category === 'font') return JSON.stringify(profile?.selected_font) === JSON.stringify(item.item_data);
@@ -102,155 +94,237 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     return false;
   };
 
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-cyan-500"></div>
+        <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Carregando Mercado Neural...</p>
+      </div>
+    );
+  }
+
+  const rarityColors = {
+    COMMON: 'text-zinc-400 border-zinc-800 bg-zinc-900/40',
+    RARE: 'text-blue-400 border-blue-900/30 bg-blue-950/20',
+    EPIC: 'text-purple-400 border-purple-900/30 bg-purple-950/20',
+    LEGENDARY: 'text-yellow-400 border-yellow-900/30 bg-yellow-950/20 shadow-[0_0_20px_rgba(234,179,8,0.1)]'
+  };
+
+  const rarityLabel = {
+    COMMON: 'Comum',
+    RARE: 'Raro',
+    EPIC: 'Épico',
+    LEGENDARY: 'Lendário'
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between bg-white/5 p-4 rounded-2xl border border-white/10">
+    <div className="space-y-6 h-full flex flex-col">
+      {/* Header com Saldo */}
+      <div className="flex items-center justify-between bg-zinc-900/60 p-4 rounded-3xl border border-white/5 backdrop-blur-xl">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-yellow-500/20 rounded-xl text-yellow-500">
-            <Coins className="w-6 h-6" />
+          <div className="p-2 bg-yellow-500/10 rounded-xl text-yellow-500 border border-yellow-500/20">
+            <Coins size={20} />
           </div>
           <div>
-            <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Seu Saldo</p>
-            <p className="text-xl font-black tabular-nums">{profile?.coins || 0} Moedas</p>
+            <p className="text-[10px] text-zinc-500 font-black uppercase tracking-[0.2em]">Brain Coins</p>
+            <p className="text-xl font-black tabular-nums text-white">{profile?.coins || 0}</p>
           </div>
         </div>
         <button 
           onClick={onClose}
-          className="text-gray-400 hover:text-white transition-colors font-bold text-sm uppercase tracking-widest"
+          className="p-2 hover:bg-white/5 rounded-xl transition-colors text-zinc-500 hover:text-white"
         >
-          Fechar
+          <XCircle size={24} />
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-12">
-        {items.map((item) => {
-          const owned = inventory.includes(item.id) && item.category !== 'power_up';
-          const equipped = isEquipped(item);
-          const canAfford = (profile?.coins || 0) >= item.price;
-          
-          const rarityColors = {
-            COMMON: 'text-zinc-400 border-zinc-800 bg-zinc-900/40',
-            RARE: 'text-blue-400 border-blue-900/30 bg-blue-950/20',
-            EPIC: 'text-purple-400 border-purple-900/30 bg-purple-950/20',
-            LEGENDARY: 'text-yellow-400 border-yellow-900/30 bg-yellow-950/20 shadow-[0_0_20px_rgba(234,179,8,0.1)]'
-          };
-          
-          const rarityLabel = {
-            COMMON: 'Comum',
-            RARE: 'Raro',
-            EPIC: 'Épico',
-            LEGENDARY: 'Lendário'
-          };
+      {/* Tabs Principais */}
+      <div className="flex gap-2 p-1 bg-black/40 rounded-2xl border border-white/5">
+        {[
+          { id: 'COSMETICS', label: 'Loja', icon: ShoppingBag },
+          { id: 'POWERS', label: 'Poderes', icon: Zap },
+          { id: 'MY_ITEMS', label: 'Meu Inventário', icon: Star }
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as any)}
+            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+              activeTab === tab.id 
+                ? 'bg-white/10 text-white shadow-lg border border-white/10' 
+                : 'text-zinc-500 hover:text-zinc-300'
+            }`}
+          >
+            <tab.icon size={14} />
+            <span className="hidden sm:inline">{tab.label}</span>
+          </button>
+        ))}
+      </div>
 
-          const currentRarity = item.rarity || 'COMMON';
-
-          return (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={`p-5 rounded-3xl border-2 transition-all relative overflow-hidden flex flex-col ${
-                equipped 
-                  ? 'border-cyan-500 bg-cyan-500/10 shadow-[0_0_20px_rgba(6,182,212,0.15)]' 
-                  : owned 
-                    ? 'border-white/20 bg-white/5' 
-                    : rarityColors[currentRarity]
+      {/* Sub-categorias para Cosméticos */}
+      {activeTab === 'COSMETICS' && (
+        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+          {[
+            { id: 'all', label: 'Tudo' },
+            { id: 'skin', label: 'Skins' },
+            { id: 'title', label: 'Títulos' },
+            { id: 'font', label: 'Fontes' },
+            { id: 'arena_effect', label: 'Efeitos' }
+          ].map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setCosmeticCategory(cat.id as any)}
+              className={`whitespace-nowrap px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest border transition-all ${
+                cosmeticCategory === cat.id
+                  ? 'bg-cyan-500/20 border-cyan-500 text-cyan-400'
+                  : 'bg-zinc-900 border-zinc-800 text-zinc-500'
               }`}
             >
-              {/* Rarity Tag */}
-              <div className="flex justify-between items-start mb-4">
-                <span className={`text-[8px] font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded-full border ${
-                  currentRarity === 'LEGENDARY' ? 'bg-yellow-500/20 border-yellow-500/30' : 'bg-black/20 border-white/5'
-                }`}>
-                  {rarityLabel[currentRarity]}
-                </span>
-                <div className="opacity-40">
-                  {item.category === 'skin' ? <Palette size={14} /> : 
-                   item.category === 'power_up' ? <Sparkles size={14} /> :
-                   <Type size={14} />}
-                </div>
-              </div>
+              {cat.label}
+            </button>
+          ))}
+        </div>
+      )}
 
-              <div className="flex flex-col h-full justify-between gap-4">
-                <div>
-                  <h3 className={`font-black italic text-lg uppercase tracking-tight mb-1 ${
-                    currentRarity === 'LEGENDARY' ? 'text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-yellow-600' : 'text-white'
-                  }`}>
-                    {item.name}
-                  </h3>
-                  <p className="text-[10px] text-zinc-500 font-bold leading-relaxed uppercase tracking-tight">
-                    {item.description}
-                  </p>
-                  
-                  <div className="mt-4">
-                    {item.category === 'skin' && item.item_data.color !== 'rainbow' && (
-                      <div 
-                        className="w-full h-1 rounded-full" 
-                        style={{ backgroundColor: item.item_data.color, boxShadow: `0 0 10px ${item.item_data.color}40` }}
-                      />
-                    )}
-                    {item.category === 'skin' && item.item_data.color === 'rainbow' && (
-                      <div className="w-full h-1 rounded-full bg-gradient-to-r from-red-500 via-green-500 to-blue-500 animate-pulse" />
-                    )}
-                    {item.category === 'title' && (
-                      <div className="text-[10px] font-black uppercase tracking-[0.3em] py-2 px-3 bg-black/40 rounded-xl border border-white/5 text-center" style={{ 
-                        color: item.item_data.color || 'inherit',
-                        textShadow: item.item_data.glow ? `0 0 10px ${item.item_data.color}` : 'none'
-                      }}>
-                        « {item.item_data.text} »
+      {/* Grid de Itens */}
+      <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-12">
+          {items
+            .filter(item => {
+              if (activeTab === 'POWERS') return item.category === 'power_up';
+              if (activeTab === 'MY_ITEMS') return inventory.includes(item.id) && item.category !== 'power_up';
+              if (activeTab === 'COSMETICS') {
+                if (item.category === 'power_up') return false;
+                if (cosmeticCategory === 'all') return true;
+                return item.category === cosmeticCategory;
+              }
+              return true;
+            })
+            .map((item) => {
+              const owned = inventory.includes(item.id) && item.category !== 'power_up';
+              const equipped = isEquipped(item);
+              const canAfford = (profile?.coins || 0) >= item.price;
+              const currentRarity = item.rarity || 'COMMON';
+
+              return (
+                <motion.div
+                  key={item.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className={`p-5 rounded-3xl border-2 transition-all relative overflow-hidden flex flex-col h-full ${
+                    equipped 
+                      ? 'border-cyan-500 bg-cyan-500/10 shadow-[0_0_20px_rgba(6,182,212,0.1)]' 
+                      : owned 
+                        ? 'border-white/20 bg-white/5' 
+                        : rarityColors[currentRarity]
+                  }`}
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <span className={`text-[8px] font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded-full border ${
+                      currentRarity === 'LEGENDARY' ? 'bg-yellow-500/20 border-yellow-500/30' : 'bg-black/20 border-white/5'
+                    }`}>
+                      {rarityLabel[currentRarity]}
+                    </span>
+                    <div className="opacity-30">
+                      {item.category === 'skin' ? <Palette size={14} /> : 
+                       item.category === 'power_up' ? <Zap size={14} /> :
+                       item.category === 'arena_effect' ? <Sparkles size={14} /> :
+                       <Type size={14} />}
+                    </div>
+                  </div>
+
+                  <div className="flex-1 flex flex-col">
+                    <h3 className={`font-black italic text-lg uppercase tracking-tight mb-1 ${
+                      currentRarity === 'LEGENDARY' ? 'text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-yellow-600' : 'text-white'
+                    }`}>
+                      {item.name}
+                    </h3>
+                    <p className="text-[10px] text-zinc-500 font-bold leading-relaxed uppercase tracking-tight">
+                      {item.description}
+                    </p>
+                    
+                    <div className="mt-4 mb-6">
+                      {item.category === 'skin' && item.item_data.color !== 'rainbow' && (
+                        <div 
+                          className="w-full h-1.5 rounded-full" 
+                          style={{ backgroundColor: item.item_data.color, boxShadow: `0 0 10px ${item.item_data.color}40` }}
+                        />
+                      )}
+                      {item.category === 'skin' && item.item_data.color === 'rainbow' && (
+                        <div className="w-full h-1.5 rounded-full bg-gradient-to-r from-red-500 via-green-500 to-blue-500 animate-pulse" />
+                      )}
+                      {item.category === 'title' && (
+                        <div className="text-[10px] font-black uppercase tracking-[0.2em] py-2 px-3 bg-black/40 rounded-xl border border-white/5 text-center" style={{ 
+                          color: item.item_data.color || 'inherit',
+                          textShadow: item.item_data.glow ? `0 0 10px ${item.item_data.color}` : 'none'
+                        }}>
+                          « {item.item_data.text} »
+                        </div>
+                      )}
+                      {item.category === 'power_up' && (
+                        <div className="flex items-center gap-2 text-zinc-400">
+                          <div className={`p-2 rounded-lg bg-black/40 border border-white/5`}>
+                            {item.item_data.powerId === 'slow' ? <Monitor size={16} className="text-blue-400" /> : <Shield size={16} className="text-purple-400" />}
+                          </div>
+                          <span className="text-[9px] font-black uppercase tracking-widest">
+                            Consumível
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/5">
+                    {!owned && item.category !== 'power_up' ? (
+                      <div className="flex items-center gap-1.5">
+                        <Coins size={12} className="text-yellow-500" />
+                        <span className={`text-sm font-black ${canAfford ? 'text-white' : 'text-red-500'}`}>
+                          {item.price}
+                        </span>
                       </div>
+                    ) : item.category === 'power_up' ? (
+                      <div className="flex items-center gap-1.5">
+                        <Coins size={12} className="text-yellow-500" />
+                        <span className={`text-sm font-black ${canAfford ? 'text-white' : 'text-red-500'}`}>
+                          {item.price}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-[9px] font-black uppercase tracking-widest text-cyan-400">
+                        Adquirido
+                      </span>
+                    )}
+
+                    {owned ? (
+                      <button
+                        onClick={() => !equipped && handleEquip(item)}
+                        disabled={equipped}
+                        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                          equipped
+                            ? 'bg-cyan-500 text-black cursor-default'
+                            : 'bg-white/10 hover:bg-white/20 text-white active:scale-95'
+                        }`}
+                      >
+                        {equipped ? 'Equipado' : 'Equipar'}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleBuy(item.id, item.price)}
+                        disabled={buying === item.id || !canAfford}
+                        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                          canAfford
+                            ? 'bg-yellow-500 text-black hover:scale-105 active:scale-95 shadow-lg shadow-yellow-500/20'
+                            : 'bg-zinc-900 text-zinc-700 cursor-not-allowed border border-white/5'
+                        }`}
+                      >
+                        {buying === item.id ? '...' : item.category === 'power_up' ? 'Comprar Carga' : 'Comprar'}
+                      </button>
                     )}
                   </div>
-                </div>
-
-                <div className="flex items-center justify-between mt-auto">
-                  {!owned ? (
-                    <div className="flex items-center gap-2">
-                      <Coins className="w-4 h-4 text-yellow-500" />
-                      <span className={`font-black ${canAfford ? 'text-white' : 'text-red-400'}`}>
-                        {item.price}
-                      </span>
-                    </div>
-                  ) : (
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-cyan-400">
-                      Adquirido
-                    </span>
-                  )}
-
-                  {owned ? (
-                    <button
-                      onClick={() => !equipped && handleEquip(item)}
-                      disabled={equipped}
-                      className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-                        equipped
-                          ? 'bg-cyan-500 text-black cursor-default'
-                          : 'bg-white/10 hover:bg-white/20 text-white'
-                      }`}
-                    >
-                      {equipped ? (
-                        <span className="flex items-center gap-2">
-                          <Check className="w-3 h-3" /> Equipado
-                        </span>
-                      ) : 'Equipar'}
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => handleBuy(item.id, item.price)}
-                      disabled={buying === item.id || !canAfford}
-                      className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-                        canAfford
-                          ? 'bg-yellow-500 text-black hover:scale-105 active:scale-95'
-                          : 'bg-white/5 text-gray-500 cursor-not-allowed border border-white/10'
-                      }`}
-                    >
-                      {buying === item.id ? 'Processando...' : 'Comprar'}
-                    </button>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          );
-        })}
+                </motion.div>
+              );
+            })}
+        </div>
       </div>
     </div>
   );

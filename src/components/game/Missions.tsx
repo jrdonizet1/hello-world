@@ -10,6 +10,8 @@ interface Mission {
   description: string;
   reward_coins: number;
   reward_xp: number;
+  reward_power_slow?: number;
+  reward_power_shield?: number;
   goal_type: string;
   goal_value: number;
   is_daily: boolean;

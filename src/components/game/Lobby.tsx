@@ -41,12 +41,19 @@ export const Lobby: React.FC = () => {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      if (session) fetchProfile(session.user.id);
+      if (session) {
+        fetchProfile(session.user.id);
+      }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      if (session) fetchProfile(session.user.id);
+      if (session) {
+        fetchProfile(session.user.id);
+      } else {
+        setProfile(null);
+        setNickname('');
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -73,10 +80,12 @@ export const Lobby: React.FC = () => {
 
       if (error) throw error;
       
-      const formattedRooms = rooms.map(room => ({
-        ...room,
-        playerCount: room.profiles[0]?.count || 0
-      }));
+      const formattedRooms = rooms
+        .map(room => ({
+          ...room,
+          playerCount: (room.profiles as any)?.[0]?.count || 0
+        }))
+        .filter(room => room.playerCount > 0);
 
       setAvailableRooms(formattedRooms);
     } catch (err: any) {
@@ -246,12 +255,12 @@ export const Lobby: React.FC = () => {
     setLoading(true);
     try {
       await (leaveRoom as any)();
+    } catch (err: any) {
+      console.error('Erro ao sair da sala:', err);
+    } finally {
       setRoom(null, null, false);
       setIsReady(false);
       setView('MULTIPLAYER');
-    } catch (err: any) {
-      toast.error('Erro ao sair da sala');
-    } finally {
       setLoading(false);
     }
   };
@@ -308,8 +317,14 @@ export const Lobby: React.FC = () => {
                 ) : (
                   <div className="flex items-center justify-between">
                     <div 
-                      onClick={() => setView('PROFILE')}
-                      className="flex items-center gap-3 cursor-pointer group"
+                      onClick={() => {
+                        if (session?.user?.is_anonymous) {
+                          toast.info('Crie uma conta com Google para acessar seu perfil e salvar seu progresso!');
+                          return;
+                        }
+                        setView('PROFILE');
+                      }}
+                      className={`flex items-center gap-3 ${session?.user?.is_anonymous ? 'opacity-70 cursor-help' : 'cursor-pointer'} group`}
                     >
                       <div className="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center border border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.2)] group-hover:scale-110 transition-transform">
                         <User size={20} className="text-cyan-400" />
@@ -319,19 +334,27 @@ export const Lobby: React.FC = () => {
                           <span className="text-sm font-black truncate max-w-[120px] text-white group-hover:text-cyan-400 transition-colors">
                             {nickname || 'Cérebro Anônimo'}
                           </span>
-                          <span className="bg-cyan-500/20 text-cyan-400 text-[8px] font-black px-1.5 py-0.5 rounded border border-cyan-500/20">LVL {profile?.level || 1}</span>
+                          {!session?.user?.is_anonymous && (
+                            <span className="bg-cyan-500/20 text-cyan-400 text-[8px] font-black px-1.5 py-0.5 rounded border border-cyan-500/20">LVL {profile?.level || 1}</span>
+                          )}
                         </div>
                         <div className="flex items-center gap-2 mt-0.5">
-                          <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 rounded-full bg-yellow-500 shadow-[0_0_5px_rgba(234,179,8,0.5)]"></div>
-                            <span className="text-[10px] font-black text-yellow-500">{profile?.coins || 0}</span>
-                          </div>
-                          <div className="w-1 h-1 rounded-full bg-zinc-800"></div>
-                          <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-tighter">XP {profile?.xp || 0}</span>
+                          {session?.user?.is_anonymous ? (
+                            <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest">Visitante Temporário</span>
+                          ) : (
+                            <>
+                              <div className="flex items-center gap-1">
+                                <div className="w-2 h-2 rounded-full bg-yellow-500 shadow-[0_0_5px_rgba(234,179,8,0.5)]"></div>
+                                <span className="text-[10px] font-black text-yellow-500">{profile?.coins || 0}</span>
+                              </div>
+                              <div className="w-1 h-1 rounded-full bg-zinc-800"></div>
+                              <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-tighter">XP {profile?.xp || 0}</span>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
-                    <button onClick={() => supabase.auth.signOut()} className="text-zinc-600 hover:text-red-500 transition-colors ml-4"><LogOut size={18} /></button>
+                    <button onClick={() => supabase.auth.signOut()} className="text-zinc-600 hover:text-red-500 transition-colors ml-4" title="Sair"><LogOut size={18} /></button>
                   </div>
                 )}
               </div>
@@ -350,9 +373,9 @@ export const Lobby: React.FC = () => {
                   <Users size={20} /> ARENA MULTIPLAYER
                 </button>
                 
-                {session && (
+                {session && !session.user.is_anonymous && (
                   <button 
-                    disabled={rewardLoading}
+                    disabled={rewardLoading || (profile?.last_daily_reward && new Date().getTime() - new Date(profile.last_daily_reward).getTime() < 24 * 60 * 60 * 1000)}
                     onClick={async () => {
                       setRewardLoading(true);
                       try {
@@ -365,13 +388,16 @@ export const Lobby: React.FC = () => {
                         setRewardLoading(false);
                       }
                     }}
-                    className="w-full py-3 bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 font-black text-[10px] rounded-xl flex items-center justify-center gap-2 hover:bg-yellow-500/20 transition-all uppercase tracking-widest disabled:opacity-50"
+                    className="w-full py-3 bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 font-black text-[10px] rounded-xl flex items-center justify-center gap-2 hover:bg-yellow-500/20 transition-all uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     {rewardLoading ? (
                       <div className="w-4 h-4 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
                     ) : (
                       <>
-                        <Trophy size={14} /> Resgatar Recompensa Diária
+                        <Trophy size={14} /> 
+                        {profile?.last_daily_reward && new Date().getTime() - new Date(profile.last_daily_reward).getTime() < 24 * 60 * 60 * 1000 
+                          ? 'Recompensa Resgatada' 
+                          : 'Resgatar Recompensa Diária'}
                       </>
                     )}
                   </button>
@@ -722,7 +748,7 @@ export const Lobby: React.FC = () => {
               </div>
             </motion.div>
           )}
-          {view === 'PROFILE' && (
+          {view === 'PROFILE' && !session?.user?.is_anonymous && (
             <motion.div 
               key="profile"
               initial={{ opacity: 0, scale: 0.95 }}

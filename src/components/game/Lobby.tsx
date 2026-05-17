@@ -36,6 +36,7 @@ export const Lobby: React.FC = () => {
   const [roomData, setRoomData] = useState<any>(null);
   const [isReady, setIsReady] = useState(false);
   const [pendingAction, setPendingAction] = useState<{ type: 'CREATE' | 'JOIN', code?: string } | null>(null);
+  const [rewardLoading, setRewardLoading] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {

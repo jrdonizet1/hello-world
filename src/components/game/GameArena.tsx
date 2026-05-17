@@ -16,7 +16,8 @@ export const GameArena: React.FC = () => {
     endGame,
     userSkin,
     userTitle,
-    gameMode
+    gameMode,
+    selectedThemes
   } = useGameStore();
 
   const [countDown, setCountDown] = useState(3);

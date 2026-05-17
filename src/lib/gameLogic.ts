@@ -1,21 +1,47 @@
 import { Command } from '../store/useGameStore';
 
-const COMMANDS: Omit<Command, 'id'>[] = [
-  { text: 'TOQUE NO VERMELHO', type: 'COLOR', action: 'tap', target: 'red', difficulty: 1 },
-  { text: 'NÃO TOQUE NO AZUL', type: 'COLOR', action: 'not_tap', target: 'blue', difficulty: 2 },
-  { text: 'ESCOLHA O VERDE', type: 'COLOR', action: 'tap', target: 'green', difficulty: 1 },
-  { text: 'ESQUEÇA O AMARELO', type: 'COLOR', action: 'not_tap', target: 'yellow', difficulty: 2 },
-  { text: 'CLIQUE NO AZUL', type: 'COLOR', action: 'tap', target: 'blue', difficulty: 1 },
-  { text: 'SWIPE NÃO DISPONÍVEL', type: 'TAP', action: 'tap', target: 'any', difficulty: 3 },
-  { text: '2 + 2 = 4?', type: 'MATH', action: 'math_4', target: '4', difficulty: 1 },
-  { text: '10 - 3 = 7?', type: 'MATH', action: 'math_4', target: '4', difficulty: 2 },
+export interface StroopCommand extends Command {
+  displayWord: string;
+  displayColor: string;
+  isCorrect: boolean;
+}
+
+const COLORS = [
+  { name: 'VERMELHO', value: '#ef4444', key: 'red' },
+  { name: 'AZUL', value: '#3b82f6', key: 'blue' },
+  { name: 'VERDE', value: '#22c55e', key: 'green' },
+  { name: 'AMARELO', value: '#eab308', key: 'yellow' },
+  { name: 'ROXO', value: '#a855f7', key: 'purple' },
+  { name: 'ROSA', value: '#ec4899', key: 'pink' },
 ];
 
-export const generateCommand = (difficulty: number): Command => {
-  const filtered = COMMANDS.filter(c => c.difficulty <= difficulty);
-  const base = filtered[Math.floor(Math.random() * filtered.length)];
+export const generateCommand = (difficulty: number): StroopCommand => {
+  // 50/50 chance of being a matching or non-matching color
+  const isCorrect = Math.random() > 0.5;
+  
+  const wordIndex = Math.floor(Math.random() * COLORS.length);
+  const word = COLORS[wordIndex];
+  
+  let colorValue: string;
+  if (isCorrect) {
+    colorValue = word.value;
+  } else {
+    let colorIndex;
+    do {
+      colorIndex = Math.floor(Math.random() * COLORS.length);
+    } while (colorIndex === wordIndex);
+    colorValue = COLORS[colorIndex].value;
+  }
+
   return {
-    ...base,
     id: Math.random().toString(36).substring(7),
+    text: 'A COR BATE COM A PALAVRA?',
+    displayWord: word.name,
+    displayColor: colorValue,
+    isCorrect,
+    type: 'COLOR',
+    action: 'boolean',
+    target: isCorrect ? 'true' : 'false',
+    difficulty,
   };
 };

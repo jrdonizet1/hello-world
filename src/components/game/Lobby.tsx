@@ -11,7 +11,7 @@ import { Shop } from './Shop';
 type LobbyView = 'MAIN' | 'MULTIPLAYER' | 'CREATE_ROOM' | 'JOIN_ROOM' | 'WAITING' | 'VISITOR_NICK' | 'ROOMS_LIST' | 'PROFILE' | 'SHOP' | 'REFERRAL';
 
 export const Lobby: React.FC = () => {
-  const { startGame, setRoom, roomId, roomCode, isHost, setCustomization } = useGameStore();
+  const { startGame, setRoom, roomId, roomCode, isHost, setCustomization, selectedThemes, setSelectedThemes } = useGameStore();
   const [session, setSession] = useState<any>(null);
   const [nickname, setNickname] = useState('');
   const [profile, setProfile] = useState<any>(null);

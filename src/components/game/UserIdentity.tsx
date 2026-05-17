@@ -55,9 +55,11 @@ export const UserIdentity: React.FC<UserIdentityProps> = ({
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      <div className="flex-shrink-0">
-        {getIcon()}
-      </div>
+      {getIcon() && (
+        <div className="flex-shrink-0">
+          {getIcon()}
+        </div>
+      )}
       <div className="flex flex-col">
         <motion.span 
           className={`font-black italic uppercase tracking-tight ${nameSizeClasses[size]}`}

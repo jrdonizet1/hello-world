@@ -27,11 +27,14 @@ interface BrainLagState {
   userSkin: string | null;
   userTitle: string | null;
   selectedThemes: string[];
+  baseTime: number;
+  accelerationEnabled: boolean;
   
   setGameState: (state: GameState) => void;
   setGameMode: (mode: GameMode) => void;
   setSelectedThemes: (themes: string[]) => void;
-  startGame: (mode?: GameMode, themes?: string[]) => void;
+  setGameSettings: (baseTime: number, accelerationEnabled: boolean) => void;
+  startGame: (mode?: GameMode, themes?: string[], baseTime?: number, accelerationEnabled?: boolean) => void;
   endGame: (reason: string) => void;
   updateScore: (points: number) => void;
   setCommand: (command: Command | null) => void;

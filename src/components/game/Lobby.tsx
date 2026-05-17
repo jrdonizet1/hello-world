@@ -1558,7 +1558,7 @@ export const Lobby: React.FC = () => {
                       }`}
                     >
                       <div className="flex items-center gap-4">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs ${
+                        <div className={`w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center font-black text-xs ${
                           i === 0 ? 'bg-yellow-500 text-black shadow-[0_0_15px_rgba(234,179,8,0.5)]' :
                           i === 1 ? 'bg-gray-300 text-black' :
                           i === 2 ? 'bg-amber-600 text-black' :
@@ -1566,6 +1566,7 @@ export const Lobby: React.FC = () => {
                         }`}>
                           {i + 1}
                         </div>
+                        <UserAvatar url={entry.profiles?.avatar_url} showLevel={false} size="sm" />
                         <div className="flex flex-col">
                           <UserIdentity 
                             name={entry.profiles?.nickname || 'Anônimo'}
@@ -1578,7 +1579,7 @@ export const Lobby: React.FC = () => {
                           />
                         </div>
                       </div>
-                      
+
                       <div className="text-right">
                         <span className={`text-xl font-black italic tabular-nums ${
                           i === 0 ? 'text-yellow-500' : 'text-white'

@@ -487,6 +487,7 @@ export const updateEquippedItems = createServerFn({ method: "POST" })
     if (arenaEffect !== undefined) updateData.selected_arena_effect = arenaEffect;
     if (icon !== undefined) updateData.selected_icon = icon;
     if (effect !== undefined) updateData.selected_effect = effect;
+    if (avatarUrl !== undefined) updateData.avatar_url = avatarUrl;
 
     const { error } = await supabaseAdmin
       .from("profiles")

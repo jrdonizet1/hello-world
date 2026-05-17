@@ -42,7 +42,7 @@ export const saveScore = createServerFn({ method: "POST" })
     if (themeScores) {
       Object.entries(themeScores).forEach(([themeId, tScore]: [string, any]) => {
         const colName = `score_${themeId.toLowerCase()}`;
-        if (!currentEntry || (currentEntry[colName] || 0) < tScore) {
+        if (!currentEntry || (currentEntry as any)[colName] < tScore) {
           updateData[colName] = tScore;
         }
       });

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/useGameStore';
-import { Trophy, Users, Zap, LogIn, User, LogOut, Plus, LogIn as JoinIcon, ChevronLeft, Copy, Check, Shield, ShieldOff, Lock, UserPlus, RefreshCw, ShoppingBag, Share2, Timer, Infinity, Monitor, Globe, History, XCircle, CheckCircle2 } from 'lucide-react';
+import { Trophy, Users, Zap, LogIn, User, LogOut, Plus, LogIn as JoinIcon, ChevronLeft, ChevronRight, Copy, Check, Shield, ShieldOff, Lock, UserPlus, RefreshCw, ShoppingBag, Share2, Timer, Infinity, Monitor, Globe, History, XCircle, CheckCircle2 } from 'lucide-react';
 import { lovable } from '@/integrations/lovable';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -45,6 +45,7 @@ export const Lobby: React.FC = () => {
   const [history, setHistory] = useState<any[]>([]);
   const [rankings, setRankings] = useState<any[]>([]);
   const [rankingCategory, setRankingCategory] = useState<string | null>(null);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date().getTime()), 1000);
@@ -1434,22 +1435,45 @@ export const Lobby: React.FC = () => {
                 <p className="text-zinc-500 text-[10px] uppercase font-bold tracking-widest">Global Hall of Fame</p>
               </div>
 
-              <div className="flex overflow-x-auto gap-2 pb-2 no-scrollbar">
+              <div className="relative group">
                 <button 
-                  onClick={() => fetchRankings(null)}
-                  className={`flex-shrink-0 px-4 py-2 rounded-xl text-[8px] font-black uppercase tracking-widest border transition-all ${rankingCategory === null ? 'bg-white text-black border-white' : 'bg-black/20 border-white/5 text-zinc-500'}`}
+                  onClick={() => {
+                    if (scrollRef.current) scrollRef.current.scrollBy({ left: -100, behavior: 'smooth' });
+                  }}
+                  className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-black/60 border border-white/10 p-1.5 rounded-full backdrop-blur-md text-zinc-400 hover:text-white transition-all opacity-0 group-hover:opacity-100"
                 >
-                  Geral
+                  <ChevronLeft size={16} />
                 </button>
-                {THEMES.map(theme => (
+                
+                <div 
+                  ref={scrollRef}
+                  className="flex overflow-x-auto gap-2 pb-2 no-scrollbar px-2"
+                >
                   <button 
-                    key={theme.id}
-                    onClick={() => fetchRankings(theme.id)}
-                    className={`flex-shrink-0 px-4 py-2 rounded-xl text-[8px] font-black uppercase tracking-widest border transition-all ${rankingCategory === theme.id ? 'bg-cyan-500 text-white border-cyan-400' : 'bg-black/20 border-white/5 text-zinc-500'}`}
+                    onClick={() => fetchRankings(null)}
+                    className={`flex-shrink-0 px-4 py-2 rounded-xl text-[8px] font-black uppercase tracking-widest border transition-all ${rankingCategory === null ? 'bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.1)]' : 'bg-black/20 border-white/5 text-zinc-500'}`}
                   >
-                    {theme.name}
+                    Geral
                   </button>
-                ))}
+                  {THEMES.map(theme => (
+                    <button 
+                      key={theme.id}
+                      onClick={() => fetchRankings(theme.id)}
+                      className={`flex-shrink-0 px-4 py-2 rounded-xl text-[8px] font-black uppercase tracking-widest border transition-all ${rankingCategory === theme.id ? 'bg-cyan-500 text-white border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.2)]' : 'bg-black/20 border-white/5 text-zinc-500'}`}
+                    >
+                      {theme.name}
+                    </button>
+                  ))}
+                </div>
+
+                <button 
+                  onClick={() => {
+                    if (scrollRef.current) scrollRef.current.scrollBy({ left: 100, behavior: 'smooth' });
+                  }}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-black/60 border border-white/10 p-1.5 rounded-full backdrop-blur-md text-zinc-400 hover:text-white transition-all opacity-0 group-hover:opacity-100"
+                >
+                  <ChevronRight size={16} />
+                </button>
               </div>
 
               <div className="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar pr-1">

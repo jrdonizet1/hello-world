@@ -669,6 +669,7 @@ export const Lobby: React.FC = () => {
               </div>
 
               <ThemeSelector />
+              <GameSettingsSelector />
 
               <div className="space-y-4 pt-2">
                 <div className="bg-zinc-900/40 border border-zinc-800/50 p-4 rounded-3xl backdrop-blur-xl">
@@ -677,7 +678,7 @@ export const Lobby: React.FC = () => {
                     <button 
                       onClick={() => {
                         setCustomization(profile?.selected_skin, profile?.selected_title);
-                        startGame('NORMAL');
+                        startGame('NORMAL', undefined, baseTime, accelerationEnabled);
                       }}
                       className="py-4 bg-white text-black font-black text-xs rounded-xl shadow-[0_0_15px_rgba(255,255,255,0.1)] active:scale-95 transition-all uppercase"
                     >
@@ -686,7 +687,7 @@ export const Lobby: React.FC = () => {
                     <button 
                       onClick={() => {
                         setCustomization(profile?.selected_skin, profile?.selected_title);
-                        startGame('BLITZ');
+                        startGame('BLITZ', undefined, baseTime, accelerationEnabled);
                       }}
                       className="py-4 bg-amber-500/10 border border-amber-500/30 text-amber-500 font-black text-xs rounded-xl active:scale-95 transition-all uppercase"
                     >
@@ -695,7 +696,7 @@ export const Lobby: React.FC = () => {
                     <button 
                       onClick={() => {
                         setCustomization(profile?.selected_skin, profile?.selected_title);
-                        startGame('SURVIVAL');
+                        startGame('SURVIVAL', undefined, baseTime, accelerationEnabled);
                       }}
                       className="col-span-2 py-4 bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 font-black text-xs rounded-xl active:scale-95 transition-all uppercase"
                     >
@@ -1010,6 +1011,7 @@ export const Lobby: React.FC = () => {
               </div>
 
               <ThemeSelector />
+              <GameSettingsSelector />
 
               <button 
                 onClick={handleCreateRoom}
@@ -1106,7 +1108,12 @@ export const Lobby: React.FC = () => {
                 </div>
               </div>
 
-              {isHost && <ThemeSelector />}
+              {isHost && (
+                <>
+                  <ThemeSelector />
+                  <GameSettingsSelector />
+                </>
+              )}
 
               <div className="w-full bg-zinc-900/30 border border-zinc-800/50 rounded-3xl p-5 min-h-[220px] shadow-lg">
                 <div className="flex items-center justify-between mb-4">

@@ -181,7 +181,8 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             { id: 'skin', label: 'Skins' },
             { id: 'title', label: 'Títulos' },
             { id: 'font', label: 'Fontes' },
-            { id: 'arena_effect', label: 'Efeitos' }
+            { id: 'arena_effect', label: 'Efeitos' },
+            { id: 'avatar', label: 'Ícones' }
           ].map((cat) => (
             <button
               key={cat.id}

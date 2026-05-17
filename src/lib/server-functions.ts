@@ -1,16 +1,15 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { z } from "zod";
 
 export const saveScore = createServerFn({ method: "POST" })
+  .validator((d: { score: number }) => d)
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }) => {
     const { userId } = context;
-    const score = (data as any).score;
+    const { score } = data;
 
-    if (typeof score !== 'number') throw new Error("Invalid score");
-
-    // Check existing score
     const { data: currentEntry } = await supabaseAdmin
       .from("leaderboard")
       .select("score")
@@ -49,12 +48,11 @@ export const getLeaderboard = createServerFn({ method: "GET" })
   });
 
 export const updateProfile = createServerFn({ method: "POST" })
+  .validator((d: { nickname: string }) => d)
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }) => {
     const { userId } = context;
-    const nickname = (data as any).nickname;
-
-    if (typeof nickname !== 'string') throw new Error("Invalid nickname");
+    const { nickname } = data;
 
     const { error } = await supabaseAdmin
       .from("profiles")

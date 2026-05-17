@@ -53,6 +53,7 @@ interface BrainLagState {
   setCustomization: (skin: string | null, title: string | null, font?: any, arenaEffect?: any) => void;
   increaseCombo: (reactionTime: number) => void;
   setDuelOpponent: (id: string | null, progress: number) => void;
+  usePower: (powerId: string) => void;
   resetCombo: () => void;
 }
 

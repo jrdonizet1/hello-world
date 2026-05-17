@@ -40,7 +40,7 @@ export const Lobby: React.FC = () => {
   const handleSaveNickname = async () => {
     if (!nickname.trim()) return;
     try {
-      await updateProfile({ data: { nickname } });
+      await (updateProfile as any)({ data: { nickname } });
       setIsEditing(false);
       toast.success('Perfil atualizado!');
     } catch (err) {

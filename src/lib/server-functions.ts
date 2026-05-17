@@ -4,9 +4,10 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 export const saveScore = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ data, context }: { data: { score: number }, context: any }) => {
-    const { userId } = context;
+  .handler(async (args: any) => {
+    const { data, context } = args;
     const { score } = data;
+    const { userId } = context;
 
     const { data: currentEntry } = await supabaseAdmin
       .from("leaderboard")
@@ -47,9 +48,10 @@ export const getLeaderboard = createServerFn({ method: "GET" })
 
 export const updateProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ data, context }: { data: { nickname: string }, context: any }) => {
-    const { userId } = context;
+  .handler(async (args: any) => {
+    const { data, context } = args;
     const { nickname } = data;
+    const { userId } = context;
 
     const { error } = await supabaseAdmin
       .from("profiles")

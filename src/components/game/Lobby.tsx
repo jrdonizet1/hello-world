@@ -760,7 +760,7 @@ export const Lobby: React.FC = () => {
                     </button>
                     <button 
                       onClick={() => {
-                        setCustomization(profile?.selected_skin, profile?.selected_title);
+                        setCustomization(profile?.selected_skin, profile?.selected_title, profile?.selected_font, profile?.selected_arena_effect);
                         startGame('SURVIVAL', undefined, baseTime, accelerationIntensity);
                       }}
                       className="col-span-2 py-4 bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 font-black text-xs rounded-xl active:scale-95 transition-all uppercase"

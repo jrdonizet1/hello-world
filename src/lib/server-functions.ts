@@ -7,7 +7,7 @@ export const saveScore = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async (args: any) => {
     const { data, context } = args;
-    const { score, themeScores, maxCombo } = data;
+    const { score, themeScores, maxCombo, powersUsedInSession, sessionUsedPower } = data;
     const { userId } = context;
 
     const { data: profile, error: profileError } = await supabaseAdmin

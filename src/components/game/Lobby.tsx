@@ -871,6 +871,8 @@ export const Lobby: React.FC = () => {
                 )}
               </div>
 
+              <ThemeSelector />
+
               <button 
                 onClick={handleCreateRoom}
                 disabled={loading}

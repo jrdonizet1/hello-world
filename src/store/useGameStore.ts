@@ -90,6 +90,9 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
   duelSeed: null,
   activePowers: [],
   coins: 0,
+  powerSlowCount: 0,
+  powerShieldCount: 0,
+  hasShield: false,
 
   setCustomization: (skin, title, font, arenaEffect) => set({ 
     userSkin: skin, 

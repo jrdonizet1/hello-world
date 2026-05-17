@@ -44,7 +44,7 @@ export const GameOver: React.FC = () => {
     }
     setLoading(true);
     try {
-      await saveScore(score);
+      await saveScore({ data: score });
       toast.success('Score salvo no ranking global!');
       fetchLeaderboard();
     } catch (err: any) {

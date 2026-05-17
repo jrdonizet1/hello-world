@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { motion, useAnimation, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/useGameStore';
 import { generateCommand } from '../../lib/gameLogic';
+import { saveGameHistory } from '@/lib/server-functions';
 
 export const GameArena: React.FC = () => {
   const { 
@@ -59,6 +60,17 @@ export const GameArena: React.FC = () => {
 
     const isCorrect = (currentCommand as any).isCorrect === response;
     
+    // Save history
+    saveGameHistory({
+      data: {
+        commandText: currentCommand.text,
+        displayWord: (currentCommand as any).displayWord || null,
+        isCorrect: (currentCommand as any).isCorrect,
+        userAnswer: response,
+        theme: currentCommand.theme || 'GENERAL'
+      }
+    } as any).catch(err => console.error('Error saving history:', err));
+
     if (isCorrect) {
       updateScore(1);
       setCommand(generateCommand(Math.floor(score / 5) + 1, selectedThemes));

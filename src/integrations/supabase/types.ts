@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      game_history: {
+        Row: {
+          command_text: string
+          created_at: string
+          display_word: string | null
+          id: string
+          is_correct: boolean
+          theme: string | null
+          user_answer: boolean
+          user_id: string
+        }
+        Insert: {
+          command_text: string
+          created_at?: string
+          display_word?: string | null
+          id?: string
+          is_correct: boolean
+          theme?: string | null
+          user_answer: boolean
+          user_id: string
+        }
+        Update: {
+          command_text?: string
+          created_at?: string
+          display_word?: string | null
+          id?: string
+          is_correct?: boolean
+          theme?: string | null
+          user_answer?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       leaderboard: {
         Row: {
           created_at: string

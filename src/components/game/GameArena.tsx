@@ -199,6 +199,19 @@ export const GameArena: React.FC = () => {
       `}</style>
       {/* Header */}
       <div className="flex justify-between items-center mb-6 z-10">
+        {/* Opponent Progress (Multiplayer Duel) */}
+        {isMultiplayer && (
+          <div className="absolute top-0 left-0 w-full h-1 bg-white/5 overflow-hidden">
+            <motion.div 
+              className="h-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]"
+              animate={{ width: `${Math.min(100, (duelOpponentProgress / 50) * 100)}%` }}
+              transition={{ duration: 0.5 }}
+            />
+            <div className="absolute top-2 left-2 text-[8px] font-black text-red-500 uppercase tracking-widest opacity-60">
+              Oponente: {duelOpponentProgress} pts
+            </div>
+          </div>
+        )}
         <div className="flex flex-col">
           <span className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em]">Sincronia</span>
           <span className="text-4xl font-black italic tabular-nums">{score.toFixed(1)}</span>

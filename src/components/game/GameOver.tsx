@@ -9,7 +9,7 @@ import { saveScore, getLeaderboard } from '@/lib/server-functions';
 import { toast } from 'sonner';
 
 export const GameOver: React.FC = () => {
-  const { score, lastError, startGame, setGameState } = useGameStore();
+  const { score, lastError, startGame, setGameState, gameMode } = useGameStore();
   const [session, setSession] = useState<any>(null);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);

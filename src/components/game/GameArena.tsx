@@ -137,7 +137,7 @@ export const GameArena: React.FC = () => {
             backgroundColor: timeRemaining < 0.8 ? '#ef4444' : (userSkin || '#06b6d4'),
             boxShadow: timeRemaining < 0.8 ? '0 0 15px rgba(239,68,68,0.5)' : `0 0 15px ${(userSkin || '#06b6d4')}80`
           }}
-          animate={{ width: `${Math.max(0, (timeRemaining / 2.2) * 100)}%` }}
+          animate={{ width: `${Math.max(0, (timeRemaining / (gameMode === 'SURVIVAL' ? 5 : (gameMode === 'BLITZ' ? 1.2 : 2.2))) * 100)}%` }}
           transition={{ duration: 0.05, ease: 'linear' }}
         />
       </div>

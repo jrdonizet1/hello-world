@@ -51,7 +51,7 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
     setBuying(itemId);
     try {
-      await buyShopItem(itemId);
+      await buyShopItem({ data: itemId });
       toast.success('Item adquirido com sucesso!');
       await loadData();
     } catch (err: any) {

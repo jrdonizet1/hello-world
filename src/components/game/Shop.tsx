@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, Coins, Check, Lock, Palette, Type, Monitor, Sparkles, Star, Zap, XCircle, ChevronRight, Shield } from 'lucide-react';
+import { ShoppingBag, Coins, Check, Lock, Palette, Type, Monitor, Sparkles, Star, Zap, XCircle, ChevronRight, Shield, Crown, ShieldCheck, Infinity as InfinityIcon } from 'lucide-react';
 import { getShopItems, buyShopItem, getUserInventory, updateEquippedItems, getProfile } from '../../lib/server-functions';
 import { useGameStore } from '../../store/useGameStore';
 import { toast } from 'sonner';

@@ -115,11 +115,27 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-12">
         {items.map((item) => {
-          const owned = inventory.includes(item.id);
+          const owned = inventory.includes(item.id) && item.category !== 'power_up';
           const equipped = isEquipped(item);
           const canAfford = (profile?.coins || 0) >= item.price;
+          
+          const rarityColors = {
+            COMMON: 'text-zinc-400 border-zinc-800 bg-zinc-900/40',
+            RARE: 'text-blue-400 border-blue-900/30 bg-blue-950/20',
+            EPIC: 'text-purple-400 border-purple-900/30 bg-purple-950/20',
+            LEGENDARY: 'text-yellow-400 border-yellow-900/30 bg-yellow-950/20 shadow-[0_0_20px_rgba(234,179,8,0.1)]'
+          };
+          
+          const rarityLabel = {
+            COMMON: 'Comum',
+            RARE: 'Raro',
+            EPIC: 'Épico',
+            LEGENDARY: 'Lendário'
+          };
+
+          const currentRarity = item.rarity || 'COMMON';
 
           return (
             <motion.div

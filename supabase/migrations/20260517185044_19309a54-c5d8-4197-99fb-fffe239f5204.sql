@@ -1,0 +1,3 @@
+ALTER TABLE public.rooms 
+ADD COLUMN IF NOT EXISTS base_time NUMERIC DEFAULT 2.2,
+ADD COLUMN IF NOT EXISTS acceleration_enabled BOOLEAN DEFAULT true;

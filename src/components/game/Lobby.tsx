@@ -467,6 +467,15 @@ export const Lobby: React.FC = () => {
                 >
                   <ShoppingBag size={18} /> LOJA DE ITENS
                 </button>
+
+                {session && !session.user.is_anonymous && (
+                  <button 
+                    onClick={() => setView('REFERRAL')}
+                    className="w-full py-3 bg-cyan-500/10 border border-cyan-500/20 text-cyan-500 font-black text-[10px] rounded-xl flex items-center justify-center gap-2 hover:bg-cyan-500/20 transition-all uppercase tracking-widest shadow-[0_0_15px_rgba(6,182,212,0.1)]"
+                  >
+                    <UserPlus size={14} /> Convide Amigos & Ganhe Moedas
+                  </button>
+                )}
               </div>
             </motion.div>
           )}

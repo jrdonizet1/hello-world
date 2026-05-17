@@ -137,7 +137,7 @@ export const GameArena: React.FC = () => {
               </h2>
             ) : (
               <h2 className="text-7xl sm:text-8xl font-black tracking-tighter leading-none uppercase italic glitch-effect">
-                {currentCommand?.displayWord || currentCommand?.text}
+                {(currentCommand as any)?.displayWord || currentCommand?.text}
               </h2>
             )}
           </motion.div>
@@ -150,16 +150,16 @@ export const GameArena: React.FC = () => {
           onClick={() => handleAction(false)}
           className="flex-1 rounded-3xl bg-red-500/10 border-2 border-red-500/50 flex flex-col items-center justify-center gap-2 active:scale-95 active:bg-red-500/20 transition-all text-red-500"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x w-12 h-12" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
-          <span class="font-bold tracking-widest text-sm">NÃO</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x w-12 h-12" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+          <span className="font-bold tracking-widest text-sm">NÃO</span>
         </button>
 
         <button 
           onClick={() => handleAction(true)}
           className="flex-1 rounded-3xl bg-green-500/10 border-2 border-green-500/50 flex flex-col items-center justify-center gap-2 active:scale-95 active:bg-green-500/20 transition-all text-green-500"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check w-12 h-12" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>
-          <span class="font-bold tracking-widest text-sm">SIM</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check w-12 h-12" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>
+          <span className="font-bold tracking-widest text-sm">SIM</span>
         </button>
       </div>
     </div>

@@ -50,7 +50,7 @@ export const GameOver: React.FC = () => {
         themeScores[selectedThemes[0]] = score;
       }
       
-      const result = await (saveScore as any)({ data: { score, themeScores, maxCombo } });
+      const result = await (saveScore as any)({ data: { score, themeScores, maxCombo, powersUsedInSession, sessionUsedPower } });
       if (result.success) {
         setRewards({
           xp: result.xpGained,

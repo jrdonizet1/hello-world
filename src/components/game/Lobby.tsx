@@ -381,7 +381,10 @@ export const Lobby: React.FC = () => {
 
               <div className="grid grid-cols-1 gap-3">
                 <button 
-                  onClick={startGame}
+                  onClick={() => {
+                    setCustomization(profile?.selected_skin, profile?.selected_title);
+                    startGame();
+                  }}
                   className="w-full py-6 bg-white text-black font-black text-2xl rounded-2xl shadow-[0_0_30px_rgba(255,255,255,0.2)] active:scale-95 transition-transform"
                 >
                   SOLO RUN

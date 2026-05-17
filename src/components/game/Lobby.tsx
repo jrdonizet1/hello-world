@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { updateProfile, createRoom, joinRoom, startRoomGame, claimDailyReward, leaveRoom, getProfile, redeemReferralCode, updateRoomSettings, getGameHistory, getLeaderboard } from '@/lib/server-functions';
 import { Shop } from './Shop';
 import { Missions } from './Missions';
+import { UserIdentity } from './UserIdentity';
 
 type LobbyView = 'MAIN' | 'MULTIPLAYER' | 'CREATE_ROOM' | 'JOIN_ROOM' | 'WAITING' | 'VISITOR_NICK' | 'ROOMS_LIST' | 'PROFILE' | 'SHOP' | 'REFERRAL' | 'OFFLINE_SETTINGS' | 'HISTORY' | 'RANKING' | 'MISSIONS';
 

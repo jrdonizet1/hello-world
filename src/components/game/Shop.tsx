@@ -45,6 +45,7 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [buying, setBuying] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'COSMETICS' | 'POWERS' | 'MY_ITEMS'>('COSMETICS');
   const [cosmeticCategory, setCosmeticCategory] = useState<'all' | 'skin' | 'title' | 'font' | 'arena_effect' | 'avatar'>('all');
+  const [inventoryCategory, setInventoryCategory] = useState<'all' | 'skin' | 'title' | 'font' | 'arena_effect' | 'avatar'>('all');
 
   const loadData = async () => {
     try {
@@ -216,8 +217,8 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         ))}
       </div>
 
-      {/* Sub-categorias para Cosméticos */}
-      {activeTab === 'COSMETICS' && (
+      {/* Sub-categorias para Cosméticos ou Inventário */}
+      {(activeTab === 'COSMETICS' || activeTab === 'MY_ITEMS') && (
         <div className="relative group">
           <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 px-8 scroll-smooth" id="shop-categories">
             {[
@@ -227,19 +228,22 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               { id: 'font', label: 'Fontes' },
               { id: 'arena_effect', label: 'Efeitos' },
               { id: 'avatar', label: 'Avatares' }
-            ].map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setCosmeticCategory(cat.id as any)}
-                className={`whitespace-nowrap px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest border transition-all ${
-                  cosmeticCategory === cat.id
-                    ? 'bg-cyan-500/20 border-cyan-500 text-cyan-400'
-                    : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:border-zinc-700'
-                }`}
-              >
-                {cat.label}
-              </button>
-            ))}
+            ].map((cat) => {
+              const isActive = activeTab === 'COSMETICS' ? cosmeticCategory === cat.id : inventoryCategory === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => activeTab === 'COSMETICS' ? setCosmeticCategory(cat.id as any) : setInventoryCategory(cat.id as any)}
+                  className={`whitespace-nowrap px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest border transition-all ${
+                    isActive
+                      ? 'bg-cyan-500/20 border-cyan-500 text-cyan-400'
+                      : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:border-zinc-700'
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              );
+            })}
           </div>
           
           <button 
@@ -276,7 +280,12 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             .filter(item => {
               if (item.category === 'icon') return false; // Desabilitado a pedido do usuário
               if (activeTab === 'POWERS') return item.category === 'power_up';
-              if (activeTab === 'MY_ITEMS') return inventory.includes(item.id) && item.category !== 'power_up';
+              if (activeTab === 'MY_ITEMS') {
+                const isOwned = inventory.includes(item.id) && item.category !== 'power_up';
+                if (!isOwned) return false;
+                if (inventoryCategory === 'all') return true;
+                return item.category === inventoryCategory;
+              }
               if (activeTab === 'COSMETICS') {
                 if (item.category === 'power_up') return false;
                 if (cosmeticCategory === 'all') return true;
@@ -402,25 +411,21 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
                     {owned ? (
                       <div className="flex gap-2">
-                        {equipped && (
+                        {equipped ? (
                           <button
                             onClick={() => handleUnequip(item.category)}
-                            className="px-3 py-2 rounded-xl text-[10px] font-black uppercase bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-all border border-red-500/20"
+                            className="px-4 py-2 rounded-xl text-[10px] font-black uppercase bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-all border border-red-500/20 active:scale-95"
                           >
                             Remover
                           </button>
+                        ) : (
+                          <button
+                            onClick={() => handleEquip(item)}
+                            className="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all bg-white/10 hover:bg-white/20 text-white active:scale-95"
+                          >
+                            Equipar
+                          </button>
                         )}
-                        <button
-                          onClick={() => !equipped && handleEquip(item)}
-                          disabled={equipped}
-                          className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                            equipped
-                              ? 'bg-cyan-500 text-black cursor-default'
-                              : 'bg-white/10 hover:bg-white/20 text-white active:scale-95'
-                          }`}
-                        >
-                          {equipped ? 'Equipado' : 'Equipar'}
-                        </button>
                       </div>
                     ) : (
                       <button

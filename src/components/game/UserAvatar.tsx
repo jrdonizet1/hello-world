@@ -33,18 +33,25 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
   return (
     <div className={`relative ${className}`}>
       <div className={`${sizeClasses[size]} rounded-full bg-cyan-500/20 flex items-center justify-center border-2 border-cyan-500/30 shadow-[0_0_20px_rgba(6,182,212,0.2)] overflow-hidden`}>
-        {url ? (
+        {url && url.trim() !== '' ? (
           <img 
             src={url} 
             alt="Avatar" 
             className="w-full h-full object-cover"
             onError={(e) => {
-              (e.target as HTMLImageElement).src = ''; // Clear source to fallback to icon
+              console.warn("Avatar image failed to load:", url);
+              (e.target as HTMLImageElement).style.display = 'none';
+              const parent = (e.target as HTMLElement).parentElement;
+              if (parent) {
+                const fallbackIcon = parent.querySelector('.fallback-icon');
+                if (fallbackIcon) (fallbackIcon as HTMLElement).style.display = 'flex';
+              }
             }}
           />
-        ) : (
+        ) : null}
+        <div className="fallback-icon hidden items-center justify-center w-full h-full" style={{ display: !url || url.trim() === '' ? 'flex' : 'none' }}>
           <User size={iconSizes[size]} className="text-cyan-400" />
-        )}
+        </div>
       </div>
       {showLevel && level !== undefined && (
         <div className={`absolute -bottom-1 -right-1 bg-yellow-500 text-black font-black rounded-lg shadow-lg flex items-center justify-center

@@ -95,8 +95,8 @@ export const saveScore = createServerFn({ method: "POST" })
               });
             } else if (!currentProg.completed) {
               const newProgress = isAbsolute 
-                ? Math.max(currentProg.progress, progressDelta)
-                : currentProg.progress + progressDelta;
+                ? Math.max((currentProg.progress || 0), progressDelta)
+                : (currentProg.progress || 0) + progressDelta;
                 
               await supabaseAdmin.from("user_missions").update({
                 progress: newProgress,

@@ -3,9 +3,8 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 export const saveScore = createServerFn({ method: "POST" })
-  .validator((score: number) => score)
   .middleware([requireSupabaseAuth])
-  .handler(async ({ data: score, context }) => {
+  .handler(async ({ data: score, context }: { data: number, context: any }) => {
     const { userId } = context;
 
     // Check existing score
@@ -47,9 +46,8 @@ export const getLeaderboard = createServerFn({ method: "GET" })
   });
 
 export const updateProfile = createServerFn({ method: "POST" })
-  .validator((nickname: string) => nickname)
   .middleware([requireSupabaseAuth])
-  .handler(async ({ data: nickname, context }) => {
+  .handler(async ({ data: nickname, context }: { data: string, context: any }) => {
     const { userId } = context;
 
     const { error } = await supabaseAdmin

@@ -76,7 +76,7 @@ export const Lobby: React.FC = () => {
     const { data } = await supabase
       .from('profiles')
       .select('nickname')
-      .eq('room_id', roomId);
+      .eq('room_id', roomId as string);
     if (data) setPlayers(data);
   };
 
@@ -105,7 +105,7 @@ export const Lobby: React.FC = () => {
     if (!session) return toast.error('Faça login para criar sala');
     setLoading(true);
     try {
-      const room = await createRoom();
+      const room = await (createRoom as any)();
       setRoom(room.id, room.code, true);
       setView('WAITING');
     } catch (err: any) {
@@ -120,7 +120,7 @@ export const Lobby: React.FC = () => {
     if (!joinCode) return toast.error('Digite o código');
     setLoading(true);
     try {
-      const room = await joinRoom({ data: joinCode });
+      const room = await (joinRoom as any)({ data: joinCode });
       setRoom(room.id, room.code, false);
       setView('WAITING');
     } catch (err: any) {
@@ -132,7 +132,7 @@ export const Lobby: React.FC = () => {
 
   const handleStartGame = async () => {
     try {
-      await startRoomGame({ data: roomId });
+      await (startRoomGame as any)({ data: roomId });
     } catch (err: any) {
       toast.error(err.message);
     }

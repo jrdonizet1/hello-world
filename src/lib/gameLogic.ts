@@ -19,7 +19,48 @@ const COLORS = [
   { name: 'LARANJA', value: '#f97316' },
 ];
 
-const CAPITALS = [
+const GENERAL_QUESTIONS = [
+  { q: 'O CÉU É AZUL?', a: true },
+  { q: 'O FOGO É QUENTE?', a: true },
+  { q: 'GELOS SÃO QUENTES?', a: false },
+  { q: '2 + 2 = 5?', a: false },
+  { q: 'GATOS LATEM?', a: false },
+  { q: 'O SOL É UMA ESTRELA?', a: true },
+  { q: 'PEIXES VOAM?', a: false },
+  { q: 'A TERRA É PLANA?', a: false },
+  { q: 'BRASIL ESTÁ NA EUROPA?', a: false },
+  { q: 'A LUA É FEITA DE QUEIJO?', a: false },
+  { q: 'CACHORROS MIARE?', a: false },
+  { q: 'O ANO TEM 12 MESES?', a: true },
+  { q: 'O ALFABETO TEM 26 LETRAS?', a: true },
+  { q: 'PÁSSAROS TÊM PELOS?', a: false },
+  { q: 'O GELO É ÁGUA SÓLIDA?', a: true },
+  { q: 'O NARIZ SERVE PARA OUVIR?', a: false },
+  { q: 'A SEMANA TEM 7 DIAS?', a: true },
+  { q: 'O LEITE É VERMELHO?', a: false },
+  { q: 'A GRAMA É VERDE?', a: true },
+];
+
+const CURIOSITIES = [
+  { q: 'BANANAS SÃO BAGAS?', a: true, difficulty: 2 },
+  { q: 'BALEIAS SÃO PEIXES?', a: false, difficulty: 1 },
+  { q: 'O BATMAN É DA MARVEL?', a: false, difficulty: 1 },
+  { q: 'TUBARÕES SÃO MAMÍFEROS?', a: false, difficulty: 2 },
+  { q: 'POLVOS TÊM 3 CORAÇÕES?', a: true, difficulty: 3 },
+  { q: 'DIAMANTES VÊM DO CARVÃO?', a: true, difficulty: 2 },
+  { q: 'O MONTE EVEREST É NO BRASIL?', a: false, difficulty: 1 },
+  { q: 'TOMATES SÃO FRUTAS?', a: true, difficulty: 1 },
+  { q: 'CANGURUS PODEM ANDAR PARA TRÁS?', a: false, difficulty: 3 },
+  { q: 'FORMIGAS NUNCA DORMEM?', a: false, difficulty: 3 },
+  { q: 'A TORRE EIFFEL PODE FICAR MAIOR NO VERÃO?', a: true, difficulty: 4 },
+  { q: 'MEL NUNCA ESTRAGA?', a: true, difficulty: 4 },
+  { q: 'O CORAÇÃO DE UM CAMARÃO FICA NA CABEÇA?', a: true, difficulty: 5 },
+  { q: 'CARACÓIS PODEM DORMIR POR 3 ANOS?', a: true, difficulty: 5 },
+  { q: 'O ISQUEIRO FOI INVENTADO ANTES DO FÓSFORO?', a: true, difficulty: 5 },
+  { q: 'COELHOS PODEM VOMITAR?', a: false, difficulty: 4 },
+  { q: 'CÃES SÓ ENXERGAM EM PRETO E BRANCO?', a: false, difficulty: 2 },
+];
+
   { country: 'BRASIL', capital: 'BRASÍLIA' },
   { country: 'FRANÇA', capital: 'PARIS' },
   { country: 'ITÁLIA', capital: 'ROMA' },

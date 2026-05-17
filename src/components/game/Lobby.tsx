@@ -337,7 +337,6 @@ export const Lobby: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <div 
                       onClick={() => {
-                      onClick={() => {
                         if (session?.user?.is_anonymous) {
                           toast.info('Crie uma conta com Google para acessar seu perfil e salvar seu progresso!');
                           return;

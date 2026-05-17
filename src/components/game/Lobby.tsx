@@ -267,6 +267,7 @@ export const Lobby: React.FC = () => {
     
     setLoading(true);
     try {
+      if (roomId) await (leaveRoom as any)();
       const room = await (joinRoom as any)({ 
         data: { code, password: joinPassword } 
       });

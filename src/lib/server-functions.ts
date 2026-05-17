@@ -76,6 +76,13 @@ export const saveScore = createServerFn({ method: "POST" })
             if (themeScores && themeScores[themeId]) {
               progressDelta = themeScores[themeId];
             }
+          } else if (mission.goal_type === 'USE_POWER_SLOW' && (powersUsedInSession?.slow || 0) > 0) {
+            progressDelta = 1; // 1 game where power was used
+          } else if (mission.goal_type === 'USE_POWER_SHIELD' && (powersUsedInSession?.shield || 0) > 0) {
+            progressDelta = 1;
+          } else if (mission.goal_type === 'SCORE_NO_POWER' && !sessionUsedPower && score >= mission.goal_value) {
+            progressDelta = mission.goal_value;
+            isAbsolute = true;
           }
 
           if (progressDelta > 0) {

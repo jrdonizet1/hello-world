@@ -121,6 +121,7 @@ export type Database = {
       rooms: {
         Row: {
           acceleration_enabled: boolean | null
+          acceleration_intensity: string | null
           base_time: number | null
           code: string
           created_at: string
@@ -137,6 +138,7 @@ export type Database = {
         }
         Insert: {
           acceleration_enabled?: boolean | null
+          acceleration_intensity?: string | null
           base_time?: number | null
           code: string
           created_at?: string
@@ -153,6 +155,7 @@ export type Database = {
         }
         Update: {
           acceleration_enabled?: boolean | null
+          acceleration_intensity?: string | null
           base_time?: number | null
           code?: string
           created_at?: string

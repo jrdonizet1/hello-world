@@ -30,12 +30,13 @@ interface BrainLagState {
   selectedThemes: string[];
   baseTime: number;
   accelerationEnabled: boolean;
+  accelerationIntensity: 'OFF' | 'SLOW' | 'NORMAL' | 'INSANE';
   
   setGameState: (state: GameState) => void;
   setGameMode: (mode: GameMode) => void;
   setSelectedThemes: (themes: string[]) => void;
-  setGameSettings: (baseTime: number, accelerationEnabled: boolean) => void;
-  startGame: (mode?: GameMode, themes?: string[], baseTime?: number, accelerationEnabled?: boolean) => void;
+  setGameSettings: (baseTime: number, accelerationIntensity: 'OFF' | 'SLOW' | 'NORMAL' | 'INSANE') => void;
+  startGame: (mode?: GameMode, themes?: string[], baseTime?: number, accelerationIntensity?: 'OFF' | 'SLOW' | 'NORMAL' | 'INSANE') => void;
   endGame: (reason: string) => void;
   updateScore: (points: number) => void;
   setCommand: (command: Command | null) => void;
@@ -60,25 +61,28 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
   userTitle: null,
   selectedThemes: ['COLOR', 'MATH'],
   baseTime: 2.2,
+  accelerationIntensity: 'NORMAL',
   accelerationEnabled: true,
 
   setCustomization: (skin, title) => set({ userSkin: skin, userTitle: title }),
   setGameMode: (mode) => set({ gameMode: mode }),
   setSelectedThemes: (themes) => set({ selectedThemes: themes }),
-  setGameSettings: (baseTime, accelerationEnabled) => set({ baseTime, accelerationEnabled }),
+  setGameSettings: (baseTime, accelerationIntensity) => set({ baseTime, accelerationIntensity, accelerationEnabled: accelerationIntensity !== 'OFF' }),
   setGameState: (state) => set({ gameState: state }),
   
-  startGame: (mode = 'NORMAL', themes, baseTime, accelerationEnabled) => {
+  startGame: (mode = 'NORMAL', themes, baseTime, accelerationIntensity) => {
     const state = get();
     const currentThemes = themes || state.selectedThemes;
     const currentBaseTime = baseTime !== undefined ? baseTime : state.baseTime;
-    const currentAcceleration = accelerationEnabled !== undefined ? accelerationEnabled : state.accelerationEnabled;
+    const currentAccelerationIntensity = accelerationIntensity !== undefined ? accelerationIntensity : state.accelerationIntensity;
+    const currentAcceleration = currentAccelerationIntensity !== 'OFF';
 
     set({ 
       gameState: 'PREPARE', 
       gameMode: mode,
       selectedThemes: currentThemes,
       baseTime: currentBaseTime,
+      accelerationIntensity: currentAccelerationIntensity,
       accelerationEnabled: currentAcceleration,
       score: 0, 
       timeRemaining: mode === 'BLITZ' ? 1.2 : (mode === 'SURVIVAL' ? 5 : currentBaseTime),

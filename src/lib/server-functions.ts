@@ -164,7 +164,7 @@ export const createRoom = createServerFn({ method: "POST" })
   .handler(async (args: any) => {
     const { data: roomSettings, context } = args;
     const { userId } = context;
-    const { name, maxPlayers, isPrivate, password } = roomSettings;
+    const { name, maxPlayers, isPrivate, password, selectedThemes } = roomSettings;
 
     const code = Math.random().toString(36).substring(2, 6).toUpperCase();
 

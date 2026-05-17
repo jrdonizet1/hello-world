@@ -118,6 +118,46 @@ export const updateProfile = createServerFn({ method: "POST" })
     return { success: true };
   });
 
+export const claimDailyReward = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async (args: any) => {
+    const { context } = args;
+    const { userId } = context;
+
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("last_daily_reward, coins")
+      .eq("id", userId)
+      .single();
+
+    if (!profile) throw new Error("Perfil não encontrado");
+
+    const now = new Date();
+    const lastReward = profile.last_daily_reward ? new Date(profile.last_daily_reward) : null;
+    
+    // Verificar se já passou de 24 horas ou se é um novo dia
+    if (lastReward) {
+      const diff = now.getTime() - lastReward.getTime();
+      const hours = diff / (1000 * 60 * 60);
+      if (hours < 24) {
+        throw new Error(`Volte em ${Math.ceil(24 - hours)} horas para sua próxima recompensa!`);
+      }
+    }
+
+    const reward = 100; // 100 moedas grátis
+    const { error } = await supabaseAdmin
+      .from("profiles")
+      .update({ 
+        coins: (profile.coins || 0) + reward,
+        last_daily_reward: now.toISOString()
+      })
+      .eq("id", userId);
+
+    if (error) throw new Error(error.message);
+
+    return { success: true, reward };
+  });
+
 export const createRoom = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async (args: any) => {

@@ -240,7 +240,7 @@ export const Lobby: React.FC = () => {
   const fetchPlayers = async () => {
     const { data } = await supabase
       .from('profiles')
-      .select('id, nickname, is_ready, selected_skin, selected_title, selected_icon, selected_effect, selected_font, avatar_url, level')
+      .select('id, nickname, is_ready, selected_skin, selected_title, selected_icon, selected_effect, selected_font, avatar_url, level, selected_frame')
       .eq('room_id', roomId as string);
     if (data) setPlayers(data);
   };
@@ -1227,7 +1227,7 @@ export const Lobby: React.FC = () => {
                           <span className={`relative inline-flex rounded-full h-3 w-3 ${p.is_ready || p.id === roomData?.host_id ? 'bg-green-500' : 'bg-red-500'}`}></span>
                           {p.is_ready && <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping"></span>}
                         </div>
-                        <UserAvatar url={p.avatar_url} level={p.level} size="sm" />
+                        <UserAvatar url={p.avatar_url} level={p.level} size="sm" frame={p.selected_frame} />
                         <UserIdentity 
                           name={p.nickname || 'Anônimo'}
                           skin={p.selected_skin}
@@ -1299,6 +1299,7 @@ export const Lobby: React.FC = () => {
                   url={profile?.avatar_url} 
                   level={profile?.level} 
                   size="xl" 
+                  frame={profile?.selected_frame}
                 />
 
                 <div className="text-center space-y-1">
@@ -1558,7 +1559,7 @@ export const Lobby: React.FC = () => {
                         }`}>
                           {i + 1}
                         </div>
-                        <UserAvatar url={entry.profiles?.avatar_url} showLevel={false} size="sm" />
+                        <UserAvatar url={entry.profiles?.avatar_url} showLevel={false} size="sm" frame={entry.profiles?.selected_frame} />
                         <div className="flex flex-col">
                           <UserIdentity 
                             name={entry.profiles?.nickname || 'Anônimo'}

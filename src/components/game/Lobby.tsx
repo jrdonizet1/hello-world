@@ -375,13 +375,13 @@ export const Lobby: React.FC = () => {
                 
                 {session && !session.user.is_anonymous && (
                   <button 
-                    disabled={rewardLoading || (profile?.last_daily_reward && new Date().getTime() - new Date(profile.last_daily_reward).getTime() < 24 * 60 * 60 * 1000)}
+                    disabled={rewardLoading || !isRewardAvailable()}
                     onClick={async () => {
                       setRewardLoading(true);
                       try {
                         const result = await (claimDailyReward as any)();
                         toast.success(`Você resgatou ${result.reward} Brain Coins!`);
-                        fetchProfile(session.user.id);
+                        await fetchProfile(session.user.id);
                       } catch (err: any) {
                         toast.error(err.message);
                       } finally {
@@ -395,7 +395,7 @@ export const Lobby: React.FC = () => {
                     ) : (
                       <>
                         <Trophy size={14} /> 
-                        {profile?.last_daily_reward && new Date().getTime() - new Date(profile.last_daily_reward).getTime() < 24 * 60 * 60 * 1000 
+                        {!isRewardAvailable()
                           ? 'Recompensa Resgatada' 
                           : 'Resgatar Recompensa Diária'}
                       </>

@@ -18,6 +18,8 @@ export const GameArena: React.FC = () => {
     endGame,
     userSkin,
     userTitle,
+    userFont,
+    userArenaEffect,
     gameMode,
     selectedThemes,
     baseTime,

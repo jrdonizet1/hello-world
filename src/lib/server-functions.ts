@@ -164,7 +164,7 @@ export const createRoom = createServerFn({ method: "POST" })
   .handler(async (args: any) => {
     const { data: roomSettings, context } = args;
     const { userId } = context;
-    const { name, maxPlayers, isPrivate, password } = roomSettings;
+    const { name, maxPlayers, isPrivate, password, selectedThemes } = roomSettings;
 
     const code = Math.random().toString(36).substring(2, 6).toUpperCase();
 
@@ -177,7 +177,8 @@ export const createRoom = createServerFn({ method: "POST" })
         name: name || 'Arena Neural',
         max_players: maxPlayers || 4,
         is_private: isPrivate || false,
-        password: password || null
+        password: password || null,
+        selected_themes: selectedThemes || ['COLOR', 'MATH']
       })
       .select()
       .single();
@@ -394,4 +395,28 @@ export const redeemReferralCode = createServerFn({ method: "POST" })
     if (!result.success) throw new Error(result.message);
     
     return result;
+  });
+
+export const updateRoomSettings = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async (args: any) => {
+    const { data, context } = args;
+    const { roomId, selectedThemes } = data;
+    const { userId } = context;
+
+    const { data: room } = await supabaseAdmin
+      .from("rooms")
+      .select("host_id")
+      .eq("id", roomId)
+      .single();
+
+    if (!room || room.host_id !== userId) throw new Error("Apenas o host pode alterar as configurações");
+
+    const { error } = await supabaseAdmin
+      .from("rooms")
+      .update({ selected_themes: selectedThemes })
+      .eq("id", roomId);
+
+    if (error) throw new Error(error.message);
+    return { success: true };
   });

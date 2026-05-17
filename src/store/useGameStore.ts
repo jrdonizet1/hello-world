@@ -26,10 +26,12 @@ interface BrainLagState {
   isHost: boolean;
   userSkin: string | null;
   userTitle: string | null;
+  selectedThemes: string[];
   
   setGameState: (state: GameState) => void;
   setGameMode: (mode: GameMode) => void;
-  startGame: (mode?: GameMode) => void;
+  setSelectedThemes: (themes: string[]) => void;
+  startGame: (mode?: GameMode, themes?: string[]) => void;
   endGame: (reason: string) => void;
   updateScore: (points: number) => void;
   setCommand: (command: Command | null) => void;
@@ -52,18 +54,24 @@ export const useGameStore = create<BrainLagState>((set, get) => ({
   isHost: false,
   userSkin: '#06b6d4', // Padrão cyan-400
   userTitle: null,
+  selectedThemes: ['COLOR', 'MATH'],
 
   setCustomization: (skin, title) => set({ userSkin: skin, userTitle: title }),
   setGameMode: (mode) => set({ gameMode: mode }),
+  setSelectedThemes: (themes) => set({ selectedThemes: themes }),
   setGameState: (state) => set({ gameState: state }),
   
-  startGame: (mode = 'NORMAL') => set({ 
-    gameState: 'PREPARE', 
-    gameMode: mode,
-    score: 0, 
-    timeRemaining: mode === 'BLITZ' ? 1.2 : (mode === 'SURVIVAL' ? 5 : 10),
-    lastError: null 
-  }),
+  startGame: (mode = 'NORMAL', themes) => {
+    const currentThemes = themes || get().selectedThemes;
+    set({ 
+      gameState: 'PREPARE', 
+      gameMode: mode,
+      selectedThemes: currentThemes,
+      score: 0, 
+      timeRemaining: mode === 'BLITZ' ? 1.2 : (mode === 'SURVIVAL' ? 5 : 10),
+      lastError: null 
+    });
+  },
 
   setRoom: (id, code, isHost) => set({ 
     roomId: id, 

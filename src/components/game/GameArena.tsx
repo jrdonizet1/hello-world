@@ -16,7 +16,8 @@ export const GameArena: React.FC = () => {
     endGame,
     userSkin,
     userTitle,
-    gameMode
+    gameMode,
+    selectedThemes
   } = useGameStore();
 
   const [countDown, setCountDown] = useState(3);
@@ -31,7 +32,7 @@ export const GameArena: React.FC = () => {
           if (prev <= 1) {
             clearInterval(timer);
             setGameState('PLAYING');
-            setCommand(generateCommand(1));
+            setCommand(generateCommand(1, selectedThemes));
             return 0;
           }
           return prev - 1;
@@ -58,7 +59,7 @@ export const GameArena: React.FC = () => {
     
     if (isCorrect) {
       updateScore(1);
-      setCommand(generateCommand(Math.floor(score / 5) + 1));
+      setCommand(generateCommand(Math.floor(score / 5) + 1, selectedThemes));
       
       // Scalable difficulty logic based on GameMode
       let nextTime = 2.0;

@@ -129,6 +129,7 @@ export type Database = {
           name: string | null
           password: string | null
           player_count: number | null
+          selected_themes: string[] | null
           status: string
           updated_at: string
         }
@@ -142,6 +143,7 @@ export type Database = {
           name?: string | null
           password?: string | null
           player_count?: number | null
+          selected_themes?: string[] | null
           status?: string
           updated_at?: string
         }
@@ -155,6 +157,7 @@ export type Database = {
           name?: string | null
           password?: string | null
           player_count?: number | null
+          selected_themes?: string[] | null
           status?: string
           updated_at?: string
         }

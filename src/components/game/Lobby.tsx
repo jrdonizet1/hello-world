@@ -5,13 +5,13 @@ import { Trophy, Users, Zap, LogIn, User, LogOut, Plus, LogIn as JoinIcon, Chevr
 import { lovable } from '@/integrations/lovable';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { updateProfile, createRoom, joinRoom, startRoomGame, claimDailyReward, leaveRoom, getProfile, redeemReferralCode } from '@/lib/server-functions';
+import { updateProfile, createRoom, joinRoom, startRoomGame, claimDailyReward, leaveRoom, getProfile, redeemReferralCode, updateRoomSettings } from '@/lib/server-functions';
 import { Shop } from './Shop';
 
 type LobbyView = 'MAIN' | 'MULTIPLAYER' | 'CREATE_ROOM' | 'JOIN_ROOM' | 'WAITING' | 'VISITOR_NICK' | 'ROOMS_LIST' | 'PROFILE' | 'SHOP' | 'REFERRAL';
 
 export const Lobby: React.FC = () => {
-  const { startGame, setRoom, roomId, roomCode, isHost, setCustomization } = useGameStore();
+  const { startGame, setRoom, roomId, roomCode, isHost, setCustomization, selectedThemes, setSelectedThemes } = useGameStore();
   const [session, setSession] = useState<any>(null);
   const [nickname, setNickname] = useState('');
   const [profile, setProfile] = useState<any>(null);
@@ -168,6 +168,9 @@ export const Lobby: React.FC = () => {
           setCustomization(profile?.selected_skin, profile?.selected_title);
           startGame();
         }
+        if (payload.new.selected_themes && !isHost) {
+          setSelectedThemes(payload.new.selected_themes);
+        }
       })
       .subscribe();
 
@@ -203,7 +206,12 @@ export const Lobby: React.FC = () => {
       .select('*')
       .eq('id', roomId as string)
       .single();
-    if (data) setRoomData(data);
+    if (data) {
+      setRoomData(data);
+      if (data.selected_themes) {
+        setSelectedThemes(data.selected_themes);
+      }
+    }
   };
 
   const fetchProfile = async (userId: string) => {
@@ -245,7 +253,7 @@ export const Lobby: React.FC = () => {
     try {
       if (roomId) await (leaveRoom as any)();
       const room = await (createRoom as any)({ 
-        data: { name: roomName, maxPlayers, isPrivate, password } 
+        data: { name: roomName, maxPlayers, isPrivate, password, selectedThemes } 
       });
       setRoom(room.id, room.code, true);
       setView('WAITING');
@@ -329,6 +337,61 @@ export const Lobby: React.FC = () => {
       toast.success('Código copiado!');
     }
   };
+
+  const THEMES = [
+    { id: 'COLOR', name: 'Cores', icon: '🎨', color: 'text-pink-500' },
+    { id: 'MATH', name: 'Matemática', icon: '🔢', color: 'text-blue-500' },
+    { id: 'GENERAL', name: 'Gerais', icon: '🌍', color: 'text-green-500' },
+    { id: 'CURIOSITY', name: 'Curiosidades', icon: '💡', color: 'text-yellow-500' },
+  ];
+
+  const toggleTheme = async (themeId: string) => {
+    let newThemes: string[];
+    if (selectedThemes.includes(themeId)) {
+      if (selectedThemes.length === 1) return toast.error('Selecione pelo menos um tema!');
+      newThemes = selectedThemes.filter(t => t !== themeId);
+    } else {
+      newThemes = [...selectedThemes, themeId];
+    }
+    
+    setSelectedThemes(newThemes);
+    
+    // Se estiver em uma sala e for o host, atualizar no banco
+    if (roomId && isHost) {
+      try {
+        await (updateRoomSettings as any)({ data: { roomId, selectedThemes: newThemes } });
+      } catch (err) {
+        toast.error('Erro ao atualizar temas da sala');
+      }
+    }
+  };
+
+  const ThemeSelector = () => (
+    <div className="bg-zinc-900/40 border border-zinc-800/50 p-4 rounded-3xl backdrop-blur-xl mb-4">
+      <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-3 text-center">Temas Ativos</h3>
+      <div className="grid grid-cols-2 gap-2">
+        {THEMES.map(theme => (
+          <button
+            key={theme.id}
+            onClick={() => toggleTheme(theme.id)}
+            className={`py-2.5 px-3 rounded-xl border flex items-center justify-between transition-all ${
+              selectedThemes.includes(theme.id) 
+                ? 'bg-white/10 border-white/20 text-white' 
+                : 'bg-black/20 border-white/5 text-zinc-600'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-sm">{theme.icon}</span>
+              <span className="text-[10px] font-black uppercase tracking-wider">{theme.name}</span>
+            </div>
+            {selectedThemes.includes(theme.id) && (
+              <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.8)]"></div>
+            )}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <div className="flex flex-col items-center justify-between h-full p-8 pb-12 overflow-y-auto">
@@ -421,6 +484,8 @@ export const Lobby: React.FC = () => {
                   </div>
                 )}
               </div>
+
+              <ThemeSelector />
 
               <div className="grid grid-cols-1 gap-3">
                 <div className="grid grid-cols-1 gap-2">
@@ -809,6 +874,8 @@ export const Lobby: React.FC = () => {
                 )}
               </div>
 
+              <ThemeSelector />
+
               <button 
                 onClick={handleCreateRoom}
                 disabled={loading}
@@ -903,6 +970,8 @@ export const Lobby: React.FC = () => {
                   </div>
                 </div>
               </div>
+
+              {isHost && <ThemeSelector />}
 
               <div className="w-full bg-zinc-900/30 border border-zinc-800/50 rounded-3xl p-5 min-h-[220px] shadow-lg">
                 <div className="flex items-center justify-between mb-4">

@@ -277,13 +277,18 @@ export const GameArena: React.FC = () => {
                 {(currentCommand as any)?.displayWord}
               </h2>
             ) : (
-              <h2 className={`font-black tracking-tighter leading-none uppercase italic glitch-effect ${
-                ((currentCommand as any)?.displayWord || currentCommand?.text || '').length > 20 
-                  ? 'text-3xl sm:text-4xl' 
-                  : ((currentCommand as any)?.displayWord || currentCommand?.text || '').length > 10
-                    ? 'text-5xl sm:text-6xl'
-                    : 'text-7xl sm:text-8xl'
-              }`}>
+              <h2 
+                className={`font-black tracking-tighter leading-none uppercase italic glitch-effect ${
+                  ((currentCommand as any)?.displayWord || currentCommand?.text || '').length > 20 
+                    ? 'text-3xl sm:text-4xl' 
+                    : ((currentCommand as any)?.displayWord || currentCommand?.text || '').length > 10
+                      ? 'text-5xl sm:text-6xl'
+                      : 'text-7xl sm:text-8xl'
+                }`}
+                style={{
+                  fontFamily: userFont?.fontFamily || 'inherit',
+                }}
+              >
                 {(currentCommand as any)?.displayWord || currentCommand?.text}
               </h2>
             )}

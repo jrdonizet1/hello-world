@@ -166,19 +166,34 @@ export const Shop: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
               <div className="flex flex-col h-full justify-between gap-4">
                 <div>
-                  <h3 className="font-black italic text-lg uppercase tracking-tight">
+                  <h3 className={`font-black italic text-lg uppercase tracking-tight mb-1 ${
+                    currentRarity === 'LEGENDARY' ? 'text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-yellow-600' : 'text-white'
+                  }`}>
                     {item.name}
                   </h3>
-                  <p className="text-xs text-gray-400 leading-relaxed mb-2">
+                  <p className="text-[10px] text-zinc-500 font-bold leading-relaxed uppercase tracking-tight">
                     {item.description}
                   </p>
                   
-                  {item.category === 'skin' && (
-                    <div 
-                      className="w-full h-2 rounded-full mb-2" 
-                      style={{ backgroundColor: item.item_data.color, boxShadow: `0 0 10px ${item.item_data.color}40` }}
-                    />
-                  )}
+                  <div className="mt-4">
+                    {item.category === 'skin' && item.item_data.color !== 'rainbow' && (
+                      <div 
+                        className="w-full h-1 rounded-full" 
+                        style={{ backgroundColor: item.item_data.color, boxShadow: `0 0 10px ${item.item_data.color}40` }}
+                      />
+                    )}
+                    {item.category === 'skin' && item.item_data.color === 'rainbow' && (
+                      <div className="w-full h-1 rounded-full bg-gradient-to-r from-red-500 via-green-500 to-blue-500 animate-pulse" />
+                    )}
+                    {item.category === 'title' && (
+                      <div className="text-[10px] font-black uppercase tracking-[0.3em] py-2 px-3 bg-black/40 rounded-xl border border-white/5 text-center" style={{ 
+                        color: item.item_data.color || 'inherit',
+                        textShadow: item.item_data.glow ? `0 0 10px ${item.item_data.color}` : 'none'
+                      }}>
+                        « {item.item_data.text} »
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex items-center justify-between mt-auto">

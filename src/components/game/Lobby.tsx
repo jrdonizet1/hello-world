@@ -177,11 +177,11 @@ export const Lobby: React.FC = () => {
       if (error) throw error;
       
       const formattedRooms = rooms
-        .map(room => ({
+        .map((room: any) => ({
           ...room,
           playerCount: (room.profiles as any)?.[0]?.count || 0
         }))
-        .filter(room => room.playerCount > 0);
+        .filter((room: any) => room.playerCount > 0);
 
       setAvailableRooms(formattedRooms);
     } catch (err: any) {

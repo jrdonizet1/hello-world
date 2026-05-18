@@ -611,8 +611,8 @@ export const getMissions = createServerFn({ method: "GET" })
 
     if (userMissionsError) throw new Error(userMissionsError.message);
 
-    return (missions || []).map(m => {
-      const prog = userMissions?.find(um => um.mission_id === m.id);
+    return (missions || []).map((m: any) => {
+      const prog = userMissions?.find((um: any) => um.mission_id === m.id);
       return {
         ...m,
         progress: prog?.progress || 0,
@@ -711,7 +711,7 @@ export const getAdminStats = createServerFn({ method: "GET" })
       supabaseAdmin.from("profiles").select("id", { count: "exact", head: true }) // Placeholder
     ]);
 
-    const coinsSum = (totalCoins || []).reduce((acc, curr) => acc + (curr.coins || 0), 0);
+    const coinsSum = (totalCoins || []).reduce((acc: number, curr: any) => acc + (curr.coins || 0), 0);
 
     return {
       totalUsers: totalUsers || 0,

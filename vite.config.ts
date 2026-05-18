@@ -11,11 +11,10 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 export default defineConfig({
   tanstackStart: {
     server: { 
-      entry: "server",
+      entry: "src/server.ts",
     },
   },
   vite: {
-    // Forçamos o build a não ser apenas para cloudflare se estivermos em outro ambiente
     ssr: {
       noExternal: true,
     }

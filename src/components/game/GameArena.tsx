@@ -104,7 +104,7 @@ export const GameArena: React.FC = () => {
   useEffect(() => {
     if (isMultiplayer && roomId && score !== lastSentScore.current) {
       lastSentScore.current = score;
-      supabase.auth.getUser().then(({ data: { user } }) => {
+      supabase.auth.getUser().then(({ data: { user } }: { data: { user: any } }) => {
         if (!user) return;
         const channel = supabase.channel(`duel-${roomId}`);
         channel.send({

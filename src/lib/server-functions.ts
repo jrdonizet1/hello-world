@@ -178,7 +178,7 @@ export const getLeaderboard = createServerFn({ method: "GET" })
       .limit(20);
 
     if (error) throw new Error(error.message);
-    return data.filter(entry => entry.profiles !== null);
+    return data.filter((entry: any) => entry.profiles !== null);
   });
 
 export const updateProfile = createServerFn({ method: "POST" })
@@ -611,8 +611,8 @@ export const getMissions = createServerFn({ method: "GET" })
 
     if (userMissionsError) throw new Error(userMissionsError.message);
 
-    return (missions || []).map(m => {
-      const prog = userMissions?.find(um => um.mission_id === m.id);
+    return (missions || []).map((m: any) => {
+      const prog = userMissions?.find((um: any) => um.mission_id === m.id);
       return {
         ...m,
         progress: prog?.progress || 0,
@@ -711,7 +711,7 @@ export const getAdminStats = createServerFn({ method: "GET" })
       supabaseAdmin.from("profiles").select("id", { count: "exact", head: true }) // Placeholder
     ]);
 
-    const coinsSum = (totalCoins || []).reduce((acc, curr) => acc + (curr.coins || 0), 0);
+    const coinsSum = (totalCoins || []).reduce((acc: number, curr: any) => acc + (curr.coins || 0), 0);
 
     return {
       totalUsers: totalUsers || 0,
@@ -845,7 +845,7 @@ export const getSystemSettings = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     
     const settings: any = {};
-    data.forEach(s => {
+    data.forEach((s: any) => {
       settings[s.key] = s.value;
     });
     return settings;

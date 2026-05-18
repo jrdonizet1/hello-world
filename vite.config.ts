@@ -17,6 +17,11 @@ export default defineConfig({
   vite: {
     ssr: {
       noExternal: true,
+      // Fix for "module is not defined" in some CommonJS dependencies during SSR
+      external: ['react', 'react-dom'],
+    },
+    optimizeDeps: {
+      include: ['react', 'react-dom'],
     }
   }
 });

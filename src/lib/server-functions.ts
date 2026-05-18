@@ -178,7 +178,7 @@ export const getLeaderboard = createServerFn({ method: "GET" })
       .limit(20);
 
     if (error) throw new Error(error.message);
-    return data.filter(entry => entry.profiles !== null);
+    return data.filter((entry: any) => entry.profiles !== null);
   });
 
 export const updateProfile = createServerFn({ method: "POST" })
@@ -845,7 +845,7 @@ export const getSystemSettings = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     
     const settings: any = {};
-    data.forEach(s => {
+    data.forEach((s: any) => {
       settings[s.key] = s.value;
     });
     return settings;

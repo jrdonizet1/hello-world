@@ -16,12 +16,22 @@ export default defineConfig({
   },
   vite: {
     ssr: {
-      noExternal: true,
-      // Fix for "module is not defined" in some CommonJS dependencies during SSR
-      external: ['react', 'react-dom'],
+      noExternal: [
+        'react', 
+        'react-dom', 
+        'use-sync-external-store', 
+        '@tanstack/react-store',
+        '@tanstack/react-router',
+        '@tanstack/react-start'
+      ],
     },
     optimizeDeps: {
-      include: ['react', 'react-dom'],
+      include: [
+        'react', 
+        'react-dom', 
+        'use-sync-external-store/shim/with-selector',
+        '@tanstack/react-store'
+      ],
     }
   }
 });

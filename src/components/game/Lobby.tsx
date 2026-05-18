@@ -105,7 +105,7 @@ export const Lobby: React.FC = () => {
       setPendingAction({ type: 'JOIN', code: joinParam.toUpperCase() });
     }
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }: { data: { session: any } }) => {
       setSession(session);
       if (session) {
         fetchProfile(session.user.id);
@@ -113,7 +113,7 @@ export const Lobby: React.FC = () => {
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
       setSession(session);
       if (session) {
         fetchProfile(session.user.id);

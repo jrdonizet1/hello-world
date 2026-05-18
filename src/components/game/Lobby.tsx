@@ -204,7 +204,7 @@ export const Lobby: React.FC = () => {
         schema: 'public', 
         table: 'rooms',
         filter: `id=eq.${roomId}` 
-      }, (payload) => {
+      }, (payload: any) => {
         if (payload.new.status === 'STARTING') {
           setCustomization(
             profile?.selected_skin, 

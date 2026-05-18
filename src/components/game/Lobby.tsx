@@ -105,7 +105,7 @@ export const Lobby: React.FC = () => {
       setPendingAction({ type: 'JOIN', code: joinParam.toUpperCase() });
     }
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }: { data: { session: any } }) => {
       setSession(session);
       if (session) {
         fetchProfile(session.user.id);
@@ -113,7 +113,7 @@ export const Lobby: React.FC = () => {
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
       setSession(session);
       if (session) {
         fetchProfile(session.user.id);
@@ -177,11 +177,11 @@ export const Lobby: React.FC = () => {
       if (error) throw error;
       
       const formattedRooms = rooms
-        .map(room => ({
+        .map((room: any) => ({
           ...room,
           playerCount: (room.profiles as any)?.[0]?.count || 0
         }))
-        .filter(room => room.playerCount > 0);
+        .filter((room: any) => room.playerCount > 0);
 
       setAvailableRooms(formattedRooms);
     } catch (err: any) {
@@ -204,7 +204,7 @@ export const Lobby: React.FC = () => {
         schema: 'public', 
         table: 'rooms',
         filter: `id=eq.${roomId}` 
-      }, (payload) => {
+      }, (payload: any) => {
         if (payload.new.status === 'STARTING') {
           setCustomization(
             profile?.selected_skin, 

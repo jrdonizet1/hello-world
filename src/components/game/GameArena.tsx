@@ -85,13 +85,13 @@ export const GameArena: React.FC = () => {
     const channel = supabase.channel(`duel-${roomId}`);
     
     channel
-      .on('broadcast', { event: 'score_update' }, async ({ payload }) => {
+      .on('broadcast', { event: 'score_update' }, async ({ payload }: { payload: any }) => {
         const { data: { user } } = await supabase.auth.getUser();
         if (user && payload.userId !== user.id) {
           setDuelOpponent(payload.userId, payload.score);
         }
       })
-      .on('broadcast', { event: 'player_eliminated' }, ({ payload }) => {
+      .on('broadcast', { event: 'player_eliminated' }, ({ payload }: { payload: any }) => {
         // If opponent is eliminated, we could show a message or just continue
         console.log('Opponent eliminated:', payload.userId);
       })
@@ -104,7 +104,7 @@ export const GameArena: React.FC = () => {
   useEffect(() => {
     if (isMultiplayer && roomId && score !== lastSentScore.current) {
       lastSentScore.current = score;
-      supabase.auth.getUser().then(({ data: { user } }) => {
+      supabase.auth.getUser().then(({ data: { user } }: { data: { user: any } }) => {
         if (!user) return;
         const channel = supabase.channel(`duel-${roomId}`);
         channel.send({

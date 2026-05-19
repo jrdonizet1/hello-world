@@ -7,8 +7,9 @@ export default defineConfig({
     },
   },
   ssr: {
-    noExternal: ["h3"],
+    noExternal: ["h3", /@tanstack/],
   },
+
 });
 
 

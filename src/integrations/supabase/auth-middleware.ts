@@ -13,8 +13,10 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
     const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY;
 
     if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-      return next({ context: {} as any });
+      console.warn('Supabase environment variables are missing in auth-middleware.');
+      return next({ context: { userId: 'anonymous' } as any });
     }
+
     
     const request = getRequest();
 

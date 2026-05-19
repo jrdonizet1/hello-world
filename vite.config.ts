@@ -6,5 +6,9 @@ export default defineConfig({
       "h3-v2": "h3",
     },
   },
+  ssr: {
+    noExternal: ["h3"],
+  },
 });
+
 

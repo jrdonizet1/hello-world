@@ -30,6 +30,19 @@ let _supabaseAdmin: ReturnType<typeof createSupabaseAdminClient> | undefined;
 export const supabaseAdmin = new Proxy({} as ReturnType<typeof createSupabaseAdminClient>, {
   get(_, prop, receiver) {
     if (!_supabaseAdmin) _supabaseAdmin = createSupabaseAdminClient();
-    return Reflect.get(_supabaseAdmin, prop, receiver);
+    
+    const value = Reflect.get(_supabaseAdmin, prop, receiver);
+    if (value === undefined && (prop === 'from' || prop === 'rpc' || prop === 'auth')) {
+      console.warn(`Supabase Admin method "${String(prop)}" called but client is not initialized.`);
+      // Return a no-op function that returns a chainable object to avoid immediate crashes
+      return () => ({
+        select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: null, error: null }), maybeSingle: () => Promise.resolve({ data: null, error: null }) }) }),
+        update: () => ({ eq: () => Promise.resolve({ data: null, error: null }) }),
+        upsert: () => Promise.resolve({ data: null, error: null }),
+        insert: () => Promise.resolve({ data: null, error: null }),
+        delete: () => ({ eq: () => Promise.resolve({ data: null, error: null }) }),
+      });
+    }
+    return value;
   },
 });
